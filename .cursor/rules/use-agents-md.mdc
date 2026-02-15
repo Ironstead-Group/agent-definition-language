@@ -1,0 +1,13 @@
+---
+description: Use AGENTS.md as the primary project guidance file (replaces CLAUDE.md)
+alwaysApply: true
+---
+
+# Use AGENTS.md for project guidance
+
+This project follows the [AGENTS.md](https://agents.md) standard for guiding AI coding agents.
+
+- **Read AGENTS.md** at the repository root for project context, layout, workflows, conventions, and key files.
+- **Treat AGENTS.md as the primary source** of project-specific instructions—equivalent to or in place of CLAUDE.md.
+- When working in this repo, consult AGENTS.md first for setup, code style, testing, PR instructions, and repository structure.
+- AGENTS.md is stewarded by the Agentic AI Foundation under the Linux Foundation; use it as the single, predictable place for agent instructions.

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Specification
+    url: https://github.com/YOUR_ORG/agent-definition-language/blob/main/versions/0.1.0-draft/spec.md
+    about: Read the current draft spec
+  - name: Standardization roadmap
+    url: https://github.com/YOUR_ORG/agent-definition-language/blob/main/standardization/roadmap.md
+    about: Standardization roadmap and bodies
