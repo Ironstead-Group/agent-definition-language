@@ -1,20 +1,125 @@
+/**
+ * Homepage Features Styles
+ * Clean, card-based design with subtle hover effects
+ */
+
 .features {
-  display: flex;
-  align-items: center;
-  padding: 4rem 0;
-  width: 100%;
+  padding: 6rem 0;
+  background: var(--ifm-background-color);
+}
+
+.featuresHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.featuresTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.featuresSubtitle {
+  font-size: 1.125rem;
+  color: var(--ifm-color-emphasis-600);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+[data-theme='dark'] .featuresSubtitle {
+  color: var(--ifm-color-emphasis-500);
+}
+
+.featureCard {
+  padding: 2rem;
+  height: 100%;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  text-align: left;
+}
+
+[data-theme='dark'] .featureCard {
+  border-color: var(--ifm-color-emphasis-300);
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  border-color: var(--ifm-color-primary-light);
+}
+
+[data-theme='dark'] .featureCard:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
 }
 
 .featureIcon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+  color: var(--ifm-color-primary);
 }
 
-.subtitle {
-  font-size: 1.2rem;
+[data-theme='dark'] .featureIcon {
+  background: linear-gradient(135deg, rgba(129, 140, 248, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
+}
+
+.featureTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--ifm-heading-color);
+}
+
+.featureDescription {
+  font-size: 0.9375rem;
+  line-height: 1.6;
   color: var(--ifm-color-emphasis-700);
+  margin: 0;
 }
 
+[data-theme='dark'] .featureDescription {
+  color: var(--ifm-color-emphasis-500);
+}
+
+/* Grid spacing for the row */
 .features .col {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 996px) {
+  .features {
+    padding: 4rem 0;
+  }
+
+  .featuresHeader {
+    margin-bottom: 3rem;
+  }
+
+  .featuresTitle {
+    font-size: 1.875rem;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .featureCard {
+    padding: 1.5rem;
+  }
+
+  .featureIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .featureIcon svg {
+    width: 24px;
+    height: 24px;
+  }
 }
