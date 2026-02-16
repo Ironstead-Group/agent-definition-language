@@ -8,11 +8,17 @@ keywords: [adl, production, example, security, permissions, complete]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import productionYaml from '@site/_yaml-sources/examples/production.yaml';
+import productionJson from '@site/_yaml-sources/examples/production.json';
 import identityYaml from '@site/_yaml-sources/snippets/production/identity.yaml';
+import identityJson from '@site/_yaml-sources/snippets/production/identity.json';
 import cryptoIdentityYaml from '@site/_yaml-sources/snippets/production/cryptographic-identity.yaml';
+import cryptoIdentityJson from '@site/_yaml-sources/snippets/production/cryptographic-identity.json';
 import permissionsYaml from '@site/_yaml-sources/snippets/production/permissions.yaml';
+import permissionsJson from '@site/_yaml-sources/snippets/production/permissions.json';
 import securityYaml from '@site/_yaml-sources/snippets/production/security.yaml';
+import securityJson from '@site/_yaml-sources/snippets/production/security.json';
 import runtimeYaml from '@site/_yaml-sources/snippets/production/runtime.yaml';
+import runtimeJson from '@site/_yaml-sources/snippets/production/runtime.json';
 
 # Production Agent Example
 
@@ -24,7 +30,7 @@ This example uses all major ADL features. Use it as a reference when building pr
 
 ## Document
 
-<CodeTabs yaml={productionYaml} title="research-assistant.adl" />
+<CodeTabs yaml={productionYaml} json={productionJson} title="research-assistant.adl" />
 
 ## Sections Breakdown
 
@@ -32,13 +38,13 @@ This example uses all major ADL features. Use it as a reference when building pr
 
 The agent has a unique identifier and provider information:
 
-<CodeTabs yaml={identityYaml} />
+<CodeTabs yaml={identityYaml} json={identityJson} />
 
 ### Cryptographic Identity
 
 For secure agent identification:
 
-<CodeTabs yaml={cryptoIdentityYaml} />
+<CodeTabs yaml={cryptoIdentityYaml} json={cryptoIdentityJson} />
 
 ### Permissions (Deny-by-Default)
 
@@ -46,19 +52,19 @@ For secure agent identification:
 Network and filesystem access is explicitly defined. Any access not explicitly granted is **denied**.
 :::
 
-<CodeTabs yaml={permissionsYaml} />
+<CodeTabs yaml={permissionsYaml} json={permissionsJson} />
 
 ### Security
 
 Authentication and encryption requirements:
 
-<CodeTabs yaml={securityYaml} />
+<CodeTabs yaml={securityYaml} json={securityJson} />
 
 ### Runtime Configuration
 
 How the agent should execute:
 
-<CodeTabs yaml={runtimeYaml} />
+<CodeTabs yaml={runtimeYaml} json={runtimeJson} />
 
 ## Notes
 

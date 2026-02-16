@@ -8,8 +8,11 @@ keywords: [adl, permissions, security, deny-by-default, network, filesystem]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import networkYaml from '@site/_yaml-sources/snippets/permissions/network.yaml';
+import networkJson from '@site/_yaml-sources/snippets/permissions/network.json';
 import filesystemYaml from '@site/_yaml-sources/snippets/permissions/filesystem.yaml';
+import filesystemJson from '@site/_yaml-sources/snippets/permissions/filesystem.json';
 import resourceLimitsYaml from '@site/_yaml-sources/snippets/permissions/resource-limits.yaml';
+import resourceLimitsJson from '@site/_yaml-sources/snippets/permissions/resource-limits.json';
 
 # Permissions
 
@@ -31,13 +34,13 @@ Permissions operate on a **deny-by-default** model: capabilities not explicitly 
 
 May contain: `allowed_hosts` (array of host patterns), `allowed_ports`, `allowed_protocols`, `deny_private` (bool). Host patterns support exact match and `*.example.com`.
 
-<CodeTabs yaml={networkYaml} />
+<CodeTabs yaml={networkYaml} json={networkJson} />
 
 ## 9.3 filesystem
 
 May contain: `allowed_paths` (array of `{ path, access }` where access is `read`, `write`, or `read_write`), `denied_paths`.
 
-<CodeTabs yaml={filesystemYaml} />
+<CodeTabs yaml={filesystemYaml} json={filesystemJson} />
 
 ## 9.4 environment
 
@@ -51,4 +54,4 @@ May contain: `allowed_commands`, `denied_commands`, `allow_shell` (bool).
 
 May contain: `max_memory_mb`, `max_cpu_percent`, `max_duration_sec`, `max_concurrent`.
 
-<CodeTabs yaml={resourceLimitsYaml} />
+<CodeTabs yaml={resourceLimitsYaml} json={resourceLimitsJson} />

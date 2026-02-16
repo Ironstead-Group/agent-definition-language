@@ -8,6 +8,7 @@ keywords: [adl, minimal, example, required fields]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import minimalYaml from '@site/_yaml-sources/examples/minimal.yaml';
+import minimalJson from '@site/_yaml-sources/examples/minimal.json';
 
 # Minimal Example
 
@@ -19,7 +20,7 @@ This document validates against the [ADL JSON Schema](/spec/appendix-schema).
 
 ## Document
 
-<CodeTabs yaml={minimalYaml} title="hello-agent.adl" />
+<CodeTabs yaml={minimalYaml} json={minimalJson} title="hello-agent.adl" />
 
 ## Required Fields
 

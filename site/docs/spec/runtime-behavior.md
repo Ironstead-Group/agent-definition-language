@@ -8,7 +8,9 @@ keywords: [adl, runtime, behavior, tool invocation, error handling]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import toolInvocationYaml from '@site/_yaml-sources/snippets/runtime-behavior/tool-invocation.yaml';
+import toolInvocationJson from '@site/_yaml-sources/snippets/runtime-behavior/tool-invocation.json';
 import errorHandlingYaml from '@site/_yaml-sources/snippets/runtime-behavior/error-handling.yaml';
+import errorHandlingJson from '@site/_yaml-sources/snippets/runtime-behavior/error-handling.json';
 
 # Runtime Behavior
 
@@ -30,10 +32,10 @@ May contain: `max_output_length`, `format`, `streaming` (bool).
 
 May contain: `parallel` (bool), `max_concurrent`, `timeout_ms`, `retry_policy`.
 
-<CodeTabs yaml={toolInvocationYaml} />
+<CodeTabs yaml={toolInvocationYaml} json={toolInvocationJson} />
 
 ## 11.4 error_handling
 
 May contain: `on_tool_error` (`abort`, `continue`, or `retry`), `max_retries`, `fallback_behavior`.
 
-<CodeTabs yaml={errorHandlingYaml} />
+<CodeTabs yaml={errorHandlingYaml} json={errorHandlingJson} />

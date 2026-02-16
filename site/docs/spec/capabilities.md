@@ -8,8 +8,11 @@ keywords: [adl, capabilities, tools, resources, prompts, function calling]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import toolExample from '@site/_yaml-sources/snippets/capabilities/tool-example.yaml';
+import toolExampleJson from '@site/_yaml-sources/snippets/capabilities/tool-example.json';
 import resourceExample from '@site/_yaml-sources/snippets/capabilities/resource-example.yaml';
+import resourceExampleJson from '@site/_yaml-sources/snippets/capabilities/resource-example.json';
 import promptExample from '@site/_yaml-sources/snippets/capabilities/prompt-example.yaml';
+import promptExampleJson from '@site/_yaml-sources/snippets/capabilities/prompt-example.json';
 
 # Capabilities
 
@@ -21,7 +24,7 @@ Array of tool objects (functions the agent can invoke). **OPTIONAL.** Each tool 
 
 ### Example Tool Definition
 
-<CodeTabs yaml={toolExample} title="tool-with-read-only" />
+<CodeTabs yaml={toolExample} json={toolExampleJson} title="tool-with-read-only" />
 
 :::tip Tool Flags
 - `read_only: true` - Tool does not modify state (safer, can run without confirmation)
@@ -35,7 +38,7 @@ Array of resource objects (data sources the agent can access). **OPTIONAL.** Eac
 
 ### Example Resource Definition
 
-<CodeTabs yaml={resourceExample} />
+<CodeTabs yaml={resourceExample} json={resourceExampleJson} />
 
 ## 8.3 prompts
 
@@ -43,4 +46,4 @@ Array of prompt objects (reusable prompt templates). **OPTIONAL.** Each prompt *
 
 ### Example Prompt Definition
 
-<CodeTabs yaml={promptExample} />
+<CodeTabs yaml={promptExample} json={promptExampleJson} />

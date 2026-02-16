@@ -62,7 +62,8 @@ function convertYamlToJson(
 
 /**
  * Process example YAML files
- * Converts _yaml-sources/examples/*.yaml -> static/examples/*.json
+ * Converts _yaml-sources/examples/*.yaml -> static/examples/*.adl.json (for downloads)
+ * Also generates _yaml-sources/examples/*.json (for CodeTabs component)
  */
 async function processExamples(): Promise<ConversionResult[]> {
   const results: ConversionResult[] = [];
@@ -77,11 +78,17 @@ async function processExamples(): Promise<ConversionResult[]> {
 
   for (const file of yamlFiles) {
     const yamlPath = path.join(examplesDir, file);
-    const jsonFile = file.replace(/\.yaml$/, ".adl.json");
-    const jsonPath = path.join(STATIC_EXAMPLES, jsonFile);
 
-    const result = convertYamlToJson(yamlPath, jsonPath);
-    results.push(result);
+    // Generate JSON for static downloads
+    const staticJsonFile = file.replace(/\.yaml$/, ".adl.json");
+    const staticJsonPath = path.join(STATIC_EXAMPLES, staticJsonFile);
+    const staticResult = convertYamlToJson(yamlPath, staticJsonPath);
+    results.push(staticResult);
+
+    // Generate JSON alongside YAML for CodeTabs imports
+    const codeTabsJsonPath = yamlPath.replace(/\.yaml$/, ".json");
+    const codeTabsResult = convertYamlToJson(yamlPath, codeTabsJsonPath);
+    results.push(codeTabsResult);
   }
 
   return results;

@@ -8,7 +8,9 @@ keywords: [adl, security, authentication, encryption, attestation, oauth2]
 
 import CodeTabs from '@site/src/components/CodeTabs';
 import authenticationYaml from '@site/_yaml-sources/snippets/security/authentication.yaml';
+import authenticationJson from '@site/_yaml-sources/snippets/security/authentication.json';
 import encryptionYaml from '@site/_yaml-sources/snippets/security/encryption.yaml';
+import encryptionJson from '@site/_yaml-sources/snippets/security/encryption.json';
 
 # Security
 
@@ -22,13 +24,13 @@ Always define explicit security requirements for production agents. At minimum, 
 
 May contain: `type` (one of `none`, `api_key`, `oauth2`, `oidc`, `mtls`), `required` (bool). Type-specific members (e.g., OAuth2: `scopes`, `token_endpoint`; OIDC: `issuer`, `audience`) **MAY** be present.
 
-<CodeTabs yaml={authenticationYaml} />
+<CodeTabs yaml={authenticationYaml} json={authenticationJson} />
 
 ## 10.2 encryption
 
 May contain: `in_transit` (`required`, `min_version`), `at_rest` (`required`, `algorithm`).
 
-<CodeTabs yaml={encryptionYaml} />
+<CodeTabs yaml={encryptionYaml} json={encryptionJson} />
 
 ## 10.3 attestation
 
