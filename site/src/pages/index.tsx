@@ -18,7 +18,7 @@ const adlExample = `{
     {
       "name": "search_papers",
       "description": "Search academic databases",
-      "input_schema": {
+      "parameters": {
         "type": "object",
         "properties": {
           "query": { "type": "string" }

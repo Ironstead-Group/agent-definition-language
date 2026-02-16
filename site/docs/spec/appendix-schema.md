@@ -121,4 +121,4 @@ Reference the schema in your ADL documents using the `$schema` field to enable I
 }
 ```
 
-See the full schema in the [repository](https://github.com/adl-spec/agent-definition-language/blob/main/versions/0.1.0-draft/schema.json).
+See the full schema in the [repository](https://github.com/adl-spec/agent-definition-language/blob/main/versions/0.1.0/schema.json).

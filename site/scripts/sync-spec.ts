@@ -247,6 +247,10 @@ function syncExamples(versionId: string): number {
     return 0;
   }
 
+  // Clear destination to remove stale files from renamed/deleted sources
+  if (fs.existsSync(destDir)) {
+    fs.rmSync(destDir, { recursive: true });
+  }
   ensureDir(destDir);
   return copyDir(srcDir, destDir);
 }
@@ -263,6 +267,10 @@ function syncSnippets(versionId: string): number {
     return 0;
   }
 
+  // Clear destination to remove stale files from renamed/deleted sources
+  if (fs.existsSync(destDir)) {
+    fs.rmSync(destDir, { recursive: true });
+  }
   ensureDir(destDir);
   return copyDir(srcDir, destDir);
 }
