@@ -57,6 +57,27 @@ jobs:
         working-directory: site
         run: npx docusaurus build
 
+      - name: Validate llms.txt generation
+        working-directory: site
+        run: |
+          echo "Checking llms.txt files..."
+          test -f build/llms.txt || (echo "ERROR: llms.txt not generated" && exit 1)
+          test -f build/llms-full.txt || (echo "ERROR: llms-full.txt not generated" && exit 1)
+
+          # Ensure not the placeholder (real file has 100+ lines, placeholder has ~7)
+          LINES=$(wc -l < build/llms.txt)
+          echo "llms.txt: $LINES lines"
+          if [ "$LINES" -lt 50 ]; then
+            echo "ERROR: llms.txt appears to be placeholder (only $LINES lines)"
+            exit 1
+          fi
+
+          # Check for expected content structure
+          grep -q "## spec" build/llms.txt || (echo "ERROR: llms.txt missing spec section" && exit 1)
+
+          echo "llms-full.txt: $(wc -l < build/llms-full.txt) lines"
+          head -5 build/llms.txt
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'

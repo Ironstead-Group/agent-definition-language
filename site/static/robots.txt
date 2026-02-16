@@ -1,0 +1,10 @@
+# ADL Specification Site
+# https://adl-spec.org
+
+User-agent: *
+Allow: /
+
+# LLM-friendly content
+# See https://llmstxt.org for specification
+Sitemap: https://adl-spec.org/sitemap.xml
+LLMsTxt: https://adl-spec.org/llms.txt

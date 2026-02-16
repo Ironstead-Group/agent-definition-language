@@ -1,6 +1,7 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type {PluginOptions as LlmsPluginOptions} from '@signalwire/docusaurus-plugin-llms-txt/public';
 
 const config: Config = {
   title: 'Agent Definition Language',
@@ -48,6 +49,25 @@ const config: Config = {
         },
       };
     },
+    [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+        content: {
+          enableMarkdownFiles: true,
+          enableLlmsFullTxt: true,
+          relativePaths: true,
+          includeDocs: true,
+          includeVersionedDocs: false,
+          includeBlog: false,
+          includePages: false,
+        },
+        siteTitle: 'Agent Definition Language (ADL)',
+        siteDescription: 'A vendor-neutral specification for describing AI agents. ADL provides a standardized way to define agent capabilities, permissions, security requirements, and runtime behavior.',
+        depth: 2,
+        enableDescriptions: true,
+        includeOrder: ['/spec/**', '/examples/**', '/profiles/**', '/standardization/**'],
+      } satisfies LlmsPluginOptions,
+    ],
   ],
 
   presets: [
@@ -69,6 +89,16 @@ const config: Config = {
   ],
 
   headTags: [
+    // LLM-friendly content discovery
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'alternate',
+        type: 'text/plain',
+        title: 'LLM-friendly content',
+        href: '/llms.txt',
+      },
+    },
     // Preconnect to Google Fonts for faster loading
     {
       tagName: 'link',
@@ -191,6 +221,10 @@ const config: Config = {
             {
               label: 'GitHub',
               href: 'https://github.com/adl-spec/agent-definition-language',
+            },
+            {
+              label: 'LLMs.txt',
+              href: 'pathname:///llms.txt',
             },
           ],
         },
