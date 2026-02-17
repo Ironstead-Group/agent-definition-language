@@ -26,7 +26,7 @@ New to ADL? Start with the [Minimal Example](/examples/minimal) to understand th
 ## Conventions
 
 - Examples are valid against the ADL version they target
-- **ADL 0.1.0:** JSON format with `adl`, `name`, `description`, `version` (snake_case)
+- **ADL 0.1.0:** JSON format with `adl_spec`, `name`, `description`, `version` (snake_case)
 
 ## Quick Reference
 
@@ -34,7 +34,7 @@ The minimal valid ADL document:
 
 ```json title="minimal-agent.adl.json"
 {
-  "adl": "0.1.0",
+  "adl_spec": "0.1.0",
   "name": "Hello Agent",
   "description": "A simple greeting agent.",
   "version": "1.0.0"

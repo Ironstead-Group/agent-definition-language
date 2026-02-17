@@ -10,7 +10,7 @@ import CodeBlock from '@theme/CodeBlock';
 import styles from './index.module.css';
 
 const adlExample = `{
-  "adl": "0.1.0",
+  "adl_spec": "0.1.0",
   "name": "Research Assistant",
   "description": "Helps find and analyze academic papers",
   "version": "1.0.0",
@@ -59,7 +59,7 @@ function HeroSection() {
           <div className={styles.heroCtas}>
             <Link
               className={clsx('button button--lg', styles.primaryButton)}
-              to="/spec/introduction">
+              to="/specification">
               Read the Spec
             </Link>
             <Link
@@ -139,7 +139,7 @@ function QuickExample() {
             </ul>
             <Link
               className={clsx('button button--lg', styles.learnMoreButton)}
-              to="/spec/introduction">
+              to="/specification">
               Learn More
             </Link>
           </div>
@@ -229,7 +229,7 @@ function CtaSection() {
           <div className={styles.ctaButtons}>
             <Link
               className={clsx('button button--lg', styles.primaryButton)}
-              to="/spec/introduction">
+              to="/specification">
               Read the Specification
             </Link>
             <Link

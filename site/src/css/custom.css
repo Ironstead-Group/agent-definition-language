@@ -157,13 +157,150 @@ body {
   color: var(--ifm-color-primary);
 }
 
-/* GitHub link icon styling - WCAG AA: no opacity reduction */
-.navbar__item[href*="github"] {
-  transition: color var(--adl-transition-fast);
+/* GitHub repo widget (A2A-style) */
+.github-repo-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--ifm-navbar-link-color);
+  text-decoration: none;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--adl-border-subtle);
+  transition: all var(--adl-transition-fast);
+  line-height: 1;
 }
 
-.navbar__item[href*="github"]:hover {
+.github-repo-widget:hover {
   color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.github-repo-widget__icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.github-repo-widget__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.github-repo-widget__name {
+  font-weight: 600;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.github-repo-widget__facts {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.github-repo-widget__fact {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+.github-repo-widget__fact svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 996px) {
+  /* Hide title in main navbar; sidebar header still shows it */
+  .navbar__inner .navbar__title {
+    display: none;
+  }
+
+  /* Hide right-side items in main navbar; all accessible via hamburger menu */
+  .navbar__items--right {
+    display: none !important;
+  }
+
+  /*
+   * Fix: backdrop-filter on .navbar creates a new containing block for
+   * position:fixed children, constraining the sidebar to the navbar height.
+   * Disable it when the sidebar is open so the sidebar gets proper viewport
+   * positioning. The blur effect isn't needed behind the overlay anyway.
+   */
+  .navbar.navbar-sidebar--show {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Prevent header from stretching in flex column */
+  .navbar-sidebar__brand {
+    flex: 0 0 auto !important;
+  }
+
+  /* Scrollable navigation area fills remaining space */
+  .navbar-sidebar__nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  /* Prevent search from stretching */
+  .navbar-sidebar__search {
+    flex-shrink: 0;
+  }
+
+  /* Prevent footer from stretching */
+  .navbar-sidebar__footer {
+    flex-shrink: 0;
+  }
+
+  /* Allow title to wrap in sidebar so it shows in full */
+  .navbar-sidebar__brand .navbar__title {
+    font-size: 1rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+
+  /* Search bar inside sidebar */
+  .navbar-sidebar__search {
+    padding: 0.5rem var(--ifm-navbar-padding-horizontal);
+    border-bottom: 1px solid var(--adl-border-subtle);
+    flex-shrink: 0;
+  }
+
+  .navbar-sidebar__search .navbar__search-input {
+    width: 100% !important;
+    opacity: 1 !important;
+    box-sizing: border-box;
+  }
+
+  /* Footer pinned to bottom with GitHub widget + color mode */
+  .navbar-sidebar__footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem var(--ifm-navbar-padding-horizontal);
+    border-top: 1px solid var(--adl-border-subtle);
+  }
+
+  /* Responsive tables: horizontal scroll instead of page overflow */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* ============================================
@@ -592,14 +729,91 @@ table tr:hover td {
 /* ============================================
    Search Styles
    ============================================ */
+
+/* Place search before the GitHub widget in the navbar */
+.navbar__items--right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar__items--right .navbar__search {
+  order: -1;
+  margin-left: 0;
+}
+
+/* Remove extra padding/margin from search plugin wrapper */
+.navbar__items--right > [class*='navbarSearchContainer'] {
+  padding: 0;
+}
+
+/* Local search input - transparent glass when unfocused */
+.navbar__search-input {
+  border-radius: 10px;
+  padding: 0.4rem 0.75rem 0.4rem 2rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  color: var(--ifm-navbar-link-color);
+  transition: all var(--adl-transition-normal);
+  font-size: 0.85rem;
+  width: 160px;
+  opacity: 0.6;
+}
+
+:root .navbar__search-input {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  opacity: 0.5;
+}
+
+.navbar__search-input::placeholder {
+  color: var(--adl-text-muted);
+  opacity: 0.7;
+}
+
+.navbar__search-input:hover {
+  opacity: 0.8;
+  border-color: var(--adl-border-subtle);
+}
+
+.navbar__search-input:focus {
+  opacity: 1;
+  width: 220px;
+  background: var(--adl-surface-glass);
+  border-color: var(--ifm-color-primary);
+  box-shadow: var(--adl-glow-primary);
+  outline: none;
+}
+
+[data-theme='dark'] .navbar__search-input:focus {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+/* DocSearch fallback styles */
 .DocSearch-Button {
   border-radius: 10px !important;
   padding: 0 1rem !important;
-  background: var(--adl-surface-glass) !important;
-  border: 1px solid var(--adl-border-subtle) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px);
+  opacity: 0.6;
+  transition: all var(--adl-transition-normal) !important;
+}
+
+:root .DocSearch-Button {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  opacity: 0.5;
 }
 
 .DocSearch-Button:hover {
+  opacity: 0.8;
+  border-color: var(--adl-border-subtle) !important;
+}
+
+.DocSearch-Button:focus {
+  opacity: 1;
   border-color: var(--ifm-color-primary) !important;
   box-shadow: var(--adl-glow-primary) !important;
 }

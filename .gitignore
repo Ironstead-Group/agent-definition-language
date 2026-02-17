@@ -144,3 +144,7 @@ vite.config.ts.timestamp-*
 # Temp files
 temp/
 tmp/
+
+# Claude Code local settings (user-specific, not committed)
+.claude/**/*.local.md
+.claude/**/*.local.json

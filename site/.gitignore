@@ -9,6 +9,7 @@
 .cache-loader
 /static/examples/*.json
 /_yaml-sources/**/*.json
+/docs/specification.md
 
 # Misc
 .DS_Store
@@ -20,3 +21,25 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Testing
+/test-results/
+/playwright-report/
+/playwright/.cache/
+.playwright/
+/coverage/
+*.spec.js
+*.spec.ts
+*.test.js
+*.test.ts
+/screenshots/
+/videos/
+.playwright-cli/
+/playwright-downloads/
+/user-data-dir/
+.auth/
+playwright-state.json
+*.trace.zip
+page-*.png
+page-*.jpeg
+page-*.md

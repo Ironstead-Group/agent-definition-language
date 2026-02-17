@@ -168,48 +168,43 @@ function extractSectionContent(
   section: Section,
   allSections: Section[]
 ): string {
-  // Find the section header pattern
-  const headerPattern = new RegExp(
-    `^## ${section.number.replace(/\./g, "\\.")}\\s+${section.title}`,
-    "m"
-  );
+  const escapedNumber = section.number.replace(/\./g, "\\.");
+  const escapedTitle = section.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  const match = specContent.match(headerPattern);
-  if (!match || match.index === undefined) {
-    // Try alternate patterns
-    const altPattern = new RegExp(
-      `^### ${section.number.replace(/\./g, "\\.")}`,
-      "m"
-    );
-    const altMatch = specContent.match(altPattern);
-    if (!altMatch) {
-      console.warn(`  Warning: Section ${section.number} ${section.title} not found in spec.md`);
-      return `# ${section.title}\n\n*Content pending*\n`;
+  // Try multiple header patterns to find the section
+  // Spec uses "## N. Title" (dot after number) or "## Appendix A. Title"
+  const patterns = [
+    new RegExp(`^## ${escapedNumber}\\.?\\s+${escapedTitle}`, "m"),
+    new RegExp(`^## Appendix ${escapedNumber}\\.?\\s+${escapedTitle}`, "m"),
+    new RegExp(`^## ${escapedNumber}[.\\s]`, "m"),
+    new RegExp(`^## Appendix ${escapedNumber}[.\\s]`, "m"),
+  ];
+
+  let startIndex: number | undefined;
+  for (const pattern of patterns) {
+    const m = specContent.match(pattern);
+    if (m && m.index !== undefined) {
+      startIndex = m.index;
+      break;
     }
   }
 
-  const startIndex = match?.index || 0;
+  if (startIndex === undefined) {
+    console.warn(`  Warning: Section ${section.number} ${section.title} not found in spec.md`);
+    return `# ${section.title}\n\n*Content pending*\n`;
+  }
 
-  // Find the next section at the same or higher level
+  // Find the next top-level section (## N. or ## Appendix) after this one
   let endIndex = specContent.length;
-  const sectionLevel = section.number.split(".").length;
 
-  for (const otherSection of allSections) {
-    if (otherSection.id === section.id) continue;
-
-    const otherLevel = otherSection.number.split(".").length;
-    if (otherLevel <= sectionLevel) {
-      const otherPattern = new RegExp(
-        `^## ${otherSection.number.replace(/\./g, "\\.")}\\s`,
-        "m"
-      );
-      const otherMatch = specContent.slice(startIndex + 1).match(otherPattern);
-      if (otherMatch && otherMatch.index !== undefined) {
-        const possibleEnd = startIndex + 1 + otherMatch.index;
-        if (possibleEnd < endIndex && possibleEnd > startIndex) {
-          endIndex = possibleEnd;
-        }
-      }
+  // Match any top-level section header: "## N." or "## Appendix"
+  const nextSectionPattern = /^## (?:\d+|Appendix [A-Z])[.\s]/gm;
+  nextSectionPattern.lastIndex = startIndex + 1;
+  let nextMatch: RegExpExecArray | null;
+  while ((nextMatch = nextSectionPattern.exec(specContent)) !== null) {
+    if (nextMatch.index > startIndex) {
+      endIndex = nextMatch.index;
+      break;
     }
   }
 
@@ -217,6 +212,32 @@ function extractSectionContent(
 
   // Convert ## to # for the main heading (Docusaurus expects h1)
   content = content.replace(/^## /, "# ");
+  // Remove "Appendix " prefix from heading if present (e.g. "# Appendix A. JSON Schema" -> "# JSON Schema")
+  content = content.replace(/^# Appendix [A-Z]\.\s*/, "# ");
+
+  // Escape <url> autolinks for MDX compatibility: <https://...> -> [url](url)
+  content = content.replace(/<(https?:\/\/[^>]+)>/g, "[$1]($1)");
+
+  // Escape HTML-like entities that MDX treats as JSX (e.g. &lt; in tables)
+  // These are already escaped in spec.md but MDX may still choke on bare < in some contexts
+  content = content.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/)/g, "&lt;");
+
+  // Rewrite repo-relative links to work within the Docusaurus site
+  // ../../examples/ -> /examples/ (will be handled by static assets or external links)
+  // ../../profiles/ -> /profiles/
+  // ./schema.json -> reference to schema appendix
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
+  );
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+  );
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\/schema\.json\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+  );
 
   return content;
 }
@@ -278,7 +299,7 @@ function syncSnippets(versionId: string): number {
 }
 
 /**
- * Generate MDX files from spec.md for a version
+ * Generate a single specification MDX file from spec.md
  */
 function generateSpecDocs(
   versionId: string,
@@ -290,58 +311,69 @@ function generateSpecDocs(
     throw new Error(`Spec not found: ${specPath}`);
   }
 
-  const specContent = fs.readFileSync(specPath, "utf-8");
-  const specManifest = readSpecManifest(versionId);
-  const allSections = flattenSections(specManifest.sections);
+  let specContent = fs.readFileSync(specPath, "utf-8");
 
-  ensureDir(outputDir);
-  let filesCreated = 0;
+  // Escape <url> autolinks for MDX compatibility: <https://...> -> [url](url)
+  specContent = specContent.replace(/<(https?:\/\/[^>]+)>/g, "[$1]($1)");
 
-  // Generate index/introduction file
-  const introSection = specManifest.sections.find(
-    (s) => s.id === "introduction"
+  // Escape HTML-like entities that MDX treats as JSX
+  specContent = specContent.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/|a\s)/g, "&lt;");
+
+  // Rewrite repo-relative links to GitHub URLs
+  specContent = specContent.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
   );
-  if (introSection) {
-    const introContent = extractSectionContent(
-      specContent,
-      introSection,
-      allSections
-    );
-    const introFrontmatter = generateFrontmatter(introSection, 1, versionInfo);
+  specContent = specContent.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+  );
+  specContent = specContent.replace(
+    /\[([^\]]+)\]\(\.\/schema\.json\)/g,
+    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+  );
 
-    // Add imports for CodeTabs if needed
-    const mdxContent = `${introFrontmatter}
+  // Remove the "# Agent Definition Language" h1 title if present (frontmatter provides the title)
+  specContent = specContent.replace(/^# Agent Definition Language[^\n]*\n+/, "");
+
+  // Build frontmatter
+  const statusLabel =
+    versionInfo.status === "draft"
+      ? "Draft"
+      : versionInfo.status === "rc"
+        ? "Release Candidate"
+        : versionInfo.status === "released"
+          ? "Released"
+          : "Deprecated";
+
+  const frontmatter = `---
+id: specification
+title: "Agent Definition Language Specification"
+description: "ADL Specification v${versionId} (${statusLabel})"
+keywords: [adl, specification, agent, definition, language]
+toc_max_heading_level: 3
+hide_table_of_contents: false
+---
+
 import CodeTabs from '@site/src/components/CodeTabs';
 
-${introContent}
 `;
 
-    fs.writeFileSync(path.join(outputDir, "introduction.md"), mdxContent);
-    filesCreated++;
+  // Ensure output directory exists
+  ensureDir(outputDir);
+
+  // Remove old split files if they exist in a spec/ subdirectory
+  const oldSpecDir = path.join(outputDir, "spec");
+  if (fs.existsSync(oldSpecDir)) {
+    fs.rmSync(oldSpecDir, { recursive: true });
+    console.log("  Removed old split spec files");
   }
 
-  // Generate files for each top-level section
-  let position = 2;
-  for (const section of specManifest.sections) {
-    if (section.id === "introduction") continue;
+  // Write single specification file
+  const outputPath = path.join(outputDir, "specification.md");
+  fs.writeFileSync(outputPath, frontmatter + specContent);
 
-    const content = extractSectionContent(specContent, section, allSections);
-    const frontmatter = generateFrontmatter(section, position, versionInfo);
-
-    // Add imports for CodeTabs
-    const mdxContent = `${frontmatter}
-import CodeTabs from '@site/src/components/CodeTabs';
-
-${content}
-`;
-
-    const filename = `${section.id}.md`;
-    fs.writeFileSync(path.join(outputDir, filename), mdxContent);
-    filesCreated++;
-    position++;
-  }
-
-  return filesCreated;
+  return 1;
 }
 
 /**
@@ -390,18 +422,19 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
     const isLatest = manifest.latest === versionId;
 
     let specOutputDir: string;
+    const docsDir = path.join(SITE_ROOT, "docs");
     if (isNext || (versionInfo.status === "draft" && !isLatest)) {
-      // Draft/next version goes to docs/spec (shown as "Next")
-      specOutputDir = DOCS_SPEC;
-      console.log(`  Output: docs/spec/ (next version)`);
+      // Draft/next version goes to docs/ as single file
+      specOutputDir = docsDir;
+      console.log(`  Output: docs/specification.md (next version)`);
     } else if (versionInfo.status === "released") {
       // Released versions go to versioned_docs
-      specOutputDir = path.join(VERSIONED_DOCS, `version-${versionId}`, "spec");
-      console.log(`  Output: versioned_docs/version-${versionId}/spec/`);
+      specOutputDir = path.join(VERSIONED_DOCS, `version-${versionId}`);
+      console.log(`  Output: versioned_docs/version-${versionId}/specification.md`);
     } else {
       // RC or other statuses - treat as next for now
-      specOutputDir = DOCS_SPEC;
-      console.log(`  Output: docs/spec/`);
+      specOutputDir = docsDir;
+      console.log(`  Output: docs/specification.md`);
     }
 
     // Sync examples (always to _yaml-sources for current working version)
@@ -416,15 +449,10 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
       result.filesCreated += snippetsCount;
     }
 
-    // Generate spec MDX files
-    // Note: For now, we skip auto-generation and preserve manually crafted MDX
-    // Uncomment the following to enable auto-generation from spec.md:
-    // const specFilesCount = generateSpecDocs(versionId, versionInfo, specOutputDir);
-    // console.log(`  Generated ${specFilesCount} spec files`);
-    // result.filesCreated += specFilesCount;
-
-    console.log(`  Skipping spec MDX generation (preserving manual MDX files)`);
-    console.log(`  To enable auto-generation, edit sync-spec.ts`);
+    // Generate spec MDX files from spec.md (source of truth)
+    const specFilesCount = generateSpecDocs(versionId, versionInfo, specOutputDir);
+    console.log(`  Generated ${specFilesCount} spec files`);
+    result.filesCreated += specFilesCount;
 
     result.success = true;
   } catch (error) {

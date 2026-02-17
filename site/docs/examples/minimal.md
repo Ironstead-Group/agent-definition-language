@@ -15,7 +15,7 @@ import minimalJson from '@site/_yaml-sources/0.1.0/examples/minimal.json';
 This is the simplest valid ADL document, containing only the required fields.
 
 :::info Validation
-This document validates against the [ADL JSON Schema](/spec/appendix-schema).
+This document validates against the [ADL JSON Schema](/specification#appendix-a-json-schema).
 :::
 
 ## Document
@@ -26,7 +26,7 @@ This document validates against the [ADL JSON Schema](/spec/appendix-schema).
 
 | Field | Description |
 |-------|-------------|
-| `adl` | ADL specification version (must be semantic version format) |
+| `adl_spec` | ADL specification version (must be semantic version format) |
 | `name` | Human-readable name for the agent |
 | `description` | Description of the agent's purpose and capabilities |
 | `version` | Agent's version (must be semantic version format) |

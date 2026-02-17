@@ -47,27 +47,33 @@ sections:
       - id: extension-mechanism
         number: "4.3"
         title: Extension Mechanism
+      - id: pattern-matching
+        number: "4.4"
+        title: Pattern Matching
 
   - id: core-members
     number: "5"
     title: Core Members
     level: 1
     subsections:
-      - id: adl
+      - id: adl-spec
         number: "5.1"
-        title: adl
+        title: ADL Specification
       - id: schema
         number: "5.2"
         title: "$schema"
       - id: name
         number: "5.3"
-        title: name
+        title: Name
       - id: description
         number: "5.4"
-        title: description
+        title: Description
       - id: version
         number: "5.5"
-        title: version
+        title: Version
+      - id: lifecycle
+        number: "5.6"
+        title: Lifecycle
 
   - id: agent-identity
     number: "6"
@@ -76,13 +82,13 @@ sections:
     subsections:
       - id: id
         number: "6.1"
-        title: id
+        title: Id
       - id: provider
         number: "6.2"
-        title: provider
+        title: Provider
       - id: cryptographic-identity
         number: "6.3"
-        title: cryptographic_identity
+        title: Cryptographic Identity
 
   - id: model-configuration
     number: "7"
@@ -91,10 +97,10 @@ sections:
     subsections:
       - id: model
         number: "7.1"
-        title: model
+        title: Model
       - id: system-prompt
         number: "7.2"
-        title: system_prompt
+        title: System Prompt
 
   - id: capabilities
     number: "8"
@@ -103,34 +109,37 @@ sections:
     subsections:
       - id: tools
         number: "8.1"
-        title: tools
+        title: Tools
       - id: resources
         number: "8.2"
-        title: resources
+        title: Resources
       - id: prompts
         number: "8.3"
-        title: prompts
+        title: Prompts
 
   - id: permissions
     number: "9"
     title: Permissions
     level: 1
     subsections:
+      - id: permissions-model
+        number: "9.1"
+        title: Permissions Model
       - id: network
         number: "9.2"
-        title: network
+        title: Network
       - id: filesystem
         number: "9.3"
-        title: filesystem
+        title: Filesystem
       - id: environment
         number: "9.4"
-        title: environment
+        title: Environment
       - id: execution
         number: "9.5"
-        title: execution
+        title: Execution
       - id: resource-limits
         number: "9.6"
-        title: resource_limits
+        title: Resource Limits
 
   - id: security
     number: "10"
@@ -139,13 +148,13 @@ sections:
     subsections:
       - id: authentication
         number: "10.1"
-        title: authentication
+        title: Authentication
       - id: encryption
         number: "10.2"
-        title: encryption
+        title: Encryption
       - id: attestation
         number: "10.3"
-        title: attestation
+        title: Attestation
 
   - id: runtime-behavior
     number: "11"
@@ -154,16 +163,16 @@ sections:
     subsections:
       - id: input-handling
         number: "11.1"
-        title: input_handling
+        title: Input Handling
       - id: output-handling
         number: "11.2"
-        title: output_handling
+        title: Output Handling
       - id: tool-invocation
         number: "11.3"
-        title: tool_invocation
+        title: Tool Invocation
       - id: error-handling
         number: "11.4"
-        title: error_handling
+        title: Error Handling
 
   - id: metadata
     number: "12"
@@ -172,19 +181,19 @@ sections:
     subsections:
       - id: authors
         number: "12.1"
-        title: authors
+        title: Authors
       - id: license
         number: "12.2"
-        title: license
+        title: License
       - id: documentation
         number: "12.3"
-        title: documentation
+        title: Documentation
       - id: repository
         number: "12.4"
-        title: repository
+        title: Repository
       - id: tags
         number: "12.5"
-        title: tags
+        title: Tags
 
   - id: profiles
     number: "13"
@@ -238,9 +247,9 @@ sections:
     title: IANA Considerations
     level: 1
     subsections:
-      - id: media-type-registration
+      - id: media-type
         number: "17.1"
-        title: Media Type Registration
+        title: Media Type
       - id: profile-registry
         number: "17.2"
         title: Profile Registry
@@ -274,15 +283,12 @@ sections:
 
   - id: appendix-c
     number: "C"
-    title: Governance Profile
+    title: Profiles
     level: 1
     subsections:
-      - id: governance-members
+      - id: available-profiles
         number: "C.1"
-        title: Additional Members
-      - id: compliance-mapping
-        number: "C.2"
-        title: Compliance Mapping
+        title: Available Profiles
 
 # Body-specific template hints (for generators).
 # Generators use these to insert boilerplate or reorder sections.

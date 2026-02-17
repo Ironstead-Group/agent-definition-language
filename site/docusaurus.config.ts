@@ -1,12 +1,13 @@
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
-import type {PluginOptions as LlmsPluginOptions} from '@signalwire/docusaurus-plugin-llms-txt/public';
 
 const config: Config = {
   title: 'Agent Definition Language',
   tagline: 'A vendor-neutral specification for describing AI agents',
   favicon: 'img/favicon.ico',
+
+  clientModules: ['./src/clientModules/disableCrossTabThemeSync.ts'],
 
   future: {
     v4: true,
@@ -15,7 +16,7 @@ const config: Config = {
   url: 'https://adl-spec.org',
   baseUrl: '/',
 
-  organizationName: 'adl-spec',
+  organizationName: 'ironstead-group',
   projectName: 'agent-definition-language',
 
   onBrokenLinks: 'throw',
@@ -66,7 +67,18 @@ const config: Config = {
         depth: 2,
         enableDescriptions: true,
         includeOrder: ['/spec/**', '/examples/**', '/profiles/**', '/standardization/**'],
-      } satisfies LlmsPluginOptions,
+      },
+    ],
+  ],
+
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        indexBlog: false,
+        docsRouteBasePath: '/',
+      },
     ],
   ],
 
@@ -137,39 +149,18 @@ const config: Config = {
       {name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent'},
     ],
     navbar: {
-      title: 'ADL',
+      title: 'Agent Definition Language',
       logo: {
         alt: 'ADL Logo',
         src: 'img/logo.svg',
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'specSidebar',
-          position: 'left',
-          label: 'Specification',
+          type: 'search',
+          position: 'right',
         },
         {
-          type: 'docSidebar',
-          sidebarId: 'profilesSidebar',
-          position: 'left',
-          label: 'Profiles',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'examplesSidebar',
-          position: 'left',
-          label: 'Examples',
-        },
-        {
-          type: 'docSidebar',
-          sidebarId: 'standardizationSidebar',
-          position: 'left',
-          label: 'Standardization',
-        },
-        {
-          href: 'https://github.com/adl-spec/agent-definition-language',
-          label: 'GitHub',
+          type: 'custom-github-repo' as any,
           position: 'right',
         },
       ],
@@ -182,11 +173,11 @@ const config: Config = {
           items: [
             {
               label: 'ADL 0.1.0 (Draft)',
-              to: '/spec/introduction',
+              to: '/specification',
             },
             {
-              label: 'JSON Schema',
-              to: '/spec/appendix-schema',
+              label: 'GitHub',
+              href: 'https://github.com/adl-spec/agent-definition-language',
             },
           ],
         },

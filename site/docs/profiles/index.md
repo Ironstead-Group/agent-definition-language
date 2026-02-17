@@ -66,5 +66,5 @@ Profiles **MAY**:
 
 ## See Also
 
-- [ADL Specification - Section 13: Profiles](/spec/profiles)
+- [ADL Specification - Section 13: Profiles](/specification#13-profiles)
 - [Contributing Guide](/contributing)
