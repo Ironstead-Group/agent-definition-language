@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "dev": "docusaurus start",
-    "start": "docusaurus start",
+    "dev": "npm run sync-spec && npm run prebuild && docusaurus start",
+    "start": "npm run sync-spec && npm run prebuild && docusaurus start",
     "sync-spec": "tsx scripts/sync-spec.ts",
     "prebuild": "tsx scripts/prebuild.ts",
     "build": "npm run sync-spec && npm run prebuild && docusaurus build",

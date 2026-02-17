@@ -3,6 +3,9 @@
   "name": "Duplicate Tools Agent",
   "description": "Agent with duplicate tool names.",
   "version": "1.0.0",
+  "data_classification": {
+    "sensitivity": "public"
+  },
   "tools": [
     {
       "name": "search",

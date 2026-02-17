@@ -147,6 +147,90 @@ function semanticChecks(doc: Record<string, unknown>): ADLError[] {
     }
   }
 
+  // ADL-2020/2021/2022: Data classification checks
+  const dataClassification = doc.data_classification as Record<string, unknown> | undefined;
+  if (dataClassification) {
+    const VALID_SENSITIVITIES = ["public", "internal", "confidential", "restricted"];
+    const VALID_CATEGORIES = ["pii", "phi", "financial", "credentials", "intellectual_property", "regulatory"];
+
+    // ADL-2020: Invalid sensitivity level
+    if (typeof dataClassification.sensitivity === "string" && !VALID_SENSITIVITIES.includes(dataClassification.sensitivity)) {
+      errors.push(
+        createError(
+          "ADL-2020",
+          `Invalid data classification sensitivity: "${dataClassification.sensitivity}". Valid: ${VALID_SENSITIVITIES.join(", ")}`,
+          { pointer: "/data_classification/sensitivity" },
+        ),
+      );
+    }
+
+    // ADL-2021: Invalid category values
+    if (Array.isArray(dataClassification.categories)) {
+      for (let i = 0; i < dataClassification.categories.length; i++) {
+        const cat = dataClassification.categories[i] as string;
+        if (typeof cat === "string" && !VALID_CATEGORIES.includes(cat)) {
+          errors.push(
+            createError(
+              "ADL-2021",
+              `Invalid data classification category: "${cat}". Valid: ${VALID_CATEGORIES.join(", ")}`,
+              { pointer: `/data_classification/categories/${i}` },
+            ),
+          );
+        }
+      }
+    }
+
+    // ADL-2022: Retention min_days exceeds max_days
+    const retention = dataClassification.retention as Record<string, unknown> | undefined;
+    if (retention) {
+      const minDays = retention.min_days as number | undefined;
+      const maxDays = retention.max_days as number | undefined;
+      if (typeof minDays === "number" && typeof maxDays === "number" && minDays > maxDays) {
+        errors.push(
+          createError(
+            "ADL-2022",
+            `Retention min_days (${minDays}) exceeds max_days (${maxDays})`,
+            { pointer: "/data_classification/retention" },
+          ),
+        );
+      }
+    }
+  }
+
+  // ADL-2023: High-water mark — top-level sensitivity must be >= any tool/resource sensitivity
+  if (dataClassification && typeof dataClassification.sensitivity === "string") {
+    const SENSITIVITY_ORDER: Record<string, number> = {
+      public: 0,
+      internal: 1,
+      confidential: 2,
+      restricted: 3,
+    };
+    const topLevel = SENSITIVITY_ORDER[dataClassification.sensitivity] ?? -1;
+
+    const checkItems = (items: unknown[], kind: string) => {
+      if (!Array.isArray(items)) return;
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i] as Record<string, unknown>;
+        const itemDc = item?.data_classification as Record<string, unknown> | undefined;
+        if (itemDc && typeof itemDc.sensitivity === "string") {
+          const itemLevel = SENSITIVITY_ORDER[itemDc.sensitivity] ?? -1;
+          if (itemLevel > topLevel) {
+            errors.push(
+              createError(
+                "ADL-2023",
+                `${kind}[${i}] sensitivity "${itemDc.sensitivity}" exceeds top-level sensitivity "${dataClassification.sensitivity}" (high-water mark violation)`,
+                { pointer: `/${kind}/${i}/data_classification/sensitivity` },
+              ),
+            );
+          }
+        }
+      }
+    };
+
+    checkItems(doc.tools as unknown[] ?? [], "tools");
+    checkItems(doc.resources as unknown[] ?? [], "resources");
+  }
+
   // ADL-5003: Lifecycle sunset_date must be after effective_date
   const lifecycle = doc.lifecycle as Record<string, unknown> | undefined;
   if (lifecycle) {

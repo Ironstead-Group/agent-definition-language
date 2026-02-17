@@ -101,6 +101,58 @@ describe("validate", () => {
       ).toBe(true);
     });
 
+    test("ADL-2020: invalid data classification sensitivity", () => {
+      const { data, errors } = loadDocument(
+        path.join(FIXTURES, "invalid/bad-sensitivity.json"),
+      );
+      expect(errors).toHaveLength(0);
+      const validationErrors = validateDocument(
+        data as Record<string, unknown>,
+      );
+      expect(
+        validationErrors.some((e) => e.code === "ADL-2020"),
+      ).toBe(true);
+    });
+
+    test("ADL-2021: invalid data classification category", () => {
+      const { data, errors } = loadDocument(
+        path.join(FIXTURES, "invalid/bad-category.json"),
+      );
+      expect(errors).toHaveLength(0);
+      const validationErrors = validateDocument(
+        data as Record<string, unknown>,
+      );
+      expect(
+        validationErrors.some((e) => e.code === "ADL-2021"),
+      ).toBe(true);
+    });
+
+    test("ADL-2022: retention min_days exceeds max_days", () => {
+      const { data, errors } = loadDocument(
+        path.join(FIXTURES, "invalid/bad-retention.json"),
+      );
+      expect(errors).toHaveLength(0);
+      const validationErrors = validateDocument(
+        data as Record<string, unknown>,
+      );
+      expect(
+        validationErrors.some((e) => e.code === "ADL-2022"),
+      ).toBe(true);
+    });
+
+    test("ADL-2023: high-water mark violation", () => {
+      const { data, errors } = loadDocument(
+        path.join(FIXTURES, "invalid/high-water-mark.json"),
+      );
+      expect(errors).toHaveLength(0);
+      const validationErrors = validateDocument(
+        data as Record<string, unknown>,
+      );
+      expect(
+        validationErrors.some((e) => e.code === "ADL-2023"),
+      ).toBe(true);
+    });
+
     test("ADL-5003: sunset_date before effective_date", () => {
       const { data, errors } = loadDocument(
         path.join(FIXTURES, "invalid/bad-lifecycle.json"),

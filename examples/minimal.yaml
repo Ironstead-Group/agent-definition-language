@@ -1,10 +1,10 @@
 # Minimal valid ADL document (v0.1.0-draft)
-# Only required fields: adlVersion, info (title, version)
+# Only required fields: adl_spec, name, description, version, data_classification
 
-adlVersion: "0.1.0"
-info:
-  title: Minimal Example Agent
-  description: A minimal agent definition for testing and illustration.
-  version: "1.0.0"
-  license:
-    name: Apache-2.0
+adl_spec: "0.1.0"
+name: Minimal Example Agent
+description: A minimal agent definition for testing and illustration.
+version: "1.0.0"
+
+data_classification:
+  sensitivity: public

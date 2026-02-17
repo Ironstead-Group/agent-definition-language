@@ -30,8 +30,8 @@ Profiles are identified by URIs (e.g., `urn:adl:profile:governance:1.0`).
 | Profile | Identifier | Status | Description |
 |---------|------------|--------|-------------|
 | [Governance](/profiles/governance/overview) | `urn:adl:profile:governance:1.0` | Draft | Compliance frameworks, audit trails, enterprise governance |
-| [Healthcare](/profiles/healthcare/overview) | `urn:adl:profile:healthcare:1.0` | Placeholder | HIPAA compliance, PHI handling |
-| [Financial](/profiles/financial/overview) | `urn:adl:profile:financial:1.0` | Placeholder | PCI-DSS, SOX compliance |
+| [Healthcare](/profiles/healthcare/overview) | `urn:adl:profile:healthcare:1.0` | Draft | HIPAA compliance, PHI handling, clinical safety, FHIR interoperability |
+| [Financial](/profiles/financial/overview) | `urn:adl:profile:financial:1.0` | Draft | PCI-DSS, SOX, GLBA, MiFID II, AML/KYC compliance |
 
 ## Profile Versioning
 
