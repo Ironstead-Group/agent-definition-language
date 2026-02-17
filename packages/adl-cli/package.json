@@ -1,0 +1,49 @@
+{
+  "name": "@adl-spec/cli",
+  "version": "0.1.0",
+  "description": "CLI tooling for the Agent Definition Language (ADL)",
+  "type": "module",
+  "bin": {
+    "adl": "./dist/index.js"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node",
+    "build:bin": "bun run scripts/build-binaries.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "bun-types": "^1.2.4",
+    "typescript": "~5.6.2"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IronsteadGroup/agent-definition-language",
+    "directory": "packages/adl-cli"
+  },
+  "keywords": [
+    "adl",
+    "agent",
+    "definition",
+    "language",
+    "cli",
+    "validation",
+    "schema"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "adl_spec": "0.1.0",
+  "name": "Bad Lifecycle Agent",
+  "description": "Agent where sunset_date is before effective_date.",
+  "version": "1.0.0",
+  "lifecycle": {
+    "status": "deprecated",
+    "effective_date": "2026-06-01T00:00:00Z",
+    "sunset_date": "2026-01-01T00:00:00Z"
+  }
+}

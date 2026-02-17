@@ -464,6 +464,44 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
 }
 
 /**
+ * Sync JSON Schema to site/static for hosting
+ *
+ * Copies the canonical schema.json and generates a draft-07 version
+ * for IDE IntelliSense (VS Code only fully supports draft-07).
+ */
+function syncSchema(versionId: string): number {
+  const schemaPath = path.join(VERSIONS_DIR, versionId, "schema.json");
+  if (!fs.existsSync(schemaPath)) {
+    console.log(`  No schema.json found for version ${versionId}`);
+    return 0;
+  }
+
+  // Derive the short version path (e.g., "0.1.0" -> "0.1")
+  const parts = versionId.split(".");
+  const shortVersion = `${parts[0]}.${parts[1]}`;
+  const staticDir = path.join(SITE_ROOT, "static", shortVersion);
+  ensureDir(staticDir);
+
+  let count = 0;
+
+  // Copy canonical schema (2020-12)
+  const destSchema = path.join(staticDir, "schema.json");
+  fs.copyFileSync(schemaPath, destSchema);
+  console.log(`  Copied schema.json → static/${shortVersion}/schema.json`);
+  count++;
+
+  // Generate draft-07 version for IDE IntelliSense
+  const schemaContent = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
+  schemaContent["$schema"] = "http://json-schema.org/draft-07/schema#";
+  const destDraft07 = path.join(staticDir, "schema-draft07.json");
+  fs.writeFileSync(destDraft07, JSON.stringify(schemaContent, null, 2) + "\n");
+  console.log(`  Generated schema-draft07.json → static/${shortVersion}/schema-draft07.json`);
+  count++;
+
+  return count;
+}
+
+/**
  * Main sync function
  */
 async function main(): Promise<void> {
@@ -488,13 +526,20 @@ async function main(): Promise<void> {
     results.push(result);
   }
 
+  // Sync schemas to static/ for hosting
+  let schemaCount = 0;
+  for (const versionId of versionsToSync) {
+    schemaCount += syncSchema(versionId);
+  }
+  console.log(`\nSynced ${schemaCount} schema files to static/`);
+
   // Generate versions.json for Docusaurus
   generateVersionsJson(manifest);
 
   // Summary
   const successCount = results.filter((r) => r.success).length;
   const failCount = results.filter((r) => !r.success).length;
-  const totalFiles = results.reduce((sum, r) => sum + r.filesCreated, 0);
+  const totalFiles = results.reduce((sum, r) => sum + r.filesCreated, 0) + schemaCount;
 
   console.log(`\nSync complete: ${successCount} versions synced, ${failCount} failed`);
   console.log(`Total files: ${totalFiles}`);
