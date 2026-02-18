@@ -11,17 +11,15 @@ keywords: [adl, examples, json, agent definition]
 
 This section contains example Agent Definition Language (ADL) documents. They illustrate the specification and can be used to validate tooling.
 
-:::tip Start Here
-New to ADL? Start with the [Minimal Example](/examples/minimal) to understand the required fields, then explore the [Production Example](/examples/production) for a complete implementation.
-:::
+> **Tip:** New to ADL? Start with the [Minimal Example](./minimal.yaml) to understand the required fields, then explore the [Production Example](./production.yaml) for a complete implementation.
 
 ## Example Index
 
 | Example | Description |
 |---------|-------------|
-| [Minimal](/examples/minimal) | Minimal valid ADL document with only required fields |
-| [With Tools](/examples/with-tools) | Calculator agent demonstrating tool definitions |
-| [Production](/examples/production) | Full production-style agent with all features |
+| [Minimal](./minimal.yaml) | Minimal valid ADL document with only required fields |
+| [With Tools](./with-tools.yaml) | Calculator agent demonstrating tool definitions |
+| [Production](./production.yaml) | Full production-style agent with all features |
 
 ## Conventions
 
@@ -48,9 +46,7 @@ data_classification:
   sensitivity: public
 ```
 
-:::info File Extension
-ADL documents use the `.adl.yaml`, `.adl.json`, or `.adl` file extension. The media type is `application/adl+json`.
-:::
+> **Note:** ADL documents use the `.adl.yaml`, `.adl.json`, or `.adl` file extension. The media type is `application/adl+json`.
 
 ## Contributing Examples
 
@@ -60,4 +56,4 @@ New examples are welcome! To contribute:
 2. Add clear comments explaining the example's purpose
 3. Submit a PR with the example
 
-See the [Contributing Guide](/contributing) for more information.
+See the [Contributing Guide](../../../CONTRIBUTING.md) for more information.

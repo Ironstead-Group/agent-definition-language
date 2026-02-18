@@ -30,17 +30,28 @@ Profiles are identified by URIs (e.g., `urn:adl:profile:governance:1.0`).
 | Profile | Identifier | Status | Description |
 |---------|------------|--------|-------------|
 | [Governance](/profiles/governance/overview) | `urn:adl:profile:governance:1.0` | Draft | Compliance frameworks, audit trails, enterprise governance |
+| [Portfolio](/profiles/portfolio/overview) | `urn:adl:profile:portfolio:1.0` | Draft | Agent inventory, relationships, and domain membership |
 | [Healthcare](/profiles/healthcare/overview) | `urn:adl:profile:healthcare:1.0` | Draft | HIPAA compliance, PHI handling, clinical safety, FHIR interoperability |
 | [Financial](/profiles/financial/overview) | `urn:adl:profile:financial:1.0` | Draft | PCI-DSS, SOX, GLBA, MiFID II, AML/KYC compliance |
-| [Portfolio](/profiles/portfolio/overview) | `urn:adl:profile:portfolio:1.0` | Draft | Agent inventory, relationships, and domain membership |
 
 ## Profile Versioning
 
-Profiles are versioned independently of the core ADL specification. Each profile declares which ADL versions it is compatible with.
+Profiles are versioned independently of the core ADL specification. Each profile declares which ADL versions it is compatible with in its `COMPATIBILITY.md` file.
 
 - Profile versions follow [Semantic Versioning](https://semver.org/)
 - A profile version remains compatible with ADL versions it declares
 - When ADL introduces breaking changes, profiles release new versions as needed
+
+## Proposing a New Profile
+
+1. Open an issue using the profile proposal template
+2. Discuss scope, requirements, and target ADL compatibility
+3. Create a directory under `profiles/` with:
+   - `README.md` — Scope, status, maintainers
+   - `COMPATIBILITY.md` — ADL version compatibility
+   - `1.0/profile.md` — Profile specification
+   - `1.0/examples/` — Example ADL documents using the profile
+4. Submit a PR for review
 
 ## Profile Requirements
 
@@ -54,18 +65,7 @@ Profiles **MAY**:
 - Define additional validation rules
 - Require specific values for optional members
 
-## Proposing a New Profile
-
-1. Open an issue using the profile proposal template
-2. Discuss scope, requirements, and target ADL compatibility
-3. Create a directory under `profiles/` with:
-   - `README.md` - Scope, status, maintainers
-   - `COMPATIBILITY.md` - ADL version compatibility
-   - `1.0/profile.md` - Profile specification
-   - `1.0/examples/` - Example ADL documents using the profile
-4. Submit a PR for review
-
 ## See Also
 
-- [ADL Specification - Section 13: Profiles](/specification#13-profiles)
+- [ADL Specification — Section 13: Profiles](/specification#13-profiles)
 - [Contributing Guide](/contributing)
