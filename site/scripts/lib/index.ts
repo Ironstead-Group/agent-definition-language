@@ -16,6 +16,7 @@ export {
   applyMdxEscaping,
   generateProfileFrontmatter,
   convertProfileBadge,
+  convertVersionBadge,
   convertBlockquoteAdmonitions,
   wrapExampleSection,
   wrapValidationSection,

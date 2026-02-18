@@ -20,6 +20,7 @@ import {
   cleanDir,
   copyDir,
   readYamlManifest,
+  convertVersionBadge,
   type VersionInfo,
   type VersionManifest,
 } from "./lib";
@@ -332,6 +333,9 @@ function generateSpecDocs(
 
   // Remove the "# Agent Definition Language" h1 title if present (frontmatter provides the title)
   specContent = specContent.replace(/^# Agent Definition Language[^\n]*\n+/, "");
+
+  // Convert version/status/patent lines into a styled badge table
+  specContent = convertVersionBadge(specContent);
 
   // Build frontmatter
   const statusLabel =

@@ -76,6 +76,43 @@ export function convertProfileBadge(content: string): string {
 }
 
 /**
+ * Convert the spec version badge lines into a Docusaurus-compatible div table.
+ *
+ * Converts:
+ *   **Version:** 0.1.0-draft
+ *   **Status:** Draft
+ *   **Patent Status:** Patent Pending (...)
+ *
+ * Into a <div className="version-badge"> with a Markdown table.
+ * Handles both two-line (Version + Status) and three-line (+ Patent Status) variants.
+ */
+export function convertVersionBadge(content: string): string {
+  const badgePattern =
+    /\*\*Version:\*\*\s*(.+)\n\*\*Status:\*\*\s*(.+?)(?:\n\*\*Patent Status:\*\*\s*(.+))?(?=\n\n)/;
+  const match = content.match(badgePattern);
+  if (!match) return content;
+
+  const [fullMatch, version, status, patentStatus] = match;
+  const rows = [
+    `| **Version** | \`${version.trim()}\` |`,
+    `| **Status** | ${status.trim()} |`,
+  ];
+  if (patentStatus) {
+    rows.push(`| **Patent Status** | ${patentStatus.trim()} |`);
+  }
+
+  const badge = `<div className="version-badge">
+
+| | |
+|---|---|
+${rows.join("\n")}
+
+</div>`;
+
+  return content.replace(fullMatch, badge);
+}
+
+/**
  * Convert blockquote admonitions to Docusaurus admonition syntax.
  *
  * Converts:
