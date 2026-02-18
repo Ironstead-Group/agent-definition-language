@@ -8,12 +8,12 @@ Reads:
   - standardization/templates/ietf-boilerplate.md (kramdown-rfc front matter)
 
 Writes:
-  - standardization/output/draft-adl-00.md
+  - standardization/output/draft-nederveld-adl-00.md
 
 Usage:
   python scripts/generate_ietf.py
   python scripts/generate_ietf.py --spec versions/0.1.0/spec.md
-  python scripts/generate_ietf.py --output standardization/output/draft-adl-00.md
+  python scripts/generate_ietf.py --output standardization/output/draft-nederveld-adl-00.md
 """
 
 import argparse
@@ -32,7 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SPEC = REPO_ROOT / "versions" / "0.1.0" / "spec.md"
 DEFAULT_MANIFEST = REPO_ROOT / "versions" / "0.1.0" / "spec-manifest.yaml"
 DEFAULT_BOILERPLATE = REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate.md"
-DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-adl-00.md"
+DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-00.md"
 
 # Map link text to kramdown-rfc citation keys.
 # Used to convert [label](url) or <a href="...">label</a> to {{label}} citations.

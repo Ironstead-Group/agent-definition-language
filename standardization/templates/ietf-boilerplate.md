@@ -1,7 +1,7 @@
 ---
 title: "Agent Definition Language (ADL)"
 abbrev: "ADL"
-docname: draft-adl-00
+docname: draft-nederveld-adl-00
 category: std
 ipr: trust200902
 submissionType: IETF
