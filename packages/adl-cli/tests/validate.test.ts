@@ -174,10 +174,10 @@ describe("validate", () => {
   });
 
   describe("real-world examples", () => {
-    test("validates repo examples/production-0.1.0.json", () => {
+    test("validates versions/0.1.0/examples/production.yaml", () => {
       const examplePath = path.resolve(
         import.meta.dir,
-        "../../../examples/production-0.1.0.json",
+        "../../../versions/0.1.0/examples/production.yaml",
       );
       const { data, errors } = loadDocument(examplePath);
       expect(errors).toHaveLength(0);
@@ -187,10 +187,10 @@ describe("validate", () => {
       expect(validationErrors).toHaveLength(0);
     });
 
-    test("validates repo examples/minimal-0.1.0.json", () => {
+    test("validates versions/0.1.0/examples/minimal.yaml", () => {
       const examplePath = path.resolve(
         import.meta.dir,
-        "../../../examples/minimal-0.1.0.json",
+        "../../../versions/0.1.0/examples/minimal.yaml",
       );
       const { data, errors } = loadDocument(examplePath);
       expect(errors).toHaveLength(0);

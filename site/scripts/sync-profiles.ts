@@ -99,6 +99,59 @@ function syncProfile(profile: ProfileInfo): SyncResult {
 }
 
 /**
+ * Sync profiles README to site docs as the profiles index page.
+ * Rewrites links for the Docusaurus site.
+ */
+function syncProfilesReadme(): boolean {
+  const readmePath = path.join(PROFILES_DIR, "README.md");
+  if (!fs.existsSync(readmePath)) {
+    console.log("No profiles README found");
+    return false;
+  }
+
+  let content = fs.readFileSync(readmePath, "utf-8");
+
+  // Rewrite ./name/ profile links to site profile pages
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\/([^/]+)\/\)/g,
+    "[$1](/profiles/$2/overview)"
+  );
+
+  // Convert blockquote tips to Docusaurus admonitions
+  content = content.replace(
+    /^> \*\*Tip:\*\*\s*([\s\S]*?)(?=\n(?!>)|$)/gm,
+    (_, text: string) => {
+      const cleanText = text.replace(/\n> ?/g, "\n").trim();
+      return `:::tip When to Use Profiles\n${cleanText}\n:::`;
+    }
+  );
+
+  // Rewrite spec reference link
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/versions\/[^)]+#([^)]+)\)/g,
+    "[$1](/specification#$2)"
+  );
+
+  // Rewrite contributing guide link
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/CONTRIBUTING\.md\)/g,
+    "[$1](/contributing)"
+  );
+
+  // Remove the profile proposal template link (not available on site)
+  content = content.replace(
+    /\[profile proposal template\]\([^)]+\)/g,
+    "profile proposal template"
+  );
+
+  const outputPath = path.join(SITE_DOCS_PROFILES, "index.md");
+  ensureDir(path.dirname(outputPath));
+  fs.writeFileSync(outputPath, content);
+  console.log(`\nSynced profiles README → docs/profiles/index.md`);
+  return true;
+}
+
+/**
  * Main sync function
  */
 async function main(): Promise<void> {
@@ -126,6 +179,11 @@ async function main(): Promise<void> {
     console.log(`\nSyncing profile: ${profile.id} v${profile.version} (${profile.status})...`);
     const result = syncProfile(profile);
     results.push(result);
+  }
+
+  // Sync profiles README as the index page
+  if (!targetId) {
+    syncProfilesReadme();
   }
 
   // Summary

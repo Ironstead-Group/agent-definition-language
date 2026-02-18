@@ -170,20 +170,20 @@ function extractSectionContent(
   content = content.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/)/g, "&lt;");
 
   // Rewrite repo-relative links to work within the Docusaurus site
-  // ../../examples/ -> /examples/ (will be handled by static assets or external links)
+  // ./examples/name.yaml -> /examples/name (site example pages)
   // ../../profiles/ -> /profiles/
   // ./schema.json -> reference to schema appendix
   content = content.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
+    /\[([^\]]+)\]\(\.\/examples\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
   );
   content = content.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]*)\)/g,
+    (_match, text, rest) => `[${text}](/profiles/${rest || ""})`
   );
   content = content.replace(
     /\[([^\]]+)\]\(\.\/schema\.json\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+    "[$1](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
   );
 
   return content;
@@ -222,6 +222,56 @@ function syncExamples(versionId: string): number {
   }
   ensureDir(destDir);
   return copyDir(srcDir, destDir);
+}
+
+/**
+ * Sync examples README to site docs as the examples index page.
+ * Rewrites links for the Docusaurus site.
+ */
+function syncExamplesReadme(versionId: string): boolean {
+  const readmePath = path.join(VERSIONS_DIR, versionId, "examples", "README.md");
+  if (!fs.existsSync(readmePath)) {
+    console.log(`  No examples README found for version ${versionId}`);
+    return false;
+  }
+
+  let content = fs.readFileSync(readmePath, "utf-8");
+
+  // Rewrite ./name.yaml links to site example pages
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
+  );
+
+  // Convert blockquote tips to Docusaurus admonitions
+  content = content.replace(
+    /^> \*\*Tip:\*\*\s*([\s\S]*?)(?=\n(?!>)|$)/gm,
+    (_, text) => {
+      const cleanText = text.replace(/\n> ?/g, "\n").trim();
+      return `:::tip Start Here\n${cleanText}\n:::`;
+    }
+  );
+
+  // Convert blockquote notes to Docusaurus admonitions
+  content = content.replace(
+    /^> \*\*Note:\*\*\s*([\s\S]*?)(?=\n(?!>)|$)/gm,
+    (_, text) => {
+      const cleanText = text.replace(/\n> ?/g, "\n").trim();
+      return `:::info File Extension\n${cleanText}\n:::`;
+    }
+  );
+
+  // Rewrite contributing guide link
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/\.\.\/CONTRIBUTING\.md\)/g,
+    "[$1](/contributing)"
+  );
+
+  const outputPath = path.join(SITE_ROOT, "docs", "examples", "index.md");
+  ensureDir(path.dirname(outputPath));
+  fs.writeFileSync(outputPath, content);
+  console.log(`  Synced examples README → docs/examples/index.md`);
+  return true;
 }
 
 /**
@@ -266,18 +316,18 @@ function generateSpecDocs(
   // Escape HTML-like entities that MDX treats as JSX
   specContent = specContent.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/|a\s)/g, "&lt;");
 
-  // Rewrite repo-relative links to GitHub URLs
+  // Rewrite repo-relative links to site example pages
   specContent = specContent.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
+    /\[([^\]]+)\]\(\.\/examples\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
   );
   specContent = specContent.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]*)\)/g,
+    (_match, text, rest) => `[${text}](/profiles/${rest || ""})`
   );
   specContent = specContent.replace(
     /\[([^\]]+)\]\(\.\/schema\.json\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+    "[$1](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
   );
 
   // Remove the "# Agent Definition Language" h1 title if present (frontmatter provides the title)
@@ -394,6 +444,11 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
       const snippetsCount = syncSnippets(versionId);
       console.log(`  Synced ${snippetsCount} snippet files`);
       result.filesCreated += snippetsCount;
+
+      // Sync examples README as site index page
+      if (syncExamplesReadme(versionId)) {
+        result.filesCreated += 1;
+      }
     }
 
     // Generate spec MDX files from spec.md (source of truth)
