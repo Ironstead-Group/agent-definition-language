@@ -26,23 +26,30 @@ New to ADL? Start with the [Minimal Example](/examples/minimal) to understand th
 ## Conventions
 
 - Examples are valid against the ADL version they target
-- **ADL 0.1.0:** JSON format with `adl_spec`, `name`, `description`, `version` (snake_case)
+- **Format:** YAML or JSON; must be valid JSON (RFC 8259) when processed
+- **Encoding:** UTF-8
+- **Member names:** `snake_case` (lowercase with underscores)
+- **Required members:** `adl_spec`, `name`, `description`, `version`, `data_classification`
+- **Versioning:** `adl_spec` and `version` use semantic versioning (`MAJOR.MINOR.PATCH`)
+- **Timestamps:** ISO 8601 with timezone (e.g., `2026-02-15T14:30:00Z`)
+- **Extensions:** Custom members use `x_` prefix (e.g., `x_acme_internal_id`)
 
 ## Quick Reference
 
 The minimal valid ADL document:
 
-```json title="minimal-agent.adl.json"
-{
-  "adl_spec": "0.1.0",
-  "name": "Hello Agent",
-  "description": "A simple greeting agent.",
-  "version": "1.0.0"
-}
+```yaml title="minimal.adl.yaml"
+adl_spec: "0.1.0"
+name: Hello Agent
+description: A simple greeting agent.
+version: "1.0.0"
+
+data_classification:
+  sensitivity: public
 ```
 
 :::info File Extension
-ADL documents use the `.adl.json` or `.adl` file extension. The media type is `application/adl+json`.
+ADL documents use the `.adl.yaml`, `.adl.json`, or `.adl` file extension. The media type is `application/adl+json`.
 :::
 
 ## Contributing Examples

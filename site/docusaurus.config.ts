@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Agent Definition Language',
-  tagline: 'A vendor-neutral specification for describing AI agents',
+  tagline: 'The standard for trusted AI agents',
   favicon: 'img/favicon.ico',
 
   clientModules: ['./src/clientModules/disableCrossTabThemeSync.ts'],
@@ -63,7 +63,7 @@ const config: Config = {
           includePages: false,
         },
         siteTitle: 'Agent Definition Language (ADL)',
-        siteDescription: 'A vendor-neutral specification for describing AI agents. ADL provides a standardized way to define agent capabilities, permissions, security requirements, and runtime behavior.',
+        siteDescription: 'The standard for trusted AI agents. ADL provides a standardized way to define agent identity, permissions, lifecycle, compliance, and governance in one auditable document.',
         depth: 2,
         enableDescriptions: true,
         includeOrder: ['/spec/**', '/examples/**', '/profiles/**', '/standardization/**'],
@@ -172,7 +172,7 @@ const config: Config = {
           title: 'Specification',
           items: [
             {
-              label: 'ADL 0.1.0 (Draft)',
+              label: 'ADL v0.1.0',
               to: '/specification',
             },
             {
@@ -233,7 +233,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright ${new Date().getFullYear()} ADL Specification Authors. Sponsored by Ironstead Group, LLC. Licensed under Apache 2.0.`,
+      copyright: `Copyright ${new Date().getFullYear()} ADL Specification Authors. Sponsored by Ironstead Group, LLC. Patent Pending. Licensed under Apache 2.0.`,
     },
     prism: {
       theme: prismThemes.github,

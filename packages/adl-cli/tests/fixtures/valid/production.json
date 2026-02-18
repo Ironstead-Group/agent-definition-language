@@ -5,6 +5,10 @@
   "description": "An AI assistant that helps researchers find, summarize, and analyze academic papers.",
   "version": "2.1.0",
   "id": "urn:adl:acme:research-assistant:2.1.0",
+  "data_classification": {
+    "sensitivity": "internal",
+    "categories": ["intellectual_property"]
+  },
   "lifecycle": {
     "status": "active",
     "effective_date": "2026-01-15T00:00:00Z"
@@ -28,7 +32,6 @@
     "temperature": 0.5,
     "capabilities": ["function_calling"]
   },
-  "system_prompt": "You are a research assistant that helps users find and analyze academic papers. Be thorough, accurate, and cite your sources.",
   "tools": [
     {
       "name": "search_papers",

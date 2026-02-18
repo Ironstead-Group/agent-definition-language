@@ -415,6 +415,66 @@
 }
 
 /* ==========================================================================
+   Comparison Section (ABOM / Why ADL table)
+   ========================================================================== */
+
+.comparison {
+  padding: 6rem 0;
+  background: var(--ifm-background-color);
+}
+
+.comparisonContent {
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.comparisonTable {
+  margin-top: 3rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.comparisonTable table {
+  width: 100%;
+  text-align: center;
+}
+
+.comparisonTable table th:first-child,
+.comparisonTable table td:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.comparisonTable table th {
+  font-size: 0.9rem;
+}
+
+.cellNo {
+  color: var(--ifm-color-emphasis-500);
+}
+
+.cellPartial {
+  color: var(--ifm-color-emphasis-600);
+  font-style: italic;
+}
+
+.cellYes {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .cellYes {
+  color: var(--ifm-color-primary-light);
+}
+
+.comparisonFootnote {
+  margin-top: 1.5rem;
+  font-size: 0.8125rem;
+  color: var(--ifm-color-emphasis-500);
+}
+
+/* ==========================================================================
    Compatibility Section
    ========================================================================== */
 

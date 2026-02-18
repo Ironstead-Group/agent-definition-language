@@ -28,6 +28,7 @@ const sidebars: SidebarsConfig = {
           collapsed: true,
           items: [
             'profiles/healthcare/overview',
+            'profiles/healthcare/specification',
           ],
         },
         {
@@ -36,6 +37,16 @@ const sidebars: SidebarsConfig = {
           collapsed: true,
           items: [
             'profiles/financial/overview',
+            'profiles/financial/specification',
+          ],
+        },
+        {
+          type: 'category',
+          label: 'Portfolio Profile',
+          collapsed: true,
+          items: [
+            'profiles/portfolio/overview',
+            'profiles/portfolio/specification',
           ],
         },
       ],

@@ -155,6 +155,9 @@ sections:
       - id: attestation
         number: "10.3"
         title: Attestation
+      - id: data-classification
+        number: "10.4"
+        title: Data Classification
 
   - id: runtime-behavior
     number: "11"

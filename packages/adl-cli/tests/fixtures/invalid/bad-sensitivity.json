@@ -1,0 +1,9 @@
+{
+  "adl_spec": "0.1.0",
+  "name": "Bad Sensitivity Agent",
+  "description": "Agent with invalid data classification sensitivity.",
+  "version": "1.0.0",
+  "data_classification": {
+    "sensitivity": "top-secret"
+  }
+}

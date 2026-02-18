@@ -1,0 +1,18 @@
+{
+  "adl_spec": "0.1.0",
+  "name": "High Water Mark Violation Agent",
+  "description": "Agent where tool sensitivity exceeds top-level sensitivity.",
+  "version": "1.0.0",
+  "data_classification": {
+    "sensitivity": "internal"
+  },
+  "tools": [
+    {
+      "name": "access_restricted_data",
+      "description": "Accesses restricted data",
+      "data_classification": {
+        "sensitivity": "restricted"
+      }
+    }
+  ]
+}

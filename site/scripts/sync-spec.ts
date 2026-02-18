@@ -15,6 +15,15 @@
 import * as fs from "fs";
 import * as path from "path";
 import { parse as parseYaml } from "yaml";
+import {
+  ensureDir,
+  cleanDir,
+  copyDir,
+  readYamlManifest,
+  convertVersionBadge,
+  type VersionInfo,
+  type VersionManifest,
+} from "./lib";
 
 // Paths
 const REPO_ROOT = path.resolve(__dirname, "../..");
@@ -24,22 +33,8 @@ const YAML_SOURCES = path.join(SITE_ROOT, "_yaml-sources");
 const DOCS_SPEC = path.join(SITE_ROOT, "docs", "spec");
 const VERSIONED_DOCS = path.join(SITE_ROOT, "versioned_docs");
 
-// Types
-interface VersionInfo {
-  id: string;
-  status: "draft" | "rc" | "released" | "deprecated";
-  title?: string;
-  description?: string;
-  released_at?: string;
-  superseded_by?: string;
-  note?: string;
-}
-
-interface Manifest {
-  latest: string | null;
-  next: string;
-  versions: VersionInfo[];
-}
+// Re-type Manifest as VersionManifest for local use
+type Manifest = VersionManifest;
 
 interface Section {
   id: string;
@@ -64,57 +59,10 @@ interface SyncResult {
 }
 
 /**
- * Ensure directory exists
- */
-function ensureDir(dir: string): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-/**
- * Clean directory contents
- */
-function cleanDir(dir: string): void {
-  if (fs.existsSync(dir)) {
-    fs.rmSync(dir, { recursive: true });
-  }
-  ensureDir(dir);
-}
-
-/**
- * Copy directory recursively
- */
-function copyDir(src: string, dest: string): number {
-  let count = 0;
-  ensureDir(dest);
-
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      count += copyDir(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-      count++;
-    }
-  }
-
-  return count;
-}
-
-/**
  * Read and parse the versions manifest
  */
 function readManifest(): Manifest {
-  const manifestPath = path.join(VERSIONS_DIR, "manifest.yaml");
-  if (!fs.existsSync(manifestPath)) {
-    throw new Error(`Manifest not found: ${manifestPath}`);
-  }
-  const content = fs.readFileSync(manifestPath, "utf-8");
-  return parseYaml(content) as Manifest;
+  return readYamlManifest<Manifest>(path.join(VERSIONS_DIR, "manifest.yaml"));
 }
 
 /**
@@ -223,20 +171,20 @@ function extractSectionContent(
   content = content.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/)/g, "&lt;");
 
   // Rewrite repo-relative links to work within the Docusaurus site
-  // ../../examples/ -> /examples/ (will be handled by static assets or external links)
+  // ./examples/name.yaml -> /examples/name (site example pages)
   // ../../profiles/ -> /profiles/
   // ./schema.json -> reference to schema appendix
   content = content.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
+    /\[([^\]]+)\]\(\.\/examples\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
   );
   content = content.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]*)\)/g,
+    (_match, text, rest) => `[${text}](/profiles/${rest || ""})`
   );
   content = content.replace(
     /\[([^\]]+)\]\(\.\/schema\.json\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+    "[$1](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
   );
 
   return content;
@@ -275,6 +223,56 @@ function syncExamples(versionId: string): number {
   }
   ensureDir(destDir);
   return copyDir(srcDir, destDir);
+}
+
+/**
+ * Sync examples README to site docs as the examples index page.
+ * Rewrites links for the Docusaurus site.
+ */
+function syncExamplesReadme(versionId: string): boolean {
+  const readmePath = path.join(VERSIONS_DIR, versionId, "examples", "README.md");
+  if (!fs.existsSync(readmePath)) {
+    console.log(`  No examples README found for version ${versionId}`);
+    return false;
+  }
+
+  let content = fs.readFileSync(readmePath, "utf-8");
+
+  // Rewrite ./name.yaml links to site example pages
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
+  );
+
+  // Convert blockquote tips to Docusaurus admonitions
+  content = content.replace(
+    /^> \*\*Tip:\*\*\s*([\s\S]*?)(?=\n(?!>)|$)/gm,
+    (_, text) => {
+      const cleanText = text.replace(/\n> ?/g, "\n").trim();
+      return `:::tip Start Here\n${cleanText}\n:::`;
+    }
+  );
+
+  // Convert blockquote notes to Docusaurus admonitions
+  content = content.replace(
+    /^> \*\*Note:\*\*\s*([\s\S]*?)(?=\n(?!>)|$)/gm,
+    (_, text) => {
+      const cleanText = text.replace(/\n> ?/g, "\n").trim();
+      return `:::info File Extension\n${cleanText}\n:::`;
+    }
+  );
+
+  // Rewrite contributing guide link
+  content = content.replace(
+    /\[([^\]]+)\]\(\.\.\/\.\.\/\.\.\/CONTRIBUTING\.md\)/g,
+    "[$1](/contributing)"
+  );
+
+  const outputPath = path.join(SITE_ROOT, "docs", "examples", "index.md");
+  ensureDir(path.dirname(outputPath));
+  fs.writeFileSync(outputPath, content);
+  console.log(`  Synced examples README → docs/examples/index.md`);
+  return true;
 }
 
 /**
@@ -319,22 +317,25 @@ function generateSpecDocs(
   // Escape HTML-like entities that MDX treats as JSX
   specContent = specContent.replace(/(?<!`)<(?!\/?\w|!--|https?:\/\/|a\s)/g, "&lt;");
 
-  // Rewrite repo-relative links to GitHub URLs
+  // Rewrite repo-relative links to site example pages
   specContent = specContent.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/examples\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/examples/$2)"
+    /\[([^\]]+)\]\(\.\/examples\/([^)]+)\.yaml\)/g,
+    "[$1](/examples/$2)"
   );
   specContent = specContent.replace(
-    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]+)\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/profiles/$2)"
+    /\[([^\]]+)\]\(\.\.\/\.\.\/profiles\/([^)]*)\)/g,
+    (_match, text, rest) => `[${text}](/profiles/${rest || ""})`
   );
   specContent = specContent.replace(
     /\[([^\]]+)\]\(\.\/schema\.json\)/g,
-    "[$1](https://github.com/IronsteadGroup/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
+    "[$1](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.1.0/schema.json)"
   );
 
   // Remove the "# Agent Definition Language" h1 title if present (frontmatter provides the title)
   specContent = specContent.replace(/^# Agent Definition Language[^\n]*\n+/, "");
+
+  // Convert version/status/patent lines into a styled badge table
+  specContent = convertVersionBadge(specContent);
 
   // Build frontmatter
   const statusLabel =
@@ -447,6 +448,11 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
       const snippetsCount = syncSnippets(versionId);
       console.log(`  Synced ${snippetsCount} snippet files`);
       result.filesCreated += snippetsCount;
+
+      // Sync examples README as site index page
+      if (syncExamplesReadme(versionId)) {
+        result.filesCreated += 1;
+      }
     }
 
     // Generate spec MDX files from spec.md (source of truth)
@@ -461,6 +467,44 @@ function syncVersion(versionId: string, manifest: Manifest): SyncResult {
   }
 
   return result;
+}
+
+/**
+ * Sync JSON Schema to site/static for hosting
+ *
+ * Copies the canonical schema.json and generates a draft-07 version
+ * for IDE IntelliSense (VS Code only fully supports draft-07).
+ */
+function syncSchema(versionId: string): number {
+  const schemaPath = path.join(VERSIONS_DIR, versionId, "schema.json");
+  if (!fs.existsSync(schemaPath)) {
+    console.log(`  No schema.json found for version ${versionId}`);
+    return 0;
+  }
+
+  // Derive the short version path (e.g., "0.1.0" -> "0.1")
+  const parts = versionId.split(".");
+  const shortVersion = `${parts[0]}.${parts[1]}`;
+  const staticDir = path.join(SITE_ROOT, "static", shortVersion);
+  ensureDir(staticDir);
+
+  let count = 0;
+
+  // Copy canonical schema (2020-12)
+  const destSchema = path.join(staticDir, "schema.json");
+  fs.copyFileSync(schemaPath, destSchema);
+  console.log(`  Copied schema.json → static/${shortVersion}/schema.json`);
+  count++;
+
+  // Generate draft-07 version for IDE IntelliSense
+  const schemaContent = JSON.parse(fs.readFileSync(schemaPath, "utf-8"));
+  schemaContent["$schema"] = "http://json-schema.org/draft-07/schema#";
+  const destDraft07 = path.join(staticDir, "schema-draft07.json");
+  fs.writeFileSync(destDraft07, JSON.stringify(schemaContent, null, 2) + "\n");
+  console.log(`  Generated schema-draft07.json → static/${shortVersion}/schema-draft07.json`);
+  count++;
+
+  return count;
 }
 
 /**
@@ -488,13 +532,20 @@ async function main(): Promise<void> {
     results.push(result);
   }
 
+  // Sync schemas to static/ for hosting
+  let schemaCount = 0;
+  for (const versionId of versionsToSync) {
+    schemaCount += syncSchema(versionId);
+  }
+  console.log(`\nSynced ${schemaCount} schema files to static/`);
+
   // Generate versions.json for Docusaurus
   generateVersionsJson(manifest);
 
   // Summary
   const successCount = results.filter((r) => r.success).length;
   const failCount = results.filter((r) => !r.success).length;
-  const totalFiles = results.reduce((sum, r) => sum + r.filesCreated, 0);
+  const totalFiles = results.reduce((sum, r) => sum + r.filesCreated, 0) + schemaCount;
 
   console.log(`\nSync complete: ${successCount} versions synced, ${failCount} failed`);
   console.log(`Total files: ${totalFiles}`);

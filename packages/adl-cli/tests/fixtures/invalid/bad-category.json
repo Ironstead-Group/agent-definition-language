@@ -1,0 +1,10 @@
+{
+  "adl_spec": "0.1.0",
+  "name": "Bad Category Agent",
+  "description": "Agent with invalid data classification category.",
+  "version": "1.0.0",
+  "data_classification": {
+    "sensitivity": "internal",
+    "categories": ["pii", "top-secret-stuff"]
+  }
+}

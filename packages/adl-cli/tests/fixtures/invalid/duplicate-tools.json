@@ -1,0 +1,19 @@
+{
+  "adl_spec": "0.1.0",
+  "name": "Duplicate Tools Agent",
+  "description": "Agent with duplicate tool names.",
+  "version": "1.0.0",
+  "data_classification": {
+    "sensitivity": "public"
+  },
+  "tools": [
+    {
+      "name": "search",
+      "description": "Search for things"
+    },
+    {
+      "name": "search",
+      "description": "Another search tool with the same name"
+    }
+  ]
+}

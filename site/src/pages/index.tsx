@@ -11,24 +11,30 @@ import styles from './index.module.css';
 
 const adlExample = `{
   "adl_spec": "0.1.0",
-  "name": "Research Assistant",
-  "description": "Helps find and analyze academic papers",
-  "version": "1.0.0",
-  "tools": [
-    {
-      "name": "search_papers",
-      "description": "Search academic databases",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": { "type": "string" }
-        }
-      }
-    }
-  ],
+  "name": "Claims Processing Agent",
+  "version": "2.1.0",
+  "lifecycle": {
+    "status": "active",
+    "sunset_date": "2027-06-01"
+  },
   "permissions": {
     "network": {
-      "allowed_hosts": ["arxiv.org", "scholar.google.com"]
+      "allowed_hosts": ["claims-api.internal"]
+    },
+    "data_access": {
+      "allowed_sources": ["claims-db"],
+      "restricted_fields": ["ssn", "dob"]
+    }
+  },
+  "profiles": {
+    "governance": {
+      "compliance_framework": {
+        "standards": ["SOC2-CC6.1", "HIPAA-164.312"]
+      },
+      "ai_governance": {
+        "human_oversight_level": "human_in_the_loop",
+        "decision_authority": "advisory"
+      }
     }
   }
 }`;
@@ -47,14 +53,14 @@ function HeroSection() {
         <div className={styles.heroText}>
           <div className={styles.badge}>
             <span className={styles.badgeDot}></span>
-            Draft Specification v0.1.0
+            Community Specification v0.1.0
           </div>
           <Heading as="h1" className={styles.heroTitle}>
-            Agent Definition Language
+            {siteConfig.tagline}
           </Heading>
           <p className={styles.heroSubtitle}>
-            {siteConfig.tagline}. Define capabilities, permissions, and security boundaries
-            for AI agents in a portable, machine-readable format.
+            The agent passport for identity, permissions, lifecycle, and compliance
+            — in one auditable, machine-readable document.
           </p>
           <div className={styles.heroCtas}>
             <Link
@@ -64,8 +70,8 @@ function HeroSection() {
             </Link>
             <Link
               className={clsx('button button--lg', styles.secondaryButton)}
-              to="/examples">
-              View Examples
+              to="/profiles/governance/overview">
+              Explore Governance
             </Link>
           </div>
         </div>
@@ -89,19 +95,19 @@ function HeroSection() {
   );
 }
 
-function QuickExample() {
+function ValuePropSection() {
   return (
     <section className={styles.quickExample}>
       <div className="container">
         <div className={styles.quickExampleContent}>
           <div className={styles.quickExampleText}>
             <Heading as="h2" className={styles.sectionTitle}>
-              Like OpenAPI, but for AI Agents
+              The governance layer above MCP and A2A
             </Heading>
             <p className={styles.sectionDescription}>
-              ADL provides a standardized way to describe AI agents, their capabilities,
-              permissions, and security requirements. Enable discovery, interoperability,
-              and secure deployment across any platform or runtime.
+              MCP describes how agents connect to tools. A2A describes how agents
+              communicate. ADL describes <strong>who the agent is</strong> — identity,
+              permissions, lifecycle, and compliance in one portable document.
             </p>
             <ul className={styles.benefitsList}>
               <li>
@@ -110,7 +116,7 @@ function QuickExample() {
                     <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill="currentColor"/>
                   </svg>
                 </span>
-                Portable agent definitions work across providers
+                Deny-by-default permissions with auditable boundaries
               </li>
               <li>
                 <span className={styles.checkIcon}>
@@ -118,7 +124,7 @@ function QuickExample() {
                     <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill="currentColor"/>
                   </svg>
                 </span>
-                JSON Schema validation for tooling and automation
+                Compliance mappings for NIST 800-53, SOC 2, ISO 27001, EU AI Act
               </li>
               <li>
                 <span className={styles.checkIcon}>
@@ -126,7 +132,7 @@ function QuickExample() {
                     <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill="currentColor"/>
                   </svg>
                 </span>
-                Security-first with deny-by-default permissions
+                Lifecycle management with sunset dates and successors
               </li>
               <li>
                 <span className={styles.checkIcon}>
@@ -134,7 +140,7 @@ function QuickExample() {
                     <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill="currentColor"/>
                   </svg>
                 </span>
-                Extensible profiles for domain-specific requirements
+                Generates A2A Agent Cards and MCP configurations
               </li>
             </ul>
             <Link
@@ -143,6 +149,78 @@ function QuickExample() {
               Learn More
             </Link>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ComparisonSection() {
+  return (
+    <section className={styles.comparison}>
+      <div className="container">
+        <div className={styles.comparisonContent}>
+          <Heading as="h2" className={styles.sectionTitle}>
+            The Agent Bill of Materials
+          </Heading>
+          <p className={styles.sectionDescription}>
+            You wouldn't deploy software without an SBOM. ADL is the ABOM for AI agents
+            — a complete, verifiable record of what an agent is, what it can do, and
+            who authorized it.
+          </p>
+          <div className={styles.comparisonTable}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Concern</th>
+                  <th>A2A Agent Cards</th>
+                  <th>Agent Spec</th>
+                  <th>AGNTCY</th>
+                  <th>ADL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Agent Identity</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellNo}>—</td>
+                  <td className={styles.cellYes}>DIDs + VCs</td>
+                  <td className={styles.cellYes}>DIDs + attestation</td>
+                </tr>
+                <tr>
+                  <td>Permissions Model</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellNo}>—</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellYes}>Deny-by-default</td>
+                </tr>
+                <tr>
+                  <td>Governance & Compliance</td>
+                  <td className={styles.cellNo}>—</td>
+                  <td className={styles.cellNo}>—</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellYes}>NIST, SOC 2, EU AI Act</td>
+                </tr>
+                <tr>
+                  <td>Lifecycle Management</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellNo}>—</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellYes}>Status + sunset dates</td>
+                </tr>
+                <tr>
+                  <td>Agent Relationships</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellYes}>Flows</td>
+                  <td className={styles.cellPartial}>Partial</td>
+                  <td className={styles.cellYes}>Portfolio profile</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className={styles.comparisonFootnote}>
+            A2A Agent Cards (Google/LF) · Agent Spec (Oracle) · AGNTCY (Cisco/Outshift)
+          </p>
         </div>
       </div>
     </section>
@@ -220,11 +298,11 @@ function CtaSection() {
       <div className="container">
         <div className={styles.ctaContent}>
           <Heading as="h2" className={styles.ctaTitle}>
-            Ready to define your agents?
+            Ready to trust your agents?
           </Heading>
           <p className={styles.ctaDescription}>
-            Get started with ADL today. Read the specification, explore examples,
-            or contribute to the standard.
+            Define identity, permissions, and compliance for every agent in your
+            organization. Read the specification or explore the governance profile.
           </p>
           <div className={styles.ctaButtons}>
             <Link
@@ -247,12 +325,13 @@ function CtaSection() {
 export default function Home(): ReactNode {
   return (
     <Layout
-      title="Agent Definition Language"
-      description="A vendor-neutral specification for describing AI agents">
+      title="The standard for trusted AI agents"
+      description="Define identity, permissions, lifecycle, and compliance for AI agents in one auditable document.">
       <HeroSection />
       <main>
         <HomepageFeatures />
-        <QuickExample />
+        <ValuePropSection />
+        <ComparisonSection />
         <CompatibilitySection />
         <CtaSection />
       </main>

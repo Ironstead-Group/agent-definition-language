@@ -14,6 +14,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { glob } from "glob";
 import { parse as parseYaml } from "yaml";
+import { ensureDir } from "./lib";
 
 const SITE_ROOT = path.resolve(__dirname, "..");
 const YAML_SOURCES = path.join(SITE_ROOT, "_yaml-sources");
@@ -24,15 +25,6 @@ interface ConversionResult {
   destination: string;
   success: boolean;
   error?: string;
-}
-
-/**
- * Ensure directory exists
- */
-function ensureDir(dir: string): void {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
 }
 
 /**
