@@ -8,12 +8,12 @@ Reads:
   - standardization/templates/ietf-boilerplate.md (kramdown-rfc front matter)
 
 Writes:
-  - standardization/output/draft-nederveld-adl-00.md
+  - standardization/output/draft-nederveld-adl-01.md
 
 Usage:
   python scripts/generate_ietf.py
   python scripts/generate_ietf.py --spec versions/0.1.0/spec.md
-  python scripts/generate_ietf.py --output standardization/output/draft-nederveld-adl-00.md
+  python scripts/generate_ietf.py --output standardization/output/draft-nederveld-adl-01.md
 """
 
 import argparse
@@ -32,18 +32,18 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SPEC = REPO_ROOT / "versions" / "0.1.0" / "spec.md"
 DEFAULT_MANIFEST = REPO_ROOT / "versions" / "0.1.0" / "spec-manifest.yaml"
 DEFAULT_BOILERPLATE = REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate.md"
-DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-00.md"
+DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-01.md"
 
 # Map link text to kramdown-rfc citation keys.
 # Used to convert [label](url) or <a href="...">label</a> to {{label}} citations.
 LINK_CITATIONS = {
     "JSON [RFC8259]": "JSON {{RFC8259}}",
-    "JSON Schema": "JSON Schema {{JSON-SCHEMA}}",
-    "A2A Protocol": "A2A Protocol {{A2A}}",
-    "Model Context Protocol (MCP)": "Model Context Protocol (MCP) {{MCP}}",
-    "OpenAPI": "OpenAPI {{OPENAPI}}",
-    "W3C DIDs": "W3C DIDs {{W3C.DID}}",
-    "Verifiable Credentials": "Verifiable Credentials {{W3C.VC}}",
+    "JSON Schema": "**JSON Schema** {{JSON-SCHEMA}}",
+    "A2A Protocol": "**A2A Protocol** {{A2A}}",
+    "Model Context Protocol (MCP)": "**Model Context Protocol (MCP)** {{MCP}}",
+    "OpenAPI": "**OpenAPI** {{OPENAPI}}",
+    "W3C DIDs": "**W3C DIDs** {{W3C.DID}}",
+    "Verifiable Credentials": "**Verifiable Credentials** {{W3C.VC}}",
 }
 
 # RFC 2119 / 8174 keywords that get {bcp14} spans in kramdown-rfc.
@@ -144,8 +144,10 @@ def convert_spec_links(text: str) -> str:
 
     # Replace any remaining <a> tags with their label text + citation
     text = re.sub(r'<a\s+href="[^"]*"[^>]*>(.*?)</a>', replace_html_link, text)
-    # Clean up doubled bold markers
+    # Clean up doubled bold markers from **[link](url)** → ****Label** {{CIT}}**
     text = text.replace("****", "**")
+    # Remove stray trailing bold after citations: {{CIT}}** → {{CIT}}
+    text = re.sub(r'(\}\})\*\*', r'\1', text)
     return text
 
 
@@ -195,6 +197,9 @@ def convert_bcp14_keywords(text: str) -> str:
             in_requirements_section = False
 
         if in_requirements_section:
+            # Replace bold keywords with quoted keywords per RFC 8174 boilerplate
+            for kw in BCP14_KEYWORDS:
+                line = line.replace(f"**{kw}**", f'"{kw}"')
             result.append(line)
             continue
 
@@ -244,6 +249,102 @@ def escape_kramdown_syntax(text: str) -> str:
             line = line.replace('"{{" ', '2%x7B ')
             line = line.replace(' "}}"', ' 2%x7D')
         result.append(line)
+    return "\n".join(result)
+
+
+def narrow_iana_profile_table(text: str) -> str:
+    """Reduce the IANA Initial Registry Contents table to 3 columns.
+
+    The 7-column table exceeds the 72-char line limit in .txt output.
+    Columns 4-7 (Spec Reference, ADL Compatibility, Contact, Status) are
+    identical for all initial entries, so we move them to a note below.
+    """
+    lines = text.split("\n")
+    result = []
+    in_initial_registry = False
+    table_started = False
+    table_done = False
+
+    for line in lines:
+        if "**Initial Registry Contents:**" in line or "Initial Registry Contents" in line:
+            in_initial_registry = True
+            result.append(line)
+            continue
+
+        if in_initial_registry and not table_started:
+            # Look for the header row
+            if line.startswith("|") and "Identifier" in line:
+                table_started = True
+                result.append("| Identifier (URI) | Name | Version |")
+                continue
+            result.append(line)
+            continue
+
+        if in_initial_registry and table_started and not table_done:
+            if line.startswith("|---") or line.startswith("| ---"):
+                result.append("|------------------|------|---------|")
+                continue
+            if line.startswith("|"):
+                # Extract first 3 columns from data rows
+                cells = [c.strip() for c in line.split("|")]
+                # cells[0] is empty (before first |), cells[1..] are the columns
+                cells = [c for c in cells if c != ""]
+                if len(cells) >= 3:
+                    result.append(f"| {cells[0]} | {cells[1]} | {cells[2]} |")
+                continue
+            else:
+                # Table ended — add the note about common fields
+                table_done = True
+                in_initial_registry = False
+                result.append("")
+                result.append(
+                    "All initial entries reference Appendix C of "
+                    "\\[this document\\], target ADL compatibility "
+                    "0.1.x, are `active`, and list the Author's "
+                    "Address as contact."
+                )
+                result.append("")
+                result.append(line)
+                continue
+
+        result.append(line)
+
+    return "\n".join(result)
+
+
+def normalize_ascii(text: str) -> str:
+    """Replace non-ASCII characters with ASCII equivalents for IETF compliance."""
+    text = text.replace("\u2014", " -- ")   # em-dash
+    text = text.replace("\u2013", "-")       # en-dash
+    text = text.replace("\u2192", "->")      # right arrow
+    text = text.replace("\u2265", ">=")      # greater-than-or-equal
+    return text
+
+
+def add_code_markers(text: str) -> str:
+    """Wrap the ABNF grammar code block with CODE BEGINS/CODE ENDS markers.
+
+    Targets the ABNF block in Appendix D (identified by the ```abnf fence).
+    JSON example blocks are inline illustrations and don't need markers.
+    """
+    lines = text.split("\n")
+    result = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.strip().startswith("```abnf"):
+            result.append("\\<CODE BEGINS>")
+            result.append(line)
+            i += 1
+            while i < len(lines):
+                result.append(lines[i])
+                if lines[i].strip() == "```":
+                    result.append("\\<CODE ENDS>")
+                    break
+                i += 1
+        else:
+            result.append(line)
+        i += 1
     return "\n".join(result)
 
 
@@ -418,6 +519,8 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     middle_content = strip_horizontal_rules(middle_content)
     middle_content = adjust_heading_levels(middle_content)
     middle_content = strip_section_numbers(middle_content)
+    middle_content = narrow_iana_profile_table(middle_content)
+    middle_content = normalize_ascii(middle_content)
 
     # Apply transformations to back content
     back_content = convert_spec_links(back_content)
@@ -427,6 +530,8 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     back_content = strip_horizontal_rules(back_content)
     back_content = adjust_heading_levels(back_content)
     back_content = strip_section_numbers(back_content)
+    back_content = add_code_markers(back_content)
+    back_content = normalize_ascii(back_content)
 
     # Assemble final document
     output = (

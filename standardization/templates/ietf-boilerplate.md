@@ -1,7 +1,7 @@
 ---
 title: "Agent Definition Language (ADL)"
 abbrev: "ADL"
-docname: draft-nederveld-adl-00
+docname: draft-nederveld-adl-01
 category: std
 ipr: trust200902
 submissionType: IETF
@@ -35,9 +35,9 @@ normative:
   RFC8174:
   RFC8259:
   RFC8615:
-  RFC8785:
 
 informative:
+  RFC8785:
   A2A:
     title: "Agent-to-Agent Protocol Specification"
     target: https://a2a-protocol.org/specification
