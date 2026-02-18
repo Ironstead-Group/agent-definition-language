@@ -252,66 +252,6 @@ def escape_kramdown_syntax(text: str) -> str:
     return "\n".join(result)
 
 
-def narrow_iana_profile_table(text: str) -> str:
-    """Reduce the IANA Initial Registry Contents table to 3 columns.
-
-    The 7-column table exceeds the 72-char line limit in .txt output.
-    Columns 4-7 (Spec Reference, ADL Compatibility, Contact, Status) are
-    identical for all initial entries, so we move them to a note below.
-    """
-    lines = text.split("\n")
-    result = []
-    in_initial_registry = False
-    table_started = False
-    table_done = False
-
-    for line in lines:
-        if "**Initial Registry Contents:**" in line or "Initial Registry Contents" in line:
-            in_initial_registry = True
-            result.append(line)
-            continue
-
-        if in_initial_registry and not table_started:
-            # Look for the header row
-            if line.startswith("|") and "Identifier" in line:
-                table_started = True
-                result.append("| Identifier (URI) | Name | Version |")
-                continue
-            result.append(line)
-            continue
-
-        if in_initial_registry and table_started and not table_done:
-            if line.startswith("|---") or line.startswith("| ---"):
-                result.append("|------------------|------|---------|")
-                continue
-            if line.startswith("|"):
-                # Extract first 3 columns from data rows
-                cells = [c.strip() for c in line.split("|")]
-                # cells[0] is empty (before first |), cells[1..] are the columns
-                cells = [c for c in cells if c != ""]
-                if len(cells) >= 3:
-                    result.append(f"| {cells[0]} | {cells[1]} | {cells[2]} |")
-                continue
-            else:
-                # Table ended — add the note about common fields
-                table_done = True
-                in_initial_registry = False
-                result.append("")
-                result.append(
-                    "All initial entries reference Appendix C of "
-                    "\\[this document\\], target ADL compatibility "
-                    "0.1.x, are `active`, and list the Author's "
-                    "Address as contact."
-                )
-                result.append("")
-                result.append(line)
-                continue
-
-        result.append(line)
-
-    return "\n".join(result)
-
-
 def normalize_ascii(text: str) -> str:
     """Replace non-ASCII characters with ASCII equivalents for IETF compliance."""
     text = text.replace("\u2014", " -- ")   # em-dash
@@ -519,7 +459,6 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     middle_content = strip_horizontal_rules(middle_content)
     middle_content = adjust_heading_levels(middle_content)
     middle_content = strip_section_numbers(middle_content)
-    middle_content = narrow_iana_profile_table(middle_content)
     middle_content = normalize_ascii(middle_content)
 
     # Apply transformations to back content
