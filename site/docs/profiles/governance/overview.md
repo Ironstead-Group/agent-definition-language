@@ -1,6 +1,6 @@
 ---
 id: overview
-title: Governance Profile
+title: Overview
 sidebar_position: 1
 description: The Governance Profile extends ADL for regulated enterprise environments with compliance tracking and audit trails.
 keywords: [adl, governance, compliance, soc2, nist, iso, enterprise]

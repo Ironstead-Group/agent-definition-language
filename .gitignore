@@ -179,3 +179,19 @@ tmp/
 # Claude Code local settings (user-specific, not committed)
 .claude/**/*.local.md
 .claude/**/*.local.json
+
+# Private/internal docs (not for public distribution)
+docs/internal/
+
+# Reference cache (auto-generated)
+.refcache/
+
+# Screenshot/debugging images (allow site static assets)
+*.png
+!site/static/**/*.png
+
+# Playwright
+.playwright-cli/
+playwright-report/
+test-results/
+playwright/.cache/
