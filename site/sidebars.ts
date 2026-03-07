@@ -5,7 +5,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'doc',
       id: 'specification',
-      label: 'Specification v0.1.0',
+      label: 'Specification',
     },
     {
       type: 'category',

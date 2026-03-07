@@ -1,3 +1,34 @@
+# macOS
+.DS_Store
+**/.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
 # Generated standardization output (drafts from scripts/)
 standardization/output/
 
@@ -148,3 +179,20 @@ tmp/
 # Claude Code local settings (user-specific, not committed)
 .claude/**/*.local.md
 .claude/**/*.local.json
+
+# Private/internal docs (not for public distribution)
+docs/internal/
+proposals/pvt/
+
+# Reference cache (auto-generated)
+.refcache/
+
+# Screenshot/debugging images (allow site static assets)
+*.png
+!site/static/**/*.png
+
+# Playwright
+.playwright-cli/
+playwright-report/
+test-results/
+playwright/.cache/
