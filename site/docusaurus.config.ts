@@ -281,7 +281,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright ${new Date().getFullYear()} ADL Specification Authors. Sponsored by Ironstead Group, LLC. Patent Pending. Licensed under Apache 2.0.`,
+      copyright: `Copyright ${new Date().getFullYear()} ADL Specification Authors. Sponsored by <a href="https://ironsteadgroup.com" target="_blank" rel="noopener noreferrer">Ironstead Group, LLC</a>. Patent Pending. Licensed under Apache 2.0.`,
     },
     prism: {
       theme: prismThemes.github,
