@@ -51,8 +51,6 @@ profiles-fixed.yaml
 # Test screenshots
 /test-screenshots/
 
-# Generated docs (synced from canonical sources at build time)
-/docs/specification.md
-/docs/examples/
+# Generated docs (profile overviews are synced at build time)
 /docs/profiles/
 /static/examples/
