@@ -1,6 +1,18 @@
+import path from 'node:path';
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import {
+  remarkProfileBadge,
+  remarkBlockquoteAdmonitions,
+  remarkRewriteLinks,
+  remarkStripSections,
+  remarkStripTitle,
+  remarkVersionBadge,
+  remarkWrapExample,
+  remarkWrapValidation,
+} from './src/remark';
+import schemaCopyPlugin from './src/plugins/schema-copy';
 
 const config: Config = {
   title: 'Agent Definition Language',
@@ -25,6 +37,7 @@ const config: Config = {
   onBrokenLinks: 'throw',
 
   markdown: {
+    format: 'detect',
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },
@@ -41,6 +54,12 @@ const config: Config = {
         name: 'yaml-loader',
         configureWebpack() {
           return {
+            resolve: {
+              symlinks: false,
+              alias: {
+                '@versions': path.resolve(__dirname, '..', 'versions'),
+              },
+            },
             module: {
               rules: [
                 {
@@ -53,6 +72,30 @@ const config: Config = {
         },
       };
     },
+    schemaCopyPlugin,
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'profiles',
+        path: '../profiles',
+        routeBasePath: '/profiles',
+        sidebarPath: './sidebarsProfiles.ts',
+        include: ['README.md', '*/README.md', '*/COMPATIBILITY.md', '*/*/profile.md', '*/*/governance-record.md', '*/*/examples.mdx'],
+        exclude: [
+          '**/node_modules/**',
+        ],
+        beforeDefaultRemarkPlugins: [
+          remarkBlockquoteAdmonitions,
+          remarkStripSections,
+          remarkRewriteLinks,
+        ],
+        remarkPlugins: [
+          remarkProfileBadge,
+          remarkWrapExample,
+          remarkWrapValidation,
+        ],
+      },
+    ],
     [
       '@signalwire/docusaurus-plugin-llms-txt',
       {
@@ -80,7 +123,7 @@ const config: Config = {
       {
         hashed: true,
         indexBlog: false,
-        docsRouteBasePath: '/',
+        docsRouteBasePath: ['/', '/profiles'],
       },
     ],
   ],
@@ -93,6 +136,14 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/adl-spec/agent-definition-language/tree/main/',
           routeBasePath: '/',
+          beforeDefaultRemarkPlugins: [
+            remarkBlockquoteAdmonitions,
+            remarkStripTitle,
+          ],
+          remarkPlugins: [
+            remarkVersionBadge,
+            remarkRewriteLinks,
+          ],
           // Versioning: run `npm run docusaurus docs:version X.Y.Z` when releasing
         },
         gtag: {
