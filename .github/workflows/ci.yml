@@ -2,7 +2,7 @@
 #
 # This workflow:
 # - Validates builds on pull requests
-# - Syncs spec content and builds the site
+# - Builds the site (zero-sync: Docusaurus reads directly from source)
 # - Vercel handles actual deployment via GitHub integration
 #
 # Branch strategy:
@@ -46,18 +46,6 @@ jobs:
       - name: Install dependencies
         working-directory: site
         run: npm ci
-
-      - name: Sync spec content
-        working-directory: site
-        run: npm run sync-spec
-
-      - name: Sync profile content
-        working-directory: site
-        run: npm run sync-profiles
-
-      - name: Run prebuild (YAML to JSON)
-        working-directory: site
-        run: npm run prebuild
 
       - name: Build site
         working-directory: site
