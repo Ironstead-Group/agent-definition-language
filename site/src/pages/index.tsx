@@ -26,17 +26,10 @@ const adlExample = `{
       "restricted_fields": ["ssn", "dob"]
     }
   },
-  "profiles": {
-    "governance": {
-      "compliance_framework": {
-        "standards": ["SOC2-CC6.1", "HIPAA-164.312"]
-      },
-      "ai_governance": {
-        "human_oversight_level": "human_in_the_loop",
-        "decision_authority": "advisory"
-      }
-    }
-  }
+  "profiles": [
+    "urn:adl:profile:governance:1.0",
+    "urn:adl:profile:financial:1.0"
+  ]
 }`;
 
 function HeroSection() {
