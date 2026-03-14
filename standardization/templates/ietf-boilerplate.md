@@ -1,7 +1,7 @@
 ---
 title: "Agent Definition Language (ADL)"
 abbrev: "ADL"
-docname: draft-nederveld-adl-01
+docname: draft-nederveld-adl-02
 category: std
 ipr: trust200902
 submissionType: IETF
@@ -77,6 +77,23 @@ informative:
       - ins: M. Sporny
         name: Manu Sporny
     date: 2022
+  ISO-22989:
+    title: "Information technology — Artificial intelligence — Artificial intelligence concepts and terminology"
+    target: https://www.iso.org/standard/74296.html
+    author:
+      - org: ISO/IEC JTC 1/SC 42
+    date: 2022
+    seriesinfo:
+      ISO/IEC: "22989:2022"
+  AI-PROTOCOLS:
+    title: "Framework, Use Cases and Requirements for AI Agent Protocols"
+    target: https://datatracker.ietf.org/doc/html/draft-rosenberg-ai-protocols-00
+    author:
+      - ins: J. Rosenberg
+        name: Jonathan Rosenberg
+    date: 2025
+    seriesinfo:
+      Internet-Draft: draft-rosenberg-ai-protocols-00
 
 --- abstract
 
