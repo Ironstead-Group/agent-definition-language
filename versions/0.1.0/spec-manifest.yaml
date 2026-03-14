@@ -215,11 +215,14 @@ sections:
       - id: profile-dependencies
         number: "13.3"
         title: Profile Dependencies
-      - id: profile-registration
+      - id: vendor-profiles
         number: "13.4"
+        title: Vendor Profiles
+      - id: profile-registration
+        number: "13.5"
         title: Profile Registration
       - id: profile-example
-        number: "13.5"
+        number: "13.6"
         title: Example
 
   - id: processing
