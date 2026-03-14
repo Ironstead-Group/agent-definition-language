@@ -80,6 +80,7 @@ INLINE_CITATIONS = {
     "[W3C.DID]": "{{W3C.DID}}",
     "[W3C.VC]": "{{W3C.VC}}",
     "[ISO-22989]": "{{ISO-22989}}",
+    "[AI-PROTOCOLS]": "{{AI-PROTOCOLS}}",
 }
 
 

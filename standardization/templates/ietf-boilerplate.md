@@ -85,6 +85,15 @@ informative:
     date: 2022
     seriesinfo:
       ISO/IEC: "22989:2022"
+  AI-PROTOCOLS:
+    title: "Framework, Use Cases and Requirements for AI Agent Protocols"
+    target: https://datatracker.ietf.org/doc/html/draft-rosenberg-ai-protocols-00
+    author:
+      - ins: J. Rosenberg
+        name: Jonathan Rosenberg
+    date: 2025
+    seriesinfo:
+      Internet-Draft: draft-rosenberg-ai-protocols-00
 
 --- abstract
 
