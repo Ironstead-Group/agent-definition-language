@@ -3,9 +3,9 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   mainSidebar: [
     {
-      type: 'doc',
-      id: 'specification',
+      type: 'link',
       label: 'Specification',
+      href: '/spec',
     },
     {
       type: 'link',
@@ -13,18 +13,9 @@ const sidebars: SidebarsConfig = {
       href: '/profiles',
     },
     {
-      type: 'category',
+      type: 'link',
       label: 'Examples',
-      collapsed: false,
-      link: {
-        type: 'doc',
-        id: 'examples/index',
-      },
-      items: [
-        'examples/minimal',
-        'examples/with-tools',
-        'examples/production',
-      ],
+      href: '/spec/examples',
     },
     {
       type: 'doc',

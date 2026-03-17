@@ -3,17 +3,17 @@
 Generate an IETF Internet-Draft in kramdown-rfc format from the ADL spec.
 
 Reads:
-  - versions/0.1.0/spec.md              (canonical spec)
-  - versions/0.1.0/spec-manifest.yaml   (section structure)
+  - versions/draft/spec.md              (canonical spec)
+  - versions/draft/spec-manifest.yaml   (section structure)
   - standardization/templates/ietf-boilerplate.md (kramdown-rfc front matter)
 
 Writes:
-  - standardization/output/draft-nederveld-adl-01.md
+  - standardization/output/draft-nederveld-adl-02.md
 
 Usage:
   python scripts/generate_ietf.py
-  python scripts/generate_ietf.py --spec versions/0.1.0/spec.md
-  python scripts/generate_ietf.py --output standardization/output/draft-nederveld-adl-01.md
+  python scripts/generate_ietf.py --spec versions/draft/spec.md
+  python scripts/generate_ietf.py --output standardization/output/draft-nederveld-adl-02.md
 """
 
 import argparse
@@ -29,8 +29,8 @@ except ImportError:
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_SPEC = REPO_ROOT / "versions" / "0.1.0" / "spec.md"
-DEFAULT_MANIFEST = REPO_ROOT / "versions" / "0.1.0" / "spec-manifest.yaml"
+DEFAULT_SPEC = REPO_ROOT / "versions" / "draft" / "spec.md"
+DEFAULT_MANIFEST = REPO_ROOT / "versions" / "draft" / "spec-manifest.yaml"
 DEFAULT_BOILERPLATE = REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate.md"
 DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-02.md"
 

@@ -5,7 +5,7 @@ const sidebarsProfiles: SidebarsConfig = {
     {
       type: 'link',
       label: 'Specification',
-      href: '/specification',
+      href: '/spec',
     },
     {
       type: 'category',
@@ -77,7 +77,7 @@ const sidebarsProfiles: SidebarsConfig = {
     {
       type: 'link',
       label: 'Examples',
-      href: '/examples',
+      href: '/spec/examples',
     },
     {
       type: 'link',

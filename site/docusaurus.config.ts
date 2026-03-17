@@ -76,6 +76,37 @@ const config: Config = {
     [
       '@docusaurus/plugin-content-docs',
       {
+        id: 'spec',
+        path: '../versions/draft',
+        routeBasePath: '/spec',
+        sidebarPath: './sidebarsSpec.ts',
+        include: ['spec.md', 'examples/**/*.{md,mdx}'],
+        exclude: ['**/CONVENTIONS.md', '**/snippets/**', '**/README.md'],
+        beforeDefaultRemarkPlugins: [
+          remarkBlockquoteAdmonitions,
+          remarkStripTitle,
+        ],
+        remarkPlugins: [
+          remarkVersionBadge,
+          remarkRewriteLinks,
+        ],
+        lastVersion: '0.1.0',
+        versions: {
+          current: {
+            label: '0.2.0 (Draft)',
+            path: 'next',
+            banner: 'unreleased',
+          },
+          '0.1.0': {
+            label: '0.1.0',
+            banner: 'none',
+          },
+        },
+      },
+    ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
         id: 'profiles',
         path: '../profiles',
         routeBasePath: '/profiles',
@@ -112,7 +143,7 @@ const config: Config = {
         siteDescription: 'The standard for trusted AI agents. ADL provides a standardized way to define agent identity, permissions, lifecycle, compliance, and governance in one auditable document.',
         depth: 2,
         enableDescriptions: true,
-        includeOrder: ['/spec/**', '/examples/**', '/profiles/**', '/standardization/**'],
+        includeOrder: ['/spec/**', '/spec/examples/**', '/profiles/**', '/standardization/**'],
       },
     ],
   ],
@@ -123,7 +154,7 @@ const config: Config = {
       {
         hashed: true,
         indexBlog: false,
-        docsRouteBasePath: ['/', '/profiles'],
+        docsRouteBasePath: ['/', '/spec', '/profiles'],
       },
     ],
   ],
@@ -255,6 +286,11 @@ const config: Config = {
       },
       items: [
         {
+          type: 'docsVersionDropdown',
+          docsPluginId: 'spec',
+          position: 'left',
+        },
+        {
           type: 'search',
           position: 'right',
         },
@@ -271,8 +307,8 @@ const config: Config = {
           title: 'Specification',
           items: [
             {
-              label: 'ADL v0.1.0',
-              to: '/specification',
+              label: 'ADL Specification',
+              to: '/spec',
             },
             {
               label: 'GitHub',
@@ -289,7 +325,7 @@ const config: Config = {
             },
             {
               label: 'Examples',
-              to: '/examples',
+              to: '/spec/examples',
             },
             {
               label: 'Implementations',

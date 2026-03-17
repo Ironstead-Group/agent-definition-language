@@ -47,6 +47,7 @@ export default function remarkWrapExample() {
           type: 'containerDirective',
           name: 'info',
           attributes: {},
+          data: { hName: 'div' },
           children: [
             {
               type: 'paragraph',

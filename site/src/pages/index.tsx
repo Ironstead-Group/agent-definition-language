@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import {usePluginData} from '@docusaurus/useGlobalData';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
@@ -32,8 +33,16 @@ const adlExample = `{
   ]
 }`;
 
+function useLatestSpecVersion(): string {
+  const data = usePluginData('docusaurus-plugin-content-docs', 'spec') as any;
+  const versions = data?.versions ?? [];
+  const latest = versions.find((v: any) => v.isLast);
+  return latest?.label ?? latest?.name ?? '0.1.0';
+}
+
 function HeroSection() {
   const { siteConfig } = useDocusaurusContext();
+  const latestVersion = useLatestSpecVersion();
   return (
     <header className={styles.hero}>
       <div className={styles.heroBackground}>
@@ -46,7 +55,7 @@ function HeroSection() {
         <div className={styles.heroText}>
           <div className={styles.badge}>
             <span className={styles.badgeDot}></span>
-            Community Specification v0.1.0
+            Community Specification v{latestVersion}
           </div>
           <Heading as="h1" className={styles.heroTitle}>
             {siteConfig.tagline}
@@ -58,7 +67,7 @@ function HeroSection() {
           <div className={styles.heroCtas}>
             <Link
               className={clsx('button button--lg', styles.primaryButton)}
-              to="/specification">
+              to="/spec">
               Read the Spec
             </Link>
             <Link
@@ -138,7 +147,7 @@ function ValuePropSection() {
             </ul>
             <Link
               className={clsx('button button--lg', styles.learnMoreButton)}
-              to="/specification">
+              to="/spec">
               Learn More
             </Link>
           </div>
@@ -300,7 +309,7 @@ function CtaSection() {
           <div className={styles.ctaButtons}>
             <Link
               className={clsx('button button--lg', styles.primaryButton)}
-              to="/specification">
+              to="/spec">
               Read the Specification
             </Link>
             <Link

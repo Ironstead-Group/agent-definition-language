@@ -89,6 +89,9 @@ export default function remarkBlockquoteAdmonitions() {
           name: mapping.type,
           attributes: {},
           children,
+          data: {
+            hName: 'div',
+          },
         };
 
         parent.children[index] = directive as any;

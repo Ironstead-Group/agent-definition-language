@@ -39,6 +39,7 @@ export default function remarkWrapValidation() {
       type: 'containerDirective',
       name: 'warning',
       attributes: {},
+      data: { hName: 'div' },
       children: [
         {
           type: 'paragraph',
