@@ -4,7 +4,7 @@
  * For profile READMEs:
  *   ./1.0/profile.md        → ./specification
  *   ../registry/             → /profiles/registry/overview
- *   ../../versions/.../spec.md → /specification
+ *   ../../versions/.../spec.md → /spec
  *   ../README.md             → /profiles
  *
  * For profile specs (profile.md):
@@ -12,7 +12,7 @@
  *   ../registry/1.0/profile.md → GitHub URL
  *
  * For spec (spec.md):
- *   ./examples/name.yaml → /examples/name
+ *   ./examples/name.yaml → examples/name (relative, version-aware)
  *   ../../profiles/...   → /profiles/...
  *   ./schema.json → GitHub URL
  */
@@ -29,8 +29,8 @@ export default function remarkRewriteLinks() {
     const filePath = file.path || file.history?.[0] || '';
     const isReadme = filePath.endsWith('README.md');
     const isProfileSpec = /profiles\/[^/]+\/[\d.]+\/profile\.md$/.test(filePath);
-    const isSpec = /versions\/[\d.]+\/spec\.md$/.test(filePath) || /docs\/specification\.md$/.test(filePath);
-    const isExamplesReadme = /versions\/[\d.]+\/examples\/README\.md$/.test(filePath);
+    const isSpec = /versions\/[^/]+\/spec\.md$/.test(filePath) || /spec_versioned_docs\/[^/]+\/spec\.md$/.test(filePath);
+    const isExamplesReadme = /examples\/README\.md$/.test(filePath);
 
     visit(tree, 'link', (node: Link, index, parent) => {
       const url = node.url;
@@ -79,17 +79,17 @@ function rewriteReadmeLink(node: Link, filePath: string) {
     return;
   }
 
-  // ../../versions/.../spec.md#fragment → /specification#fragment (profile READMEs)
+  // ../../versions/.../spec.md#fragment → /spec#fragment (profile READMEs)
   const specMatch2 = url.match(/^\.\.\/\.\.\/versions\/[^)]*spec\.md(?:#(.*))?$/);
   if (specMatch2) {
-    node.url = specMatch2[1] ? `/specification#${specMatch2[1]}` : '/specification';
+    node.url = specMatch2[1] ? `/spec#${specMatch2[1]}` : '/spec';
     return;
   }
 
-  // ../versions/.../spec.md#fragment → /specification#fragment (profiles index README)
+  // ../versions/.../spec.md#fragment → /spec#fragment (profiles index README)
   const specMatch1 = url.match(/^\.\.\/versions\/[^)]*spec\.md(?:#(.*))?$/);
   if (specMatch1) {
-    node.url = specMatch1[1] ? `/specification#${specMatch1[1]}` : '/specification';
+    node.url = specMatch1[1] ? `/spec#${specMatch1[1]}` : '/spec';
     return;
   }
 
@@ -157,10 +157,10 @@ function rewriteProfileSpecLink(node: Link, filePath: string) {
 function rewriteSpecLink(node: Link) {
   const url = node.url;
 
-  // ./examples/name.yaml → /examples/name
+  // ./examples/name.yaml → examples/name (relative for version-aware routing)
   const exampleMatch = url.match(/^\.\/examples\/([^)]+)\.yaml$/);
   if (exampleMatch) {
-    node.url = `/examples/${exampleMatch[1]}`;
+    node.url = `examples/${exampleMatch[1]}`;
     return;
   }
 
@@ -171,9 +171,16 @@ function rewriteSpecLink(node: Link) {
     return;
   }
 
+  // ../profiles/... → /profiles/... (from spec_versioned_docs)
+  const profileMatch2 = url.match(/^\.\.\/profiles\/(.*)$/);
+  if (profileMatch2) {
+    node.url = `/profiles/${profileMatch2[1] || ''}`;
+    return;
+  }
+
   // ./schema.json → GitHub URL
   if (url === './schema.json') {
-    node.url = `${GITHUB_BASE}/versions/0.1.0/schema.json`;
+    node.url = `${GITHUB_BASE}/versions/draft/schema.json`;
     return;
   }
 }
@@ -184,7 +191,7 @@ function rewriteExamplesReadmeLink(node: Link) {
   // ./name.yaml → /examples/name
   const exampleMatch = url.match(/^\.\/([^)]+)\.yaml$/);
   if (exampleMatch) {
-    node.url = `/examples/${exampleMatch[1]}`;
+    node.url = `/spec/examples/${exampleMatch[1]}`;
     return;
   }
 

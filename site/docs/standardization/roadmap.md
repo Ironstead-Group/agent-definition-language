@@ -38,7 +38,7 @@ The specific standardization path will be determined based on community input an
 
 ## Get Involved
 
-- Review the [specification](/specification)
-- Try the [examples](/examples)
+- Review the [specification](/spec)
+- Try the [examples](/spec/examples)
 - Contribute on [GitHub](https://github.com/adl-spec/agent-definition-language)
 - Share feedback through issues or discussions

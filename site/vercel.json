@@ -31,13 +31,18 @@
   "redirects": [
     {
       "source": "/docs",
-      "destination": "/spec/introduction",
+      "destination": "/spec",
       "permanent": true
     },
     {
-      "source": "/spec",
-      "destination": "/spec/introduction",
-      "permanent": true
+      "source": "/specification",
+      "destination": "/spec",
+      "permanent": false
+    },
+    {
+      "source": "/examples/:path*",
+      "destination": "/spec/examples/:path*",
+      "permanent": false
     }
   ]
 }

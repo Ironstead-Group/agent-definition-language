@@ -28,9 +28,9 @@ export default function schemaCopyPlugin(context: LoadContext): Plugin {
         const schemaPath = path.join(versionsDir, versionId, 'schema.json');
         if (!fs.existsSync(schemaPath)) continue;
 
-        // Derive short version (e.g., "0.1.0" → "0.1")
+        // Derive short version (e.g., "0.1.0" → "0.1", "draft" → "draft")
         const parts = versionId.split('.');
-        const shortVersion = `${parts[0]}.${parts[1]}`;
+        const shortVersion = parts.length >= 2 ? `${parts[0]}.${parts[1]}` : versionId;
         const staticDir = path.join(context.siteDir, 'static', shortVersion);
 
         if (!fs.existsSync(staticDir)) {
