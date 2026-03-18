@@ -78,7 +78,7 @@ informative:
         name: Manu Sporny
     date: 2022
   ISO-22989:
-    title: "Information technology — Artificial intelligence — Artificial intelligence concepts and terminology"
+    title: "Information technology -- Artificial intelligence -- Artificial intelligence concepts and terminology"
     target: https://www.iso.org/standard/74296.html
     author:
       - org: ISO/IEC JTC 1/SC 42
