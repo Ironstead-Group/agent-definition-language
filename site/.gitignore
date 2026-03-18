@@ -58,3 +58,8 @@ profiles-fixed.yaml
 # Schema-copy plugin output
 /static/draft/
 /static/draft.*/
+
+# Spec version bridge output (canonical source is versions/{id}/)
+/spec_versioned_docs/
+/spec_versioned_sidebars/
+spec_versions.json

@@ -13,6 +13,11 @@ import {
   remarkWrapValidation,
 } from './src/remark';
 import schemaCopyPlugin from './src/plugins/schema-copy';
+import {bridgeSpecVersions} from './src/plugins/spec-version-bridge';
+
+// Bridge released versions from versions/{id}/ → spec_versioned_docs/
+// Must run before Docusaurus initializes the spec docs plugin.
+bridgeSpecVersions(__dirname);
 
 const config: Config = {
   title: 'Agent Definition Language',
