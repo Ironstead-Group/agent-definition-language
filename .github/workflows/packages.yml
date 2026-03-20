@@ -84,6 +84,16 @@ jobs:
           fi
           echo "All packages aligned at $EXPECTED (spec $SPEC_VERSION)"
 
+      # Build before typecheck/test — downstream packages (generator, cli)
+      # need core's declaration files (dist/index.d.ts) to resolve types.
+      - name: Build
+        run: |
+          for pkg in packages/adl-core packages/adl-generator packages/adl-cli; do
+            echo "::group::Build $(basename $pkg)"
+            (cd $pkg && bun run build)
+            echo "::endgroup::"
+          done
+
       - name: Typecheck
         run: |
           for pkg in packages/adl-core packages/adl-generator packages/adl-cli packages/adl-agent; do
@@ -97,14 +107,6 @@ jobs:
           for pkg in packages/adl-core packages/adl-generator packages/adl-cli packages/adl-agent; do
             echo "::group::Test $(basename $pkg)"
             (cd $pkg && bun test)
-            echo "::endgroup::"
-          done
-
-      - name: Build
-        run: |
-          for pkg in packages/adl-core packages/adl-generator packages/adl-cli; do
-            echo "::group::Build $(basename $pkg)"
-            (cd $pkg && bun run build)
             echo "::endgroup::"
           done
 
