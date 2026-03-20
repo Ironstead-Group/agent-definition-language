@@ -62,7 +62,7 @@ function checkGovernanceRequirements(
   profileIndex: number,
 ): ADLError[] {
   const errors: ADLError[] = [];
-  const raw = doc as Record<string, unknown>;
+  const raw = doc as unknown as Record<string, unknown>;
 
   if (!raw.compliance_framework) {
     errors.push(
