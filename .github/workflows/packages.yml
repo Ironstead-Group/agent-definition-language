@@ -1,0 +1,222 @@
+# CI/CD Pipeline for ADL packages
+#
+# This workflow:
+# - Builds, typechecks, and tests all packages on PRs and pushes to main
+# - Publishes to npm in dependency order when versions change on main
+#
+# Publishing uses npm Trusted Publishing (OIDC) — no NPM_TOKEN secret needed.
+# Each package must be configured at https://www.npmjs.com/package/<name>/access:
+#   - Provider: GitHub Actions
+#   - Organization: Ironstead-Group
+#   - Repository: agent-definition-language
+#   - Workflow: packages.yml
+#
+# First version of each package must be published manually:
+#   cd packages/<dir> && npm publish --access public
+#
+# Publish order (dependency graph):
+#   @adl-spec/core → @adl-spec/generator → @adl-spec/cli
+
+name: Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify version alignment
+        run: |
+          # All publishable packages must share the same version,
+          # and their major.minor must match the latest spec version.
+          SPEC_VERSION=$(grep '^latest:' versions/manifest.yaml | sed 's/latest: *"\(.*\)"/\1/')
+          SPEC_MAJOR_MINOR=$(echo "$SPEC_VERSION" | cut -d. -f1,2)
+          echo "Spec version: $SPEC_VERSION (major.minor: $SPEC_MAJOR_MINOR)"
+
+          FAILED=false
+          EXPECTED=""
+          for dir in adl-core adl-generator adl-cli; do
+            PKG_VERSION=$(node -p "require('./packages/$dir/package.json').version")
+            PKG_MAJOR_MINOR=$(echo "$PKG_VERSION" | cut -d. -f1,2)
+
+            if [ "$PKG_MAJOR_MINOR" != "$SPEC_MAJOR_MINOR" ]; then
+              echo "::error::packages/$dir version $PKG_VERSION does not align with spec $SPEC_VERSION (major.minor mismatch)"
+              FAILED=true
+            fi
+
+            if [ -z "$EXPECTED" ]; then
+              EXPECTED="$PKG_VERSION"
+            elif [ "$PKG_VERSION" != "$EXPECTED" ]; then
+              echo "::error::packages/$dir version $PKG_VERSION differs from packages/adl-core version $EXPECTED"
+              FAILED=true
+            fi
+
+            echo "  $dir: $PKG_VERSION ✓"
+          done
+
+          if [ "$FAILED" = "true" ]; then
+            echo ""
+            echo "Fix with: bun run scripts/bump-versions.ts sync"
+            exit 1
+          fi
+          echo "All packages aligned at $EXPECTED (spec $SPEC_VERSION)"
+
+      - name: Typecheck
+        run: |
+          for pkg in packages/adl-core packages/adl-generator packages/adl-cli packages/adl-agent; do
+            echo "::group::Typecheck $(basename $pkg)"
+            (cd $pkg && bun run typecheck)
+            echo "::endgroup::"
+          done
+
+      - name: Test
+        run: |
+          for pkg in packages/adl-core packages/adl-generator packages/adl-cli packages/adl-agent; do
+            echo "::group::Test $(basename $pkg)"
+            (cd $pkg && bun test)
+            echo "::endgroup::"
+          done
+
+      - name: Build
+        run: |
+          for pkg in packages/adl-core packages/adl-generator packages/adl-cli; do
+            echo "::group::Build $(basename $pkg)"
+            (cd $pkg && bun run build)
+            echo "::endgroup::"
+          done
+
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: build-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    concurrency:
+      group: npm-publish-packages
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build packages (dependency order)
+        run: |
+          (cd packages/adl-core && bun run build)
+          (cd packages/adl-generator && bun run build)
+          (cd packages/adl-cli && bun run build)
+
+      # Resolve workspace:* → actual versions before npm publish.
+      # bun publish handles this natively but lacks --provenance support,
+      # so we use npm publish with a pre-publish fixup.
+      - name: Resolve workspace references
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const pkgDirs = ['adl-core', 'adl-generator', 'adl-cli'];
+
+            // Build version map from workspace packages
+            const versions = {};
+            for (const dir of pkgDirs) {
+              const pkg = JSON.parse(fs.readFileSync(path.join('packages', dir, 'package.json'), 'utf8'));
+              versions[pkg.name] = pkg.version;
+            }
+
+            // Replace workspace:* with actual versions
+            for (const dir of pkgDirs) {
+              const pkgPath = path.join('packages', dir, 'package.json');
+              const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+              let changed = false;
+              for (const depType of ['dependencies', 'devDependencies', 'peerDependencies']) {
+                for (const [dep, ver] of Object.entries(pkg[depType] || {})) {
+                  if (ver.startsWith('workspace:')) {
+                    if (!versions[dep]) {
+                      console.error('Unknown workspace dep: ' + dep);
+                      process.exit(1);
+                    }
+                    pkg[depType][dep] = versions[dep];
+                    changed = true;
+                  }
+                }
+              }
+              if (changed) {
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+                console.log('Resolved workspace refs in ' + dir + ':', pkg.dependencies);
+              }
+            }
+          "
+
+      - name: Publish @adl-spec/core
+        run: |
+          cd packages/adl-core
+          CURRENT=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @adl-spec/core version 2>/dev/null || echo "0.0.0")
+          if [ "$CURRENT" = "$PUBLISHED" ]; then
+            echo "::notice::@adl-spec/core@$CURRENT already published, skipping."
+          else
+            echo "Publishing @adl-spec/core@$CURRENT (npm has $PUBLISHED)"
+            npm publish --provenance --access public
+          fi
+
+      - name: Publish @adl-spec/generator
+        run: |
+          cd packages/adl-generator
+          CURRENT=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @adl-spec/generator version 2>/dev/null || echo "0.0.0")
+          if [ "$CURRENT" = "$PUBLISHED" ]; then
+            echo "::notice::@adl-spec/generator@$CURRENT already published, skipping."
+          else
+            echo "Publishing @adl-spec/generator@$CURRENT (npm has $PUBLISHED)"
+            npm publish --provenance --access public
+          fi
+
+      - name: Publish @adl-spec/cli
+        run: |
+          cd packages/adl-cli
+          CURRENT=$(node -p "require('./package.json').version")
+          PUBLISHED=$(npm view @adl-spec/cli version 2>/dev/null || echo "0.0.0")
+          if [ "$CURRENT" = "$PUBLISHED" ]; then
+            echo "::notice::@adl-spec/cli@$CURRENT already published, skipping."
+          else
+            echo "Publishing @adl-spec/cli@$CURRENT (npm has $PUBLISHED)"
+            npm publish --provenance --access public
+          fi

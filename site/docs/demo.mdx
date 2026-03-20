@@ -1,0 +1,49 @@
+---
+title: "Demo: Passport Discovery"
+sidebar_label: Passport Discovery
+---
+
+import Demo from '@site/src/components/Demo';
+
+# Passport Discovery
+
+ADL solves a fundamental problem in multi-agent systems: **how does one agent learn what another agent can do, and whether it should be trusted?**
+
+Today, agent integrations are hardcoded. If Agent A wants to use Agent B, a developer has to read B's documentation, write glue code, and manually configure credentials. This doesn't scale when you have hundreds of agents across organizations.
+
+ADL changes this. Every agent carries a **passport** — a machine-readable document that declares its identity, capabilities, permissions, data sensitivity, and security requirements. Another agent can read this passport, understand what's available, verify trust, and start communicating — automatically.
+
+The demo below walks through this flow step by step.
+
+<Demo />
+
+## What you just saw
+
+This demo illustrates four core ideas from the ADL specification:
+
+### 1. Discovery without prior knowledge
+
+The discovery agent didn't know anything about the service agent in advance. It queried a standard URL (`/.well-known/adl-agents`) and received a directory of available agents. Any domain can publish this directory — it's how agents find each other across organizations.
+
+### 2. Passports are self-describing
+
+The ADL passport contained everything the discovery agent needed: the agent's name, what tools it offers, what data sensitivity level it operates at, and what authentication it requires. No separate API docs, no out-of-band configuration.
+
+### 3. Trust is evaluated, not assumed
+
+Before sending a single request, the discovery agent checked the passport's trust signals. Is the data public or restricted? Are the tools read-only? Is authentication required? These aren't just metadata — they're machine-enforceable constraints that let agents make autonomous trust decisions.
+
+### 4. Format interoperability
+
+The passport was converted to an A2A Agent Card with a single function call. ADL tools became A2A skills. Authentication mapped directly. An agent described in ADL can participate in the A2A ecosystem, the MCP ecosystem, or both — from one source document.
+
+## Try it locally
+
+The demo above is a simulation. To run the real thing with actual HTTP requests between two processes:
+
+```bash
+cd packages/adl-agent
+bun run examples/a2a-discovery/run-demo.ts
+```
+
+No API keys needed — it runs entirely locally using the agent's built-in tools.

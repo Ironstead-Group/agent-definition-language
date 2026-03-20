@@ -1,0 +1,118 @@
+adl_spec: "0.2.0"
+name: ADL Spec Explainer
+description: >-
+  An AI agent that explains ADL concepts, validates documents,
+  shows examples, and compares agent description formats.
+version: "0.1.0"
+
+data_classification:
+  sensitivity: public
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-20250514
+  capabilities:
+    - function_calling
+
+system_prompt: >-
+  You are the ADL Spec Explainer, an expert on the Agent Definition Language
+  (ADL). You help users understand ADL concepts, validate their ADL documents,
+  explore example documents, navigate the specification, and compare ADL with
+  other agent description formats like A2A, MCP, and OpenAPI. Be clear,
+  accurate, and helpful. When explaining errors, provide actionable guidance
+  on how to fix them.
+
+tools:
+  - name: explain_concept
+    description: >-
+      Explain an ADL concept such as the passport model, tools, permissions,
+      data classification, profiles, lifecycle, security, or extensions.
+    parameters:
+      type: object
+      properties:
+        concept:
+          type: string
+          description: The ADL concept to explain
+      required:
+        - concept
+    read_only: true
+
+  - name: validate_document
+    description: >-
+      Validate an ADL document provided as YAML or JSON and return structured
+      results with errors explained in plain language.
+    parameters:
+      type: object
+      properties:
+        document:
+          type: string
+          description: The ADL document content as YAML or JSON string
+      required:
+        - document
+    read_only: true
+
+  - name: show_example
+    description: >-
+      Return an example ADL document by category: minimal, production,
+      or with-tools.
+    parameters:
+      type: object
+      properties:
+        category:
+          type: string
+          enum:
+            - minimal
+            - production
+            - with-tools
+          description: The example category to retrieve
+      required:
+        - category
+    read_only: true
+
+  - name: get_spec_section
+    description: >-
+      Retrieve information about a specific section of the ADL specification.
+    parameters:
+      type: object
+      properties:
+        section:
+          type: string
+          description: The spec section or topic to look up
+      required:
+        - section
+    read_only: true
+
+  - name: compare_formats
+    description: >-
+      Compare ADL with another agent description format such as A2A, MCP,
+      OpenAPI, or Agent Protocol.
+    parameters:
+      type: object
+      properties:
+        format:
+          type: string
+          enum:
+            - a2a
+            - mcp
+            - openapi
+            - agent_protocol
+          description: The format to compare against ADL
+      required:
+        - format
+    read_only: true
+
+permissions:
+  network:
+    allowed_hosts:
+      - adl-spec.org
+
+security:
+  authentication:
+    type: none
+
+metadata:
+  license: Apache-2.0
+  tags:
+    - adl
+    - explainer
+    - education

@@ -1,0 +1,13 @@
+{
+  "adl_spec": "0.2.0",
+  "name": "Test Agent",
+  "description": "Agent with invalid tool name",
+  "version": "1.0.0",
+  "data_classification": { "sensitivity": "public" },
+  "tools": [
+    {
+      "name": "InvalidTool",
+      "description": "Tool name starts with uppercase"
+    }
+  ]
+}

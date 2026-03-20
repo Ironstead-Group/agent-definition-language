@@ -4,19 +4,25 @@ import chalk from "chalk";
 
 const TEMPLATES: Record<string, Record<string, unknown>> = {
   minimal: {
-    $schema: "https://adl-spec.org/0.1/schema.json",
-    adl_spec: "0.1.0",
+    $schema: "https://adl-spec.org/0.2/schema.json",
+    adl_spec: "0.2.0",
     name: "my-agent",
     description: "Describe your agent's purpose and capabilities.",
     version: "0.1.0",
+    data_classification: {
+      sensitivity: "internal",
+    },
   },
 
   full: {
-    $schema: "https://adl-spec.org/0.1/schema.json",
-    adl_spec: "0.1.0",
+    $schema: "https://adl-spec.org/0.2/schema.json",
+    adl_spec: "0.2.0",
     name: "my-agent",
     description: "Describe your agent's purpose and capabilities.",
     version: "0.1.0",
+    data_classification: {
+      sensitivity: "internal",
+    },
     lifecycle: {
       status: "draft",
     },
@@ -62,11 +68,14 @@ const TEMPLATES: Record<string, Record<string, unknown>> = {
   },
 
   governance: {
-    $schema: "https://adl-spec.org/0.1/schema.json",
-    adl_spec: "0.1.0",
+    $schema: "https://adl-spec.org/0.2/schema.json",
+    adl_spec: "0.2.0",
     name: "my-governed-agent",
     description: "An agent with governance profile for compliance requirements.",
     version: "0.1.0",
+    data_classification: {
+      sensitivity: "confidential",
+    },
     profiles: ["urn:adl:profile:governance:1.0"],
     lifecycle: {
       status: "draft",

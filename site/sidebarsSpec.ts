@@ -24,6 +24,11 @@ const sidebarsSpec: SidebarsConfig = {
     },
     {
       type: 'link',
+      label: 'Passport Discovery',
+      href: '/demo',
+    },
+    {
+      type: 'link',
       label: 'Standardization',
       href: '/standardization/roadmap',
     },

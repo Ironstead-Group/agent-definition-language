@@ -1,0 +1,52 @@
+{
+  "passport_model": {
+    "title": "The Passport Model",
+    "summary": "An ADL document is a passport — a portable, self-contained trust signal that travels with an agent.",
+    "details": "Just as a travel passport declares who you are, where you can go, and what authorities have vouched for you, an ADL document declares an agent's identity, capabilities, permissions, and trust signals. The passport is the agent's own declaration; operational details like escalation contacts or audit schedules live in a separate governance record referenced via `governance_record_ref`. This separation keeps the passport lightweight and focused on what other systems need to know to trust and interact with the agent."
+  },
+  "tools": {
+    "title": "Tools",
+    "summary": "Tools define the actions an agent can perform, with typed parameters and metadata.",
+    "details": "Each tool in the `tools` array has a `name`, `description`, and optional `parameters` (JSON Schema). Tools can be marked `read_only: true` (no side effects), `idempotent: true` (safe to retry), or `requires_confirmation: true` (needs human approval). Tools can also carry `data_classification` to inherit or override the document-level sensitivity, and `annotations` for linking to OpenAPI operations. The `examples` field provides sample inputs and outputs for documentation and testing."
+  },
+  "permissions": {
+    "title": "Permissions",
+    "summary": "ADL uses a deny-by-default permission model — nothing is allowed unless explicitly granted.",
+    "details": "The `permissions` section controls network access (`allowed_hosts`, `allowed_ports`, `allowed_protocols`, `deny_private`), filesystem access (paths with `read` or `read_write` access), environment variables, execution permissions (shell access and allowed commands), and resource limits (memory, CPU, duration, concurrency). If a permission category is omitted, that entire category of access is denied. This model follows the principle of least privilege, making agents safer by default."
+  },
+  "data_classification": {
+    "title": "Data Classification",
+    "summary": "Data sensitivity levels based on NIST FIPS 199 — public, internal, confidential, or restricted.",
+    "details": "The `data_classification` field is required on every ADL document. The `sensitivity` level (public, internal, confidential, restricted) follows a high-water mark principle: tool-level classifications cannot be less sensitive than the document-level classification. Optional `categories` tag data types (PII, PHI, financial, intellectual_property, etc.). The `retention` sub-field specifies min/max days and policy URIs. The `handling` sub-field controls encryption, anonymization, cross-border, and logging requirements."
+  },
+  "profiles": {
+    "title": "Profiles",
+    "summary": "Domain-specific extensions that add structured requirements on top of the base ADL schema.",
+    "details": "Profiles like governance, healthcare, and financial extend the base ADL schema via JSON Schema `allOf` composition. A profile can add new required fields, tighten constraints, and define conditional validation (e.g., governance profile requires `human_oversight` at Tier 2+ autonomy). Profiles are declared in the `profiles` array and validated against their own schemas. A dependent profile composes its parent via `allOf` and can tighten but never loosen constraints."
+  },
+  "lifecycle": {
+    "title": "Lifecycle",
+    "summary": "Agents have a lifecycle: draft, active, deprecated, or retired.",
+    "details": "The `lifecycle` section tracks an agent's status through four stages: `draft` (not yet ready), `active` (in production), `deprecated` (still works but being phased out), and `retired` (no longer operational). The `effective_date` marks when the current status took effect. The `sunset_date` marks when the agent will be retired (must be after `effective_date`). The `successor` field points to the replacement agent and is only valid on deprecated or retired agents."
+  },
+  "security": {
+    "title": "Security",
+    "summary": "Authentication, encryption, and attestation settings for agent trust.",
+    "details": "The `security` section has three sub-fields: `authentication` (type: none, api_key, oauth2, mtls, jwt; plus scopes, token endpoints, issuer, audience), `encryption` (in-transit TLS requirements, at-rest algorithm settings), and `attestation` (self-signed or third-party trust signals with issuer, timestamps, and optional cryptographic signatures). Attestation supports both full-document and digest-mode signatures."
+  },
+  "extensions": {
+    "title": "Extensions",
+    "summary": "Vendor-namespaced extension fields for custom metadata without breaking compatibility.",
+    "details": "The `extensions` field is available at nearly every level of an ADL document (root, tools, permissions, etc.). Extensions use reverse-domain-name keys (e.g., `com.acme.custom_field`) to avoid conflicts. Extensions must not alter the semantics of standard fields. They are preserved during validation and conversion but are not guaranteed to be understood by all consumers."
+  },
+  "system_prompt": {
+    "title": "System Prompt",
+    "summary": "The system prompt configures the agent's behavior and persona.",
+    "details": "The `system_prompt` field can be a simple string or a structured template object with `template` and `variables` fields. The template form supports variable interpolation for dynamic prompts. The system prompt defines the agent's personality, instructions, constraints, and domain expertise. It is a core part of the agent's identity in the passport model."
+  },
+  "converters": {
+    "title": "Format Converters",
+    "summary": "ADL documents can be converted to A2A Agent Cards and MCP Server Configurations.",
+    "details": "The `@adl-spec/core` package provides `convertToA2A()` and `convertToMCP()` functions. Converting to A2A produces an Agent Card with skills derived from tools, provider info, and authentication details. Converting to MCP produces a Server Configuration with tools, resources, and prompts mapped to their MCP equivalents. These converters enable interoperability — an ADL-described agent can participate in both A2A and MCP ecosystems without maintaining separate descriptions."
+  }
+}

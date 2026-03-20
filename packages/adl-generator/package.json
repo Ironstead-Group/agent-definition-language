@@ -1,0 +1,50 @@
+{
+  "name": "@adl-spec/generator",
+  "version": "0.2.0",
+  "description": "Generate agent code from ADL passports for multiple frameworks",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@adl-spec/core": "workspace:*"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "bun-types": "^1.2.4",
+    "typescript": "~5.6.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://adl-spec.org",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ironstead-Group/agent-definition-language.git",
+    "directory": "packages/adl-generator"
+  },
+  "keywords": [
+    "adl",
+    "agent",
+    "definition",
+    "language",
+    "generator",
+    "code-generation"
+  ]
+}

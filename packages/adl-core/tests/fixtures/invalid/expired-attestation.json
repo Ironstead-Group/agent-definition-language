@@ -1,0 +1,14 @@
+{
+  "adl_spec": "0.2.0",
+  "name": "Test Agent",
+  "description": "Agent with expired attestation",
+  "version": "1.0.0",
+  "data_classification": { "sensitivity": "public" },
+  "security": {
+    "attestation": {
+      "type": "self",
+      "issued_at": "2020-01-01T00:00:00Z",
+      "expires_at": "2021-01-01T00:00:00Z"
+    }
+  }
+}

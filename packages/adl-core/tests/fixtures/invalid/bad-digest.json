@@ -1,0 +1,17 @@
+{
+  "adl_spec": "0.2.0",
+  "name": "Test Agent",
+  "description": "Agent with digest signature missing fields",
+  "version": "1.0.0",
+  "data_classification": { "sensitivity": "public" },
+  "security": {
+    "attestation": {
+      "type": "self",
+      "signature": {
+        "algorithm": "Ed25519",
+        "value": "base64signature",
+        "signed_content": "digest"
+      }
+    }
+  }
+}

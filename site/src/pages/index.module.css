@@ -550,6 +550,76 @@
 }
 
 /* ==========================================================================
+   Discovery Section
+   ========================================================================== */
+
+.discovery {
+  padding: 5rem 0;
+}
+
+.discoveryContent {
+  text-align: center;
+}
+
+.discoverySteps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin: 2.5rem 0;
+  text-align: left;
+}
+
+.discoveryStep {
+  padding: 1.5rem;
+  border-radius: var(--ifm-global-radius);
+  border: 1px solid var(--adl-border-subtle);
+  background: var(--adl-surface-glass);
+  transition: all var(--adl-transition-normal);
+}
+
+[data-theme='dark'] .discoveryStep {
+  background: rgba(30, 41, 59, 0.4);
+  border-color: rgba(56, 189, 248, 0.1);
+}
+
+.discoveryStep:hover {
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--adl-glow-primary);
+}
+
+.discoveryStepNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--adl-gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.discoveryStep h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.discoveryStep p {
+  font-size: 0.9rem;
+  color: var(--adl-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+[data-theme='dark'] .discoveryStep p {
+  color: var(--ifm-color-emphasis-500);
+}
+
+/* ==========================================================================
    CTA Section
    ========================================================================== */
 
@@ -678,6 +748,10 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .discoverySteps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .sectionTitle {
     font-size: 1.875rem;
   }
@@ -712,6 +786,10 @@
   }
 
   .compatibilityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .discoverySteps {
     grid-template-columns: 1fr;
   }
 

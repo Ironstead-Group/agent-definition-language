@@ -1,0 +1,12 @@
+{
+  "adl_spec": "0.2.0",
+  "name": "Test Agent",
+  "description": "Agent with invalid host pattern",
+  "version": "1.0.0",
+  "data_classification": { "sensitivity": "public" },
+  "permissions": {
+    "network": {
+      "allowed_hosts": ["**.example.com"]
+    }
+  }
+}

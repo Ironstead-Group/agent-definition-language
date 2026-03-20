@@ -294,6 +294,62 @@ function CompatibilitySection() {
   );
 }
 
+function DiscoverySection() {
+  const steps = [
+    {
+      icon: '1',
+      title: 'Discover',
+      description: 'An agent queries a domain and finds available agents — no prior knowledge needed.',
+    },
+    {
+      icon: '2',
+      title: 'Read the Passport',
+      description: 'It fetches the ADL passport and learns the agent\u2019s tools, permissions, and data sensitivity.',
+    },
+    {
+      icon: '3',
+      title: 'Evaluate Trust',
+      description: 'Is the data public? Are tools read-only? Is auth required? The passport carries the answers.',
+    },
+    {
+      icon: '4',
+      title: 'Communicate',
+      description: 'Trust established. The agents exchange tasks using capabilities discovered from the passport.',
+    },
+  ];
+
+  return (
+    <section className={styles.discovery}>
+      <div className="container">
+        <div className={styles.discoveryContent}>
+          <Heading as="h2" className={styles.sectionTitle}>
+            See It In Action
+          </Heading>
+          <p className={styles.sectionDescription}>
+            One agent discovers another by reading its passport. No hardcoded
+            integrations, no manual configuration — just a standard document
+            that machines can read and trust.
+          </p>
+          <div className={styles.discoverySteps}>
+            {steps.map((step) => (
+              <div key={step.title} className={styles.discoveryStep}>
+                <div className={styles.discoveryStepNumber}>{step.icon}</div>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </div>
+            ))}
+          </div>
+          <Link
+            className={clsx('button button--lg', styles.learnMoreButton)}
+            to="/demo">
+            Try the Interactive Demo
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CtaSection() {
   return (
     <section className={styles.cta}>
@@ -335,6 +391,7 @@ export default function Home(): ReactNode {
         <ValuePropSection />
         <ComparisonSection />
         <CompatibilitySection />
+        <DiscoverySection />
         <CtaSection />
       </main>
     </Layout>

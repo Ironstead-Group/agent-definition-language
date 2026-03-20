@@ -1,0 +1,26 @@
+{
+  "a2a": {
+    "format": "Google Agent-to-Agent Protocol (A2A)",
+    "relationship": "ADL and A2A are complementary. ADL describes what an agent IS (identity, permissions, security), while A2A describes how agents COMMUNICATE. ADL documents can be converted to A2A Agent Cards using `convertToA2A()` from @adl-spec/core. ADL tools map to A2A skills, and provider/auth information carries over directly.",
+    "strengths": "A2A excels at runtime agent-to-agent communication with its task-based messaging model, streaming support, and push notification capabilities. It defines a clear wire protocol for multi-agent collaboration.",
+    "limitations": "A2A does not cover agent permissions, data classification, lifecycle management, or security attestation. It focuses on the communication layer rather than the trust and governance layer that ADL provides."
+  },
+  "mcp": {
+    "format": "Anthropic Model Context Protocol (MCP)",
+    "relationship": "ADL and MCP are complementary. MCP defines how models access tools, resources, and prompts. ADL describes the agent that uses those capabilities, including who can use them and under what constraints. ADL documents can be converted to MCP Server Configurations using `convertToMCP()` from @adl-spec/core.",
+    "strengths": "MCP provides a rich protocol for tool invocation, resource access, and prompt management with strong typing and a well-defined client-server model. It has broad ecosystem support across AI providers.",
+    "limitations": "MCP does not address agent identity, data classification, lifecycle, governance profiles, or cross-organizational trust. It operates at the tool/resource layer rather than the agent description layer."
+  },
+  "openapi": {
+    "format": "OpenAPI Specification",
+    "relationship": "OpenAPI describes HTTP APIs; ADL describes AI agents. ADL tools can reference OpenAPI operations via the `annotations.openapi_ref` and `annotations.operation_id` fields. An agent's tools might wrap OpenAPI endpoints, but the ADL document adds the agent-specific context: permissions, data classification, model configuration, and system prompt.",
+    "strengths": "OpenAPI is the industry standard for HTTP API documentation with massive tooling support, code generation, and client/server stub generation. It has a mature ecosystem and wide adoption.",
+    "limitations": "OpenAPI is designed for stateless request-response APIs, not autonomous agents. It lacks concepts for agent identity, autonomy levels, data sensitivity, lifecycle management, system prompts, and model configuration."
+  },
+  "agent_protocol": {
+    "format": "Agent Protocol",
+    "relationship": "Agent Protocol defines a standard HTTP interface for interacting with agents (create task, get task, list steps). ADL is complementary — it describes the agent's identity and capabilities, while Agent Protocol defines the runtime interaction API. An ADL-described agent could expose an Agent Protocol-compliant HTTP interface.",
+    "strengths": "Agent Protocol provides a simple, standardized REST API for agent interaction with task and step abstractions. It is runtime-focused and easy to implement.",
+    "limitations": "Agent Protocol does not cover agent description, discovery, trust signals, permissions, data classification, or governance. It is a runtime protocol rather than a description format."
+  }
+}

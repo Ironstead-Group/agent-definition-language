@@ -1,0 +1,12 @@
+{
+  "adl_spec": "0.2.0",
+  "name": "Test Agent",
+  "description": "Agent with successor on active status",
+  "version": "1.0.0",
+  "data_classification": { "sensitivity": "public" },
+  "lifecycle": {
+    "status": "active",
+    "effective_date": "2026-01-01T00:00:00Z",
+    "successor": "urn:adl:agent:acme:replacement:1.0.0"
+  }
+}

@@ -19,6 +19,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'doc',
+      id: 'demo',
+      label: 'Passport Discovery',
+    },
+    {
+      type: 'doc',
       id: 'standardization/roadmap',
       label: 'Standardization',
     },
