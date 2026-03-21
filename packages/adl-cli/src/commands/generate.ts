@@ -5,11 +5,8 @@ import chalk from "chalk";
 import { loadDocument } from "../core/loader.js";
 import { validateDocument } from "../core/validator.js";
 import { formatErrorsTerminal } from "../core/errors.js";
-import {
-  generateAgent,
-  listTargets,
-  type ADLDocument,
-} from "@adl-spec/generator";
+import { generateAgent, listTargets } from "@adl-spec/generator";
+import type { ADLDocument } from "@adl-spec/core";
 
 export function registerGenerateCommand(program: Command): void {
   program

@@ -10,5 +10,5 @@ import {
 export function convertToMCP(
   doc: Record<string, unknown>,
 ): Record<string, unknown> {
-  return coreConvert(doc as ADLDocument) as unknown as Record<string, unknown>;
+  return coreConvert(doc as unknown as ADLDocument) as unknown as Record<string, unknown>;
 }

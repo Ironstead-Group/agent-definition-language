@@ -1,7 +1,15 @@
 {
   "private": true,
   "workspaces": ["packages/*"],
+  "scripts": {
+    "build": "bun run scripts/build-all.ts",
+    "typecheck": "bun run --filter '*' typecheck",
+    "test": "bun run --filter '*' test",
+    "check": "bun run build && bun run typecheck && bun run test",
+    "postinstall": "lefthook install"
+  },
   "devDependencies": {
+    "lefthook": "^1.11.0",
     "yaml": "^2.7.0"
   }
 }
