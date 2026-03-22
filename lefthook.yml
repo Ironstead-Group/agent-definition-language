@@ -1,0 +1,11 @@
+pre-commit:
+  commands:
+    packages-check:
+      run: bun run build && bun run typecheck
+      glob: "packages/**/*.{ts,json}"
+
+pre-push:
+  commands:
+    full-check:
+      run: bun run check
+      glob: "packages/**/*.{ts,json}"

@@ -20,6 +20,32 @@ All contributors must sign the [Contributor License Agreement](CLA.md) before an
 
 You only need to sign once.
 
+## Local Development
+
+After cloning and installing:
+
+```bash
+bun install                # install deps + auto-configure git hooks (via lefthook)
+```
+
+### Available scripts
+
+| Command | What it does |
+|---------|-------------|
+| `bun run build` | Build packages in dependency order (core → generator → cli) |
+| `bun run typecheck` | Typecheck all packages |
+| `bun run test` | Test all packages |
+| `bun run check` | Full CI-equivalent check (build + typecheck + test) |
+
+### Git hooks
+
+Git hooks are installed automatically by `bun install`. They run via [lefthook](https://github.com/evilmartians/lefthook):
+
+- **Pre-commit**: builds and typechecks all packages (only when `packages/` files change)
+- **Pre-push**: runs the full check suite (build + typecheck + test)
+
+Use `--no-verify` to skip hooks for work-in-progress commits.
+
 ## How to Contribute
 
 ### Fork and pull request (required)

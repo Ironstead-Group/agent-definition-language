@@ -12,6 +12,24 @@ Tools, libraries, and integrations for working with ADL documents. Lint your age
 
 ## Official Tools
 
+### [@adl-spec/core](https://www.npmjs.com/package/@adl-spec/core)
+
+Reference implementation and SDK for ADL. Parse, validate, and convert agent definitions programmatically. Includes full TypeScript types, JSON Schema validation, and converters to A2A Agent Cards and MCP server configurations.
+
+- **Type:** SDK / Library
+- **ADL Version:** 0.2.0+
+- **License:** Apache-2.0
+- **Language:** TypeScript (Bun runtime)
+- **Source:** [packages/adl-core](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-core)
+
+```typescript
+import { parseADL, validateDocument, convertToA2A } from "@adl-spec/core";
+
+const { document } = parseADL(yamlString);
+const result = validateDocument(document);
+const agentCard = convertToA2A(document);
+```
+
 ### [@adl-spec/cli](https://www.npmjs.com/package/@adl-spec/cli)
 
 The official command-line tool for ADL. Validate agent definitions against the spec, convert them to A2A Agent Cards or MCP configurations, and scaffold new documents from templates.
@@ -32,6 +50,36 @@ npx @adl-spec/cli convert agent.adl.yaml --to a2a
 # Scaffold a governance-ready definition
 npx @adl-spec/cli init --template governance
 ```
+
+### [@adl-spec/generator](https://www.npmjs.com/package/@adl-spec/generator)
+
+Generate agent code from ADL documents for multiple target frameworks. Transforms ADL definitions into an intermediate representation, then renders deployable code with a pluggable target system.
+
+- **Type:** Code Generator
+- **ADL Version:** 0.2.0+
+- **License:** Apache-2.0
+- **Language:** TypeScript (Bun runtime)
+- **Source:** [packages/adl-generator](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-generator)
+- **Built-in targets:** `claude-sdk-ts`, `vanilla-ts`
+
+```typescript
+import { generateAgent, listTargets } from "@adl-spec/generator";
+
+const result = generateAgent(document, { target: "claude-sdk-ts" });
+for (const file of result.files) {
+  // file.path, file.content — ready to write to disk
+}
+```
+
+### [@adl-spec/agent](https://www.npmjs.com/package/@adl-spec/agent)
+
+An interactive AI agent that explains ADL concepts through conversation. Built with the ADL core SDK, it validates its own ADL passport on startup — a practical demonstration of ADL in action.
+
+- **Type:** Agent / Demo
+- **ADL Version:** 0.1.0+
+- **License:** Apache-2.0
+- **Language:** TypeScript (Bun runtime)
+- **Source:** [packages/adl-agent](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-agent)
 
 ### [ADL JSON Schema](https://adl-spec.org/0.1/schema.json)
 
