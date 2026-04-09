@@ -35,7 +35,7 @@ const agentCard = convertToA2A(document);
 The official command-line tool for ADL. Validate agent definitions against the spec, convert them to A2A Agent Cards or MCP configurations, and scaffold new documents from templates.
 
 - **Type:** Validator / Converter / Scaffolder
-- **ADL Version:** 0.1.0+
+- **ADL Version:** 0.2.0+
 - **License:** Apache-2.0
 - **Language:** TypeScript (Bun runtime)
 - **Source:** [packages/adl-cli](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-cli)
@@ -76,19 +76,19 @@ for (const file of result.files) {
 An interactive AI agent that explains ADL concepts through conversation. Built with the ADL core SDK, it validates its own ADL passport on startup — a practical demonstration of ADL in action.
 
 - **Type:** Agent / Demo
-- **ADL Version:** 0.1.0+
+- **ADL Version:** 0.2.0+
 - **License:** Apache-2.0
 - **Language:** TypeScript (Bun runtime)
 - **Source:** [packages/adl-agent](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-agent)
 
-### [ADL JSON Schema](https://adl-spec.org/0.1/schema.json)
+### [ADL JSON Schema](https://adl-spec.org/0.2/schema.json)
 
-The official JSON Schema for ADL 0.1.0. Use it for validation in any language with a JSON Schema library, or wire it into your editor for autocomplete and inline diagnostics.
+The official JSON Schema for ADL 0.2.0. Use it for validation in any language with a JSON Schema library, or wire it into your editor for autocomplete and inline diagnostics.
 
 - **Type:** Schema
-- **ADL Version:** 0.1.0
+- **ADL Version:** 0.2.0
 - **License:** Apache-2.0
-- **Source:** [versions/0.1.0/schema.json](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.1.0/schema.json)
+- **Source:** [versions/0.2.0/schema.json](https://github.com/Ironstead-Group/agent-definition-language/blob/main/versions/0.2.0/schema.json)
 
 ## IDE Support
 
@@ -100,26 +100,26 @@ Get autocomplete, inline errors, and hover docs for ADL documents in VS Code wit
 {
   "json.schemas": [
     {
-      "url": "https://adl-spec.org/0.1/schema.json",
+      "url": "https://adl-spec.org/0.2/schema.json",
       "fileMatch": ["*.adl.json"]
     }
   ],
   "yaml.schemas": {
-    "https://adl-spec.org/0.1/schema.json": "*.adl.yaml"
+    "https://adl-spec.org/0.2/schema.json": "*.adl.yaml"
   }
 }
 ```
 
 - **Type:** IDE Integration
-- **ADL Version:** 0.1.0
+- **ADL Version:** 0.2.0
 - **Prerequisites:** For YAML support, install the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
 
 ### JetBrains IDEs — JSON Schema Validation
 
-IntelliJ IDEA, WebStorm, and other JetBrains IDEs support JSON Schema mapping natively. Go to **Settings > Languages & Frameworks > Schemas and DTDs > JSON Schema Mappings**, add a new mapping with the schema URL `https://adl-spec.org/0.1/schema.json`, and map it to your `*.adl.json` files.
+IntelliJ IDEA, WebStorm, and other JetBrains IDEs support JSON Schema mapping natively. Go to **Settings > Languages & Frameworks > Schemas and DTDs > JSON Schema Mappings**, add a new mapping with the schema URL `https://adl-spec.org/0.2/schema.json`, and map it to your `*.adl.json` files.
 
 - **Type:** IDE Integration
-- **ADL Version:** 0.1.0
+- **ADL Version:** 0.2.0
 
 ## Adding Your Implementation
 
@@ -127,7 +127,7 @@ Built something with ADL? We want to list it here.
 
 ### Requirements
 
-1. Supports ADL 0.1.0 or later
+1. Supports ADL 0.2.0 or later
 2. Publicly available (open source preferred)
 3. Includes documentation for users
 4. Actively maintained
@@ -142,7 +142,7 @@ Open a [pull request](https://github.com/Ironstead-Group/agent-definition-langua
 Brief description of what the tool does.
 
 - **Type:** Validator / Converter / IDE Extension / Runtime / Other
-- **ADL Version:** 0.1.0+
+- **ADL Version:** 0.2.0+
 - **License:** MIT / Apache-2.0 / etc.
 - **Language:** TypeScript / Python / Go / etc.
 ```
