@@ -25,6 +25,7 @@ describe("generateAgent", () => {
 
     const ids = targets.map((t) => t.id);
     expect(ids).toContain("claude-sdk-ts");
+    expect(ids).toContain("langgraph-ts");
     expect(ids).toContain("vanilla-ts");
   });
 
@@ -51,6 +52,20 @@ describe("generateAgent", () => {
     const filePaths = result.files.map((f) => f.path);
     expect(filePaths).toContain("agent.ts");
     expect(filePaths).toContain("types.ts");
+  });
+
+  it("generates langgraph-ts output from production fixture", () => {
+    const doc = loadFixture("production.json");
+    const result = generateAgent(doc, { target: "langgraph-ts" });
+
+    expect(result.target).toBe("langgraph-ts");
+    expect(result.files.length).toBeGreaterThan(0);
+
+    const filePaths = result.files.map((f) => f.path);
+    expect(filePaths).toContain("agent.ts");
+    expect(filePaths).toContain("tools.ts");
+    expect(filePaths).toContain("types.ts");
+    expect(filePaths).toContain("README.md");
   });
 
   it("generates output from minimal fixture", () => {
@@ -85,7 +100,7 @@ describe("generateAgent", () => {
   it("all generated files have non-empty content", () => {
     const doc = loadFixture("production.json");
 
-    for (const targetId of ["claude-sdk-ts", "vanilla-ts"]) {
+    for (const targetId of ["claude-sdk-ts", "langgraph-ts", "vanilla-ts"]) {
       const result = generateAgent(doc, { target: targetId });
       for (const file of result.files) {
         expect(file.content.length).toBeGreaterThan(0);

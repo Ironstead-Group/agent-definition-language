@@ -1,36 +1,34 @@
 /**
- * Code-generation pipeline: ADL Document -> IR -> target renderer -> output files.
+ * Code-generation pipeline: ADL Document -> formatter plugin -> output files.
  */
 
 import type { ADLDocument } from "@adl-spec/core";
-import { transformToIR } from "./ir/transform.js";
-import type { GeneratedFile } from "./renderer.js";
-import { getTarget, listTargets as listRegisteredTargets } from "./renderer.js";
-
-export interface GenerateResult {
-  target: string;
-  files: GeneratedFile[];
-}
+import type { FormatterExecuteOptions, GenerateResult } from "./plugin.js";
+import { executePlugin, listPlugins } from "./plugin.js";
 
 /**
- * Run the generation pipeline for a given ADL document and target.
+ * Run the generation pipeline for a given ADL document and formatter plugin.
  *
- * @throws {Error} if the target is not registered
+ * @throws {Error} if the plugin/target is not registered
  */
 export function generate(
   doc: ADLDocument,
   targetId: string,
+  options?: FormatterExecuteOptions,
 ): GenerateResult {
-  const renderer = getTarget(targetId);
-  if (!renderer) {
-    const known = listRegisteredTargets();
+  try {
+    return executePlugin(doc, targetId, options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.startsWith("Unknown formatter plugin")) {
+      throw error;
+    }
+
+    const known = listPlugins();
     throw new Error(
       `Unknown target "${targetId}". Available targets: ${known.map((t) => t.id).join(", ") || "(none)"}`,
     );
   }
-
-  const ir = transformToIR(doc);
-  const files = renderer.render(ir);
-
-  return { target: targetId, files };
 }
+
+export type { GenerateResult } from "./plugin.js";
