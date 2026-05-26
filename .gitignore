@@ -200,3 +200,10 @@ playwright/.cache/
 # Debug/snapshot artifacts
 *.snapshot.yaml
 gov-record-snapshot.yaml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
