@@ -81,6 +81,16 @@ const sidebarsProfiles: SidebarsConfig = {
     },
     {
       type: 'link',
+      label: 'Patterns',
+      href: '/patterns',
+    },
+    {
+      type: 'link',
+      label: 'Passport Discovery',
+      href: '/demo',
+    },
+    {
+      type: 'link',
       label: 'Standardization',
       href: '/standardization/roadmap',
     },

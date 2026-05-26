@@ -18,6 +18,11 @@ const sidebars: SidebarsConfig = {
       href: '/spec/examples',
     },
     {
+      type: 'link',
+      label: 'Patterns',
+      href: '/patterns',
+    },
+    {
       type: 'doc',
       id: 'demo',
       label: 'Passport Discovery',

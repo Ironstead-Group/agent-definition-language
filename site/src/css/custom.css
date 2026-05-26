@@ -133,6 +133,26 @@ body {
   transition: all var(--adl-transition-normal);
 }
 
+/* Two-row navbar on desktop: logo/title/version on the primary row, section
+   navigation on the secondary row. --ifm-navbar-height is widened so sticky
+   doc sidebars and the table of contents offset below both rows. */
+@media (min-width: 997px) {
+  :root {
+    --adl-navbar-primary-height: 4rem;
+    --adl-navbar-secondary-height: 2.75rem;
+    --ifm-navbar-height: calc(
+      var(--adl-navbar-primary-height) + var(--adl-navbar-secondary-height)
+    );
+  }
+
+  .navbar {
+    height: var(--ifm-navbar-height);
+    align-items: stretch;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 .navbar__title {
   font-weight: 700;
   font-size: 1.25rem;
@@ -871,6 +891,30 @@ table tr:hover td {
   transform: translateY(-4px);
   box-shadow: var(--adl-glow-primary);
   border-color: var(--ifm-color-primary-lighter);
+}
+
+/* ============================================
+   Diagram (Excalidraw SVG) Styles
+   ============================================ */
+.adl-diagram {
+  background: #ffffff; /* white card so Excalidraw's dark strokes stay readable in dark mode */
+  padding: 1rem;
+  border-radius: var(--ifm-global-radius);
+  margin: 2rem 0;
+  overflow-x: auto; /* wide diagrams scroll instead of overflowing */
+  text-align: center;
+}
+
+.adl-diagram img {
+  max-width: 100%;
+  height: auto;
+}
+
+.adl-diagram figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--adl-text-muted);
+  text-align: center;
 }
 
 /* ============================================
