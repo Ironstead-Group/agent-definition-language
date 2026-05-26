@@ -1,0 +1,14 @@
+{
+  "id": "did:web:home.local:agents:personal-assistant",
+  "verificationMethod": [
+    {
+      "id": "did:web:home.local:agents:personal-assistant#key-1",
+      "type": "Ed25519VerificationKey2020",
+      "controller": "did:web:home.local:agents:personal-assistant",
+      "publicKeyBase64": "XS4yqvzFKbVhQ7/Y9dpQWwobgsvkZM1UkhX0BdIHHXM="
+    }
+  ],
+  "assertionMethod": [
+    "did:web:home.local:agents:personal-assistant#key-1"
+  ]
+}

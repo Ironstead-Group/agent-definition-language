@@ -1,0 +1,50 @@
+adl_spec: 0.2.0
+name: Personal Assistant
+description: A consumer AI assistant running on a local Mac Mini via OpenClaw.
+  Presents this passport when interacting with other agents.
+version: 1.0.0
+id: https://home.local/agents/personal-assistant
+data_classification:
+  sensitivity: internal
+lifecycle:
+  status: active
+  effective_date: 2026-05-04T07:09:10.352Z
+provider:
+  name: Home Lab
+  url: https://home.local
+  contact: user@home.local
+cryptographic_identity:
+  did: did:web:home.local:agents:personal-assistant
+  public_key:
+    algorithm: Ed25519
+    value: XS4yqvzFKbVhQ7/Y9dpQWwobgsvkZM1UkhX0BdIHHXM=
+permissions:
+  network:
+    allowed_hosts:
+      - agents.acme.example
+      - registry.acme.example
+    allowed_protocols:
+      - https
+    deny_private: false
+  resource_limits:
+    max_memory_mb: 1024
+    max_duration_sec: 120
+security:
+  authentication:
+    type: api_key
+    required: true
+  encryption:
+    in_transit:
+      required: true
+      min_version: "1.2"
+  attestation:
+    type: self
+    issued_at: 2026-05-04T07:09:10.352Z
+    expires_at: 2027-05-04T07:09:10.352Z
+    signature:
+      algorithm: Ed25519
+      value: b5mSPNDkRCyFzuBOKAgstcUKfqYUpK8D06iWVc6weaUPYwFqWJxny5ICVpY9_JGDrYsbyUq0otV3swASYSjVAA
+      signed_content: canonical
+metadata:
+  license: MIT
+  tags: []

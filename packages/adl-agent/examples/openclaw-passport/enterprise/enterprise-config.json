@@ -1,0 +1,63 @@
+{
+  "_comment": "OpenClaw-style enterprise configuration. The @adl-spec/openclaw-plugin loads passports, validates them, applies permissions as tool policies, and serves the well-known discovery endpoint per ADL spec §6.4. See proposals/2026-03-21-openclaw-runtime-layer.md.",
+  "plugins": [
+    {
+      "name": "@adl-spec/openclaw-plugin",
+      "config": {
+        "documents": [
+          "./agents/invoice-processor.adl.yaml",
+          "./agents/research-assistant.adl.yaml",
+          "./agents/legacy-analyzer.adl.yaml"
+        ],
+        "discovery": [],
+        "discovery_interval": 0,
+        "serve_discovery": true,
+        "mode": "enforce",
+        "verification": {
+          "require_signature": true,
+          "require_did_resolution": true,
+          "require_provider_coherence": true,
+          "trust_on_first_use": false,
+          "provider_allowlist": [
+            "agents.acme.example",
+            "trust.acme.example"
+          ]
+        }
+      }
+    }
+  ],
+  "agents": {
+    "list": [
+      {
+        "id": "invoice-processor",
+        "identity": {
+          "name": "Invoice Processor",
+          "passport": "./agents/invoice-processor.adl.yaml"
+        },
+        "model": {
+          "primary": "anthropic/claude-opus-4-7"
+        }
+      },
+      {
+        "id": "research-assistant",
+        "identity": {
+          "name": "Research Assistant",
+          "passport": "./agents/research-assistant.adl.yaml"
+        },
+        "model": {
+          "primary": "anthropic/claude-sonnet-4-6"
+        }
+      },
+      {
+        "id": "legacy-analyzer",
+        "identity": {
+          "name": "Legacy Analyzer",
+          "passport": "./agents/legacy-analyzer.adl.yaml"
+        },
+        "model": {
+          "primary": "anthropic/claude-sonnet-4-5"
+        }
+      }
+    ]
+  }
+}
