@@ -207,3 +207,6 @@ __pycache__/
 *.pyc
 *.egg-info/
 .pytest_cache/
+
+# Keys / secrets — never commit private keys
+*.pem
