@@ -1,7 +1,7 @@
 """did:web resolver.
 
 Implements the resolution procedure required by the verification proposal
-§10.3.1.3:
+§1.1.3:
 
 - ``did:web:{domain}``             → ``https://{domain}/.well-known/did.json``
 - ``did:web:{domain}:{path...}``   → ``https://{domain}/{path...}/did.json``

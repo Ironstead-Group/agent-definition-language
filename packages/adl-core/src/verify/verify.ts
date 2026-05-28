@@ -31,19 +31,19 @@ export async function verifyPassport(
   let publicKeySource: VerificationOutcome["publicKeySource"] = "none";
   let didDocumentAuthority: string | undefined;
 
-  // §10.3.1.1 Retrieval Integrity
+  // §1.1.1 Retrieval Integrity
   steps.push(checkRetrievalIntegrity(input));
   if (isBlocked(steps)) {
     return finalize(steps, input, publicKeySource, didDocumentAuthority);
   }
 
-  // §10.3.1.2 Schema Validation
+  // §1.1.2 Schema Validation
   const text = new TextDecoder().decode(input.passportBytes);
   const format = text.trimStart().startsWith("{") ? "json" : "yaml";
   const { document, errors: parseErrors } = parseADL(text, format);
   if (!document) {
     steps.push({
-      section: "10.3.1.2",
+      section: "1.1.2",
       name: "Schema validation",
       passed: false,
       severity: "block",
@@ -51,15 +51,15 @@ export async function verifyPassport(
     });
     return finalize(steps, input, publicKeySource, didDocumentAuthority);
   }
-  // §10.3.1.2 is strict schema validation only. Semantic checks like
-  // attestation expiry are handled by §10.3.1.6 — keeping these separate
+  // §1.1.2 is strict schema validation only. Semantic checks like
+  // attestation expiry are handled by §1.1.6 — keeping these separate
   // is what allows ports across languages to share a conformance vector
   // pack without baking semantic rules into every language's schema validator.
   const { valid, errors: valErrors } = validateDocument(document, {
     skipSemantic: true,
   });
   steps.push({
-    section: "10.3.1.2",
+    section: "1.1.2",
     name: "Schema validation",
     passed: valid,
     severity: "block",
@@ -69,13 +69,13 @@ export async function verifyPassport(
   });
   if (!valid) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.3 Identity Resolution
+  // §1.1.3 Identity Resolution
   const idResolution = await resolveIdentity(document, config);
   steps.push(idResolution.step);
   if (idResolution.didKey) didDocumentAuthority = idResolution.authority;
   if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.4 Public Key Cross-Check
+  // §1.1.4 Public Key Cross-Check
   const inlineKey = document.cryptographic_identity?.public_key?.value;
   const inlineAlg = document.cryptographic_identity?.public_key?.algorithm;
   if (idResolution.didKey && inlineKey) {
@@ -83,7 +83,7 @@ export async function verifyPassport(
     const valMatch = inlineKey === idResolution.didKey.value;
     const passed = algMatch && valMatch;
     steps.push({
-      section: "10.3.1.4",
+      section: "1.1.4",
       name: "Public key cross-check",
       passed,
       severity: "block",
@@ -98,7 +98,7 @@ export async function verifyPassport(
   } else if (idResolution.didKey) {
     publicKeySource = "did_resolved";
     steps.push({
-      section: "10.3.1.4",
+      section: "1.1.4",
       name: "Public key cross-check",
       passed: true,
       severity: "warn",
@@ -108,7 +108,7 @@ export async function verifyPassport(
     publicKeySource = "inline_only";
     if (!config.trustOnFirstUse && config.requireDidResolution) {
       steps.push({
-        section: "10.3.1.4",
+        section: "1.1.4",
         name: "Public key cross-check",
         passed: false,
         severity: "block",
@@ -117,7 +117,7 @@ export async function verifyPassport(
       return finalize(steps, input, publicKeySource, didDocumentAuthority);
     }
     steps.push({
-      section: "10.3.1.4",
+      section: "1.1.4",
       name: "Public key cross-check",
       passed: true,
       severity: "warn",
@@ -125,7 +125,7 @@ export async function verifyPassport(
     });
   } else {
     steps.push({
-      section: "10.3.1.4",
+      section: "1.1.4",
       name: "Public key cross-check",
       passed: false,
       severity: "block",
@@ -137,19 +137,19 @@ export async function verifyPassport(
   // Verification key: prefer DID-resolved per §10.2.3 / §10.3.4.
   const verificationKey = idResolution.didKey?.value ?? inlineKey!;
 
-  // §10.3.1.5 Signature Verification
+  // §1.1.5 Signature Verification
   steps.push(verifySignatureStep(document, verificationKey, config));
   if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.6 Temporal Validity
+  // §1.1.6 Temporal Validity
   steps.push(checkTemporalValidity(document));
   if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.7 Lifecycle Gating
+  // §1.1.7 Lifecycle Gating
   steps.push(checkLifecycle(document));
   if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.8 Provider–Identity Coherence
+  // §1.1.8 Provider–Identity Coherence
   steps.push(
     checkProviderCoherence(
       document,
@@ -160,7 +160,7 @@ export async function verifyPassport(
   );
   if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
 
-  // §10.3.1.9 Permission and Classification Compatibility
+  // §1.1.9 Permission and Classification Compatibility
   if (input.requestingAgent) {
     steps.push(checkClassificationCompat(document, input.requestingAgent));
     if (isBlocked(steps)) return finalize(steps, input, publicKeySource, didDocumentAuthority);
@@ -181,7 +181,7 @@ function isBlocked(steps: VerificationStepResult[]): boolean {
 function checkRetrievalIntegrity(input: VerifyInput): VerificationStepResult {
   if (input.retrievalChannel === "local_file") {
     return {
-      section: "10.3.1.1",
+      section: "1.1.1",
       name: "Retrieval integrity",
       passed: true,
       severity: "warn",
@@ -193,7 +193,7 @@ function checkRetrievalIntegrity(input: VerifyInput): VerificationStepResult {
     input.retrievalAuthority?.startsWith("127.0.0.1")
   ) {
     return {
-      section: "10.3.1.1",
+      section: "1.1.1",
       name: "Retrieval integrity",
       passed: true,
       severity: "warn",
@@ -202,7 +202,7 @@ function checkRetrievalIntegrity(input: VerifyInput): VerificationStepResult {
   }
   if (!input.retrievalAuthority) {
     return {
-      section: "10.3.1.1",
+      section: "1.1.1",
       name: "Retrieval integrity",
       passed: false,
       severity: "block",
@@ -210,7 +210,7 @@ function checkRetrievalIntegrity(input: VerifyInput): VerificationStepResult {
     };
   }
   return {
-    section: "10.3.1.1",
+    section: "1.1.1",
     name: "Retrieval integrity",
     passed: true,
     severity: "block",
@@ -230,7 +230,7 @@ async function resolveIdentity(
   if (!did) {
     return {
       step: {
-        section: "10.3.1.3",
+        section: "1.1.3",
         name: "Identity resolution",
         passed: !config.requireDidResolution,
         severity: config.requireDidResolution ? "block" : "warn",
@@ -241,7 +241,7 @@ async function resolveIdentity(
   if (!did.startsWith("did:web:")) {
     return {
       step: {
-        section: "10.3.1.3",
+        section: "1.1.3",
         name: "Identity resolution",
         passed: false,
         severity: "block",
@@ -256,7 +256,7 @@ async function resolveIdentity(
   if (!result.resolved || !result.key) {
     return {
       step: {
-        section: "10.3.1.3",
+        section: "1.1.3",
         name: "Identity resolution",
         passed: !config.requireDidResolution && config.trustOnFirstUse,
         severity: config.requireDidResolution ? "block" : "warn",
@@ -266,7 +266,7 @@ async function resolveIdentity(
   }
   return {
     step: {
-      section: "10.3.1.3",
+      section: "1.1.3",
       name: "Identity resolution",
       passed: true,
       severity: "block",
@@ -285,7 +285,7 @@ function verifySignatureStep(
   const sig = document.security?.attestation?.signature;
   if (!sig) {
     return {
-      section: "10.3.1.5",
+      section: "1.1.5",
       name: "Signature verification",
       passed: !config.requireSignature,
       severity: config.requireSignature ? "block" : "warn",
@@ -294,7 +294,7 @@ function verifySignatureStep(
   }
   if (sig.algorithm !== "Ed25519") {
     return {
-      section: "10.3.1.5",
+      section: "1.1.5",
       name: "Signature verification",
       passed: false,
       severity: "block",
@@ -303,7 +303,7 @@ function verifySignatureStep(
   }
   if (sig.signed_content !== "canonical") {
     return {
-      section: "10.3.1.5",
+      section: "1.1.5",
       name: "Signature verification",
       passed: false,
       severity: "block",
@@ -326,7 +326,7 @@ function verifySignatureStep(
     sig.value,
   );
   return {
-    section: "10.3.1.5",
+    section: "1.1.5",
     name: "Signature verification",
     passed: valid,
     severity: "block",
@@ -340,7 +340,7 @@ function checkTemporalValidity(document: ADLDocument): VerificationStepResult {
   const expiresAt = document.security?.attestation?.expires_at;
   if (!expiresAt) {
     return {
-      section: "10.3.1.6",
+      section: "1.1.6",
       name: "Temporal validity",
       passed: true,
       severity: "warn",
@@ -351,7 +351,7 @@ function checkTemporalValidity(document: ADLDocument): VerificationStepResult {
   const exp = Date.parse(expiresAt);
   if (isNaN(exp)) {
     return {
-      section: "10.3.1.6",
+      section: "1.1.6",
       name: "Temporal validity",
       passed: false,
       severity: "block",
@@ -360,7 +360,7 @@ function checkTemporalValidity(document: ADLDocument): VerificationStepResult {
   }
   if (exp < now) {
     return {
-      section: "10.3.1.6",
+      section: "1.1.6",
       name: "Temporal validity",
       passed: false,
       severity: "block",
@@ -370,7 +370,7 @@ function checkTemporalValidity(document: ADLDocument): VerificationStepResult {
   const daysUntilExp = (exp - now) / (1000 * 60 * 60 * 24);
   if (daysUntilExp < 30) {
     return {
-      section: "10.3.1.6",
+      section: "1.1.6",
       name: "Temporal validity",
       passed: true,
       severity: "warn",
@@ -378,7 +378,7 @@ function checkTemporalValidity(document: ADLDocument): VerificationStepResult {
     };
   }
   return {
-    section: "10.3.1.6",
+    section: "1.1.6",
     name: "Temporal validity",
     passed: true,
     severity: "block",
@@ -390,7 +390,7 @@ function checkLifecycle(document: ADLDocument): VerificationStepResult {
   const status = document.lifecycle?.status ?? "active";
   if (status === "retired") {
     return {
-      section: "10.3.1.7",
+      section: "1.1.7",
       name: "Lifecycle gating",
       passed: false,
       severity: "block",
@@ -399,7 +399,7 @@ function checkLifecycle(document: ADLDocument): VerificationStepResult {
   }
   if (status === "deprecated") {
     return {
-      section: "10.3.1.7",
+      section: "1.1.7",
       name: "Lifecycle gating",
       passed: true,
       severity: "warn",
@@ -411,7 +411,7 @@ function checkLifecycle(document: ADLDocument): VerificationStepResult {
   }
   if (status === "draft") {
     return {
-      section: "10.3.1.7",
+      section: "1.1.7",
       name: "Lifecycle gating",
       passed: false,
       severity: "block",
@@ -419,7 +419,7 @@ function checkLifecycle(document: ADLDocument): VerificationStepResult {
     };
   }
   return {
-    section: "10.3.1.7",
+    section: "1.1.7",
     name: "Lifecycle gating",
     passed: true,
     severity: "block",
@@ -440,7 +440,7 @@ function checkProviderCoherence(
 
   if (!config.requireProviderCoherence) {
     return {
-      section: "10.3.1.8",
+      section: "1.1.8",
       name: "Provider–identity coherence",
       passed: true,
       severity: "warn",
@@ -450,7 +450,7 @@ function checkProviderCoherence(
   const providerUrl = document.provider?.url;
   if (!providerUrl) {
     return {
-      section: "10.3.1.8",
+      section: "1.1.8",
       name: "Provider–identity coherence",
       passed: true,
       severity: "warn",
@@ -466,7 +466,7 @@ function checkProviderCoherence(
   })();
   if (!providerHost) {
     return {
-      section: "10.3.1.8",
+      section: "1.1.8",
       name: "Provider–identity coherence",
       passed: false,
       severity: "block",
@@ -476,7 +476,7 @@ function checkProviderCoherence(
 
   if (config.providerAllowlist.length > 0 && !config.providerAllowlist.includes(providerHost)) {
     return {
-      section: "10.3.1.8",
+      section: "1.1.8",
       name: "Provider–identity coherence",
       passed: false,
       severity: "block",
@@ -485,7 +485,7 @@ function checkProviderCoherence(
   }
 
   return {
-    section: "10.3.1.8",
+    section: "1.1.8",
     name: "Provider–identity coherence",
     passed: true,
     severity: "block",
@@ -505,7 +505,7 @@ function checkClassificationCompat(
 
   if (reqIdx < targetIdx) {
     return {
-      section: "10.3.1.9",
+      section: "1.1.9",
       name: "Permission/classification compatibility",
       passed: false,
       severity: "block",
@@ -513,7 +513,7 @@ function checkClassificationCompat(
     };
   }
   return {
-    section: "10.3.1.9",
+    section: "1.1.9",
     name: "Permission/classification compatibility",
     passed: true,
     severity: "block",
@@ -522,7 +522,7 @@ function checkClassificationCompat(
 }
 
 // ---------------------------------------------------------------------------
-// Outcome assembly (§10.3.1.10)
+// Outcome assembly (§1.1.10)
 // ---------------------------------------------------------------------------
 
 function finalize(

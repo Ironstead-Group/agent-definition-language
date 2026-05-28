@@ -2,7 +2,7 @@
  * did:web resolver.
  *
  * Implements the resolution procedure required by the verification proposal
- * §10.3.1.3 ([proposals/2026-05-03-passport-verification-procedure.md]):
+ * §1.1.3 ([proposals/2026-05-03-passport-verification-procedure.md]):
  *   - did:web:{domain}             → https://{domain}/.well-known/did.json
  *   - did:web:{domain}:{path...}   → https://{domain}/{path...}/did.json
  *
@@ -47,7 +47,7 @@ export interface DIDResolutionResult {
   resolved: boolean;
   key?: ResolvedKey;
   error?: string;
-  /** Domain authority that served the DID Document (for §10.3.1.8 coherence checks) */
+  /** Domain authority that served the DID Document (for §1.1.8 coherence checks) */
   authority?: string;
 }
 

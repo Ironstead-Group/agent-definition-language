@@ -207,7 +207,7 @@ function addVector(v: TestVector) {
     id: "001-valid-self-signed-tofu",
     description:
       "Self-signed passport with inline Ed25519 key passes verification under Trust-On-First-Use (no DID resolution).",
-    spec_sections: ["10.3.1.1", "10.3.1.2", "10.3.1.4", "10.3.1.5", "10.3.1.6", "10.3.1.7"],
+    spec_sections: ["1.1.1", "1.1.2", "1.1.4", "1.1.5", "1.1.6", "1.1.7"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -218,12 +218,12 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.1", passed: true, severity: "warn" },
-        { section: "10.3.1.2", passed: true, severity: "block" },
-        { section: "10.3.1.4", passed: true, severity: "warn" },
-        { section: "10.3.1.5", passed: true, severity: "block" },
-        { section: "10.3.1.6", passed: true, severity: "block" },
-        { section: "10.3.1.7", passed: true, severity: "block" },
+        { section: "1.1.1", passed: true, severity: "warn" },
+        { section: "1.1.2", passed: true, severity: "block" },
+        { section: "1.1.4", passed: true, severity: "warn" },
+        { section: "1.1.5", passed: true, severity: "block" },
+        { section: "1.1.6", passed: true, severity: "block" },
+        { section: "1.1.7", passed: true, severity: "block" },
       ],
     },
   });
@@ -236,7 +236,7 @@ function addVector(v: TestVector) {
     id: "002-valid-did-resolved-cross-checked",
     description:
       "Passport with did:web identifier resolves to a DID Document whose key matches the inline public key. Verification succeeds with cross_checked key source.",
-    spec_sections: ["10.3.1.3", "10.3.1.4"],
+    spec_sections: ["1.1.3", "1.1.4"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -253,9 +253,9 @@ function addVector(v: TestVector) {
       public_key_source: "cross_checked",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.3", passed: true, severity: "block" },
-        { section: "10.3.1.4", passed: true, severity: "block" },
-        { section: "10.3.1.5", passed: true, severity: "block" },
+        { section: "1.1.3", passed: true, severity: "block" },
+        { section: "1.1.4", passed: true, severity: "block" },
+        { section: "1.1.5", passed: true, severity: "block" },
       ],
     },
   });
@@ -267,8 +267,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "003-retrieval-local-file",
     description:
-      "Passport loaded from a local file passes §10.3.1.1 with a warn-level outcome (provenance recorded; no transport security).",
-    spec_sections: ["10.3.1.1"],
+      "Passport loaded from a local file passes §1.1.1 with a warn-level outcome (provenance recorded; no transport security).",
+    spec_sections: ["1.1.1"],
     input: {
       passport: signed,
       retrieval: { channel: "local_file" },
@@ -278,7 +278,7 @@ function addVector(v: TestVector) {
       verified: true,
       public_key_source: "inline_only",
       blocked_at_section: null,
-      step_outcomes: [{ section: "10.3.1.1", passed: true, severity: "warn" }],
+      step_outcomes: [{ section: "1.1.1", passed: true, severity: "warn" }],
     },
   });
 }
@@ -289,8 +289,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "004-retrieval-missing-authority",
     description:
-      "Passport retrieved over network without a recorded authority MUST fail §10.3.1.1 — no trust anchor can be established.",
-    spec_sections: ["10.3.1.1"],
+      "Passport retrieved over network without a recorded authority MUST fail §1.1.1 — no trust anchor can be established.",
+    spec_sections: ["1.1.1"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: null },
@@ -299,8 +299,8 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.1",
-      step_outcomes: [{ section: "10.3.1.1", passed: false, severity: "block" }],
+      blocked_at_section: "1.1.1",
+      step_outcomes: [{ section: "1.1.1", passed: false, severity: "block" }],
     },
   });
 }
@@ -316,7 +316,7 @@ function addVector(v: TestVector) {
     id: "010-schema-missing-required-field",
     description:
       "Passport missing the required `version` field MUST fail schema validation at §10.3.2.",
-    spec_sections: ["10.3.1.2"],
+    spec_sections: ["1.1.2"],
     input: {
       passport: broken,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -325,10 +325,10 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.2",
+      blocked_at_section: "1.1.2",
       step_outcomes: [
-        { section: "10.3.1.1", passed: true, severity: "warn" },
-        { section: "10.3.1.2", passed: false, severity: "block" },
+        { section: "1.1.1", passed: true, severity: "warn" },
+        { section: "1.1.2", passed: false, severity: "block" },
       ],
     },
   });
@@ -344,7 +344,7 @@ function addVector(v: TestVector) {
     id: "011-schema-invalid-sensitivity-enum",
     description:
       "Passport with non-enum `data_classification.sensitivity` value MUST fail schema validation.",
-    spec_sections: ["10.3.1.2"],
+    spec_sections: ["1.1.2"],
     input: {
       passport: broken,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -353,9 +353,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.2",
+      blocked_at_section: "1.1.2",
       step_outcomes: [
-        { section: "10.3.1.2", passed: false, severity: "block" },
+        { section: "1.1.2", passed: false, severity: "block" },
       ],
     },
   });
@@ -368,7 +368,7 @@ function addVector(v: TestVector) {
     id: "020-did-resolution-404",
     description:
       "DID Document fetch returns 404. With requireDidResolution=true and trustOnFirstUse=false, the verifier MUST block at §10.3.3.",
-    spec_sections: ["10.3.1.3"],
+    spec_sections: ["1.1.3"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -383,9 +383,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.3",
+      blocked_at_section: "1.1.3",
       step_outcomes: [
-        { section: "10.3.1.3", passed: false, severity: "block" },
+        { section: "1.1.3", passed: false, severity: "block" },
       ],
     },
   });
@@ -403,7 +403,7 @@ function addVector(v: TestVector) {
     id: "021-did-document-no-assertion-method",
     description:
       "DID Document has no resolvable assertionMethod public key. With requireDidResolution=true, MUST block at §10.3.3.",
-    spec_sections: ["10.3.1.3"],
+    spec_sections: ["1.1.3"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -418,9 +418,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.3",
+      blocked_at_section: "1.1.3",
       step_outcomes: [
-        { section: "10.3.1.3", passed: false, severity: "block" },
+        { section: "1.1.3", passed: false, severity: "block" },
       ],
     },
   });
@@ -437,7 +437,7 @@ function addVector(v: TestVector) {
     id: "022-did-method-unsupported",
     description:
       "Passport declares a non-did:web identifier. The reference implementation only supports did:web; verification MUST block at §10.3.3.",
-    spec_sections: ["10.3.1.3"],
+    spec_sections: ["1.1.3"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -446,9 +446,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.3",
+      blocked_at_section: "1.1.3",
       step_outcomes: [
-        { section: "10.3.1.3", passed: false, severity: "block" },
+        { section: "1.1.3", passed: false, severity: "block" },
       ],
     },
   });
@@ -462,7 +462,7 @@ function addVector(v: TestVector) {
     id: "030-key-mismatch-inline-vs-did",
     description:
       "Inline public_key does not match the key resolved from the DID Document. MUST block at §10.3.4.",
-    spec_sections: ["10.3.1.4"],
+    spec_sections: ["1.1.4"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -477,10 +477,10 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "none",
-      blocked_at_section: "10.3.1.4",
+      blocked_at_section: "1.1.4",
       step_outcomes: [
-        { section: "10.3.1.3", passed: true, severity: "block" },
-        { section: "10.3.1.4", passed: false, severity: "block" },
+        { section: "1.1.3", passed: true, severity: "block" },
+        { section: "1.1.4", passed: false, severity: "block" },
       ],
     },
   });
@@ -498,7 +498,7 @@ function addVector(v: TestVector) {
     id: "040-signature-tampered-post-signing",
     description:
       "Passport modified after signing (added allowed_host). The signature MUST fail verification at §10.3.5.",
-    spec_sections: ["10.3.1.5"],
+    spec_sections: ["1.1.5"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -507,9 +507,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.5",
+      blocked_at_section: "1.1.5",
       step_outcomes: [
-        { section: "10.3.1.5", passed: false, severity: "block" },
+        { section: "1.1.5", passed: false, severity: "block" },
       ],
     },
   });
@@ -522,7 +522,7 @@ function addVector(v: TestVector) {
     id: "041-signature-missing-when-required",
     description:
       "Passport has no signature; requireSignature=true MUST block at §10.3.5.",
-    spec_sections: ["10.3.1.5"],
+    spec_sections: ["1.1.5"],
     input: {
       passport: unsigned,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -531,9 +531,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.5",
+      blocked_at_section: "1.1.5",
       step_outcomes: [
-        { section: "10.3.1.5", passed: false, severity: "block" },
+        { section: "1.1.5", passed: false, severity: "block" },
       ],
     },
   });
@@ -547,8 +547,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "042-signature-wrong-key",
     description:
-      "Passport signed by a key that does not match the inline public_key. MUST block at §10.3.1.5 (signature does not verify).",
-    spec_sections: ["10.3.1.5"],
+      "Passport signed by a key that does not match the inline public_key. MUST block at §1.1.5 (signature does not verify).",
+    spec_sections: ["1.1.5"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -557,15 +557,15 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.5",
+      blocked_at_section: "1.1.5",
       step_outcomes: [
-        { section: "10.3.1.5", passed: false, severity: "block" },
+        { section: "1.1.5", passed: false, severity: "block" },
       ],
     },
   });
 }
 
-// 050 — Attestation expired (caught at §10.3.1.6 temporal validity)
+// 050 — Attestation expired (caught at §1.1.6 temporal validity)
 {
   const expired = signPassport(
     buildPassport(consumerInput({ expiresAt: "2024-01-01T00:00:00.000Z" })),
@@ -574,8 +574,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "050-attestation-expired",
     description:
-      "Passport with expires_at in the past. §10.3.1.2 is structural-only (passes), and §10.3.1.6 catches the expiry. This separation is what allows language ports to share the conformance pack — semantic rules are not baked into per-language schema validators.",
-    spec_sections: ["10.3.1.6"],
+      "Passport with expires_at in the past. §1.1.2 is structural-only (passes), and §1.1.6 catches the expiry. This separation is what allows language ports to share the conformance pack — semantic rules are not baked into per-language schema validators.",
+    spec_sections: ["1.1.6"],
     input: {
       passport: expired,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -584,11 +584,11 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.6",
+      blocked_at_section: "1.1.6",
       step_outcomes: [
-        { section: "10.3.1.2", passed: true, severity: "block" },
-        { section: "10.3.1.5", passed: true, severity: "block" },
-        { section: "10.3.1.6", passed: false, severity: "block" },
+        { section: "1.1.2", passed: true, severity: "block" },
+        { section: "1.1.5", passed: true, severity: "block" },
+        { section: "1.1.6", passed: false, severity: "block" },
       ],
     },
   });
@@ -598,10 +598,10 @@ function addVector(v: TestVector) {
 {
   // Compute a date 10 days from now to force the warn branch deterministically.
   // Note: this vector's "near expiry" status is time-relative. The expected
-  // outcome captures the structural truth: §10.3.1.6 must produce a warn
+  // outcome captures the structural truth: §1.1.6 must produce a warn
   // result (passed=true, severity=warn) when expiry is within 30 days.
   // Implementations evaluating this vector at a date AFTER the embedded
-  // expires_at will see §10.3.1.6 fail instead — vectors with relative
+  // expires_at will see §1.1.6 fail instead — vectors with relative
   // semantics are inherently time-bounded. Regenerate when stale.
   const tenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
   const signed = signPassport(
@@ -611,8 +611,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "051-attestation-near-expiry-warn",
     description:
-      "Passport with expires_at within 30 days produces a §10.3.1.6 warn-level outcome (passed=true, severity=warn). Time-relative — regenerate when stale.",
-    spec_sections: ["10.3.1.6"],
+      "Passport with expires_at within 30 days produces a §1.1.6 warn-level outcome (passed=true, severity=warn). Time-relative — regenerate when stale.",
+    spec_sections: ["1.1.6"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -623,7 +623,7 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.6", passed: true, severity: "warn" },
+        { section: "1.1.6", passed: true, severity: "warn" },
       ],
     },
   });
@@ -642,7 +642,7 @@ function addVector(v: TestVector) {
     id: "060-lifecycle-retired",
     description:
       "Passport with lifecycle.status='retired' MUST be blocked at §10.3.7. Successor URI is reported in the detail.",
-    spec_sections: ["10.3.1.7"],
+    spec_sections: ["1.1.7"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -651,9 +651,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.7",
+      blocked_at_section: "1.1.7",
       step_outcomes: [
-        { section: "10.3.1.7", passed: false, severity: "block" },
+        { section: "1.1.7", passed: false, severity: "block" },
       ],
     },
   });
@@ -672,8 +672,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "061-lifecycle-deprecated-warn",
     description:
-      "Passport with lifecycle.status='deprecated' produces a §10.3.1.7 warn outcome but still verifies overall.",
-    spec_sections: ["10.3.1.7"],
+      "Passport with lifecycle.status='deprecated' produces a §1.1.7 warn outcome but still verifies overall.",
+    spec_sections: ["1.1.7"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -684,7 +684,7 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.7", passed: true, severity: "warn" },
+        { section: "1.1.7", passed: true, severity: "warn" },
       ],
     },
   });
@@ -698,8 +698,8 @@ function addVector(v: TestVector) {
   addVector({
     id: "062-lifecycle-draft-blocked",
     description:
-      "Passport with lifecycle.status='draft' MUST be blocked at §10.3.1.7 — production runtimes refuse draft agents.",
-    spec_sections: ["10.3.1.7"],
+      "Passport with lifecycle.status='draft' MUST be blocked at §1.1.7 — production runtimes refuse draft agents.",
+    spec_sections: ["1.1.7"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -708,9 +708,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.7",
+      blocked_at_section: "1.1.7",
       step_outcomes: [
-        { section: "10.3.1.7", passed: false, severity: "block" },
+        { section: "1.1.7", passed: false, severity: "block" },
       ],
     },
   });
@@ -723,7 +723,7 @@ function addVector(v: TestVector) {
     id: "070-provider-not-allowlisted",
     description:
       "requireProviderCoherence=true with a provider_allowlist that does not include the passport's provider host MUST block at §10.3.8.",
-    spec_sections: ["10.3.1.8"],
+    spec_sections: ["1.1.8"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -735,9 +735,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.8",
+      blocked_at_section: "1.1.8",
       step_outcomes: [
-        { section: "10.3.1.8", passed: false, severity: "block" },
+        { section: "1.1.8", passed: false, severity: "block" },
       ],
     },
   });
@@ -750,7 +750,7 @@ function addVector(v: TestVector) {
     id: "071-provider-allowlisted",
     description:
       "requireProviderCoherence=true with the passport's provider host on the allowlist MUST pass §10.3.8.",
-    spec_sections: ["10.3.1.8"],
+    spec_sections: ["1.1.8"],
     input: {
       passport: signed,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -764,7 +764,7 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.8", passed: true, severity: "block" },
+        { section: "1.1.8", passed: true, severity: "block" },
       ],
     },
   });
@@ -785,7 +785,7 @@ function addVector(v: TestVector) {
     id: "080-classification-requesting-too-low",
     description:
       "Requesting agent's data_classification.sensitivity (public) is lower than the target agent's (confidential). MUST block at §10.3.9.",
-    spec_sections: ["10.3.1.9"],
+    spec_sections: ["1.1.9"],
     input: {
       passport: target,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -795,9 +795,9 @@ function addVector(v: TestVector) {
     expected: {
       verified: false,
       public_key_source: "inline_only",
-      blocked_at_section: "10.3.1.9",
+      blocked_at_section: "1.1.9",
       step_outcomes: [
-        { section: "10.3.1.9", passed: false, severity: "block" },
+        { section: "1.1.9", passed: false, severity: "block" },
       ],
     },
   });
@@ -817,7 +817,7 @@ function addVector(v: TestVector) {
     id: "081-classification-requesting-equal",
     description:
       "Requesting agent's classification equals the target's. MUST pass §10.3.9.",
-    spec_sections: ["10.3.1.9"],
+    spec_sections: ["1.1.9"],
     input: {
       passport: target,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -829,7 +829,7 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.9", passed: true, severity: "block" },
+        { section: "1.1.9", passed: true, severity: "block" },
       ],
     },
   });
@@ -849,7 +849,7 @@ function addVector(v: TestVector) {
     id: "082-classification-requesting-higher",
     description:
       "Requesting agent's classification (restricted) exceeds the target's (public). MUST pass §10.3.9.",
-    spec_sections: ["10.3.1.9"],
+    spec_sections: ["1.1.9"],
     input: {
       passport: target,
       retrieval: { channel: "header", authority: "localhost:3000" },
@@ -861,7 +861,7 @@ function addVector(v: TestVector) {
       public_key_source: "inline_only",
       blocked_at_section: null,
       step_outcomes: [
-        { section: "10.3.1.9", passed: true, severity: "block" },
+        { section: "1.1.9", passed: true, severity: "block" },
       ],
     },
   });

@@ -200,7 +200,7 @@ describe("verifyPassport (§10.3 procedure)", () => {
     expect(outcome.summary).toContain("verified");
   });
 
-  test("blocks at §10.3.1.5 when payload tampered after signing", async () => {
+  test("blocks at §1.1.5 when payload tampered after signing", async () => {
     const { signed } = makeSignedPassport();
     // Tamper: add a host to allowed_hosts AFTER signing
     signed.permissions!.network!.allowed_hosts = [
@@ -217,10 +217,10 @@ describe("verifyPassport (§10.3 procedure)", () => {
       configWith(),
     );
     expect(outcome.verified).toBe(false);
-    expect(outcome.summary).toContain("§10.3.1.5");
+    expect(outcome.summary).toContain("§1.1.5");
   });
 
-  test("blocks at §10.3.1.7 when lifecycle is retired", async () => {
+  test("blocks at §1.1.7 when lifecycle is retired", async () => {
     const { publicKey, privateKeyPem } = generateKeyPair();
     const unsigned = buildPassport({ ...baseInput, publicKey });
     unsigned.lifecycle = { ...unsigned.lifecycle!, status: "retired" };
@@ -235,12 +235,12 @@ describe("verifyPassport (§10.3 procedure)", () => {
       configWith(),
     );
     expect(outcome.verified).toBe(false);
-    expect(outcome.summary).toContain("§10.3.1.7");
+    expect(outcome.summary).toContain("§1.1.7");
   });
 
-  test("blocks when classification of requesting agent is too low (§10.3.1.9)", async () => {
+  test("blocks when classification of requesting agent is too low (§1.1.9)", async () => {
     // Build a target that's confidential and re-sign it (mutating after
-    // signing would break §10.3.1.5 first).
+    // signing would break §1.1.5 first).
     const { publicKey, privateKeyPem } = generateKeyPair();
     const unsignedTarget = buildPassport({
       ...baseInput,
@@ -270,10 +270,10 @@ describe("verifyPassport (§10.3 procedure)", () => {
       configWith(),
     );
     expect(outcome.verified).toBe(false);
-    expect(outcome.summary).toContain("§10.3.1.9");
+    expect(outcome.summary).toContain("§1.1.9");
   });
 
-  test("blocks at §10.3.1.4 when inline key disagrees with DID-resolved key", async () => {
+  test("blocks at §1.1.4 when inline key disagrees with DID-resolved key", async () => {
     const { publicKey, privateKeyPem } = generateKeyPair();
     const unsigned = buildPassport({ ...baseInput, publicKey });
     const signed = signPassport(unsigned, privateKeyPem);
@@ -304,13 +304,13 @@ describe("verifyPassport (§10.3 procedure)", () => {
         }),
       );
       expect(outcome.verified).toBe(false);
-      expect(outcome.summary).toContain("§10.3.1.4");
+      expect(outcome.summary).toContain("§1.1.4");
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
 
-  test("provider allowlist blocks unknown providers (§10.3.1.8)", async () => {
+  test("provider allowlist blocks unknown providers (§1.1.8)", async () => {
     const { signed } = makeSignedPassport();
     const bytes = new TextEncoder().encode(yamlStringify(signed));
     const outcome = await verifyPassport(
@@ -325,6 +325,6 @@ describe("verifyPassport (§10.3 procedure)", () => {
       }),
     );
     expect(outcome.verified).toBe(false);
-    expect(outcome.summary).toContain("§10.3.1.8");
+    expect(outcome.summary).toContain("§1.1.8");
   });
 });

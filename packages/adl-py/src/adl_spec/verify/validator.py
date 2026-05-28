@@ -1,9 +1,9 @@
 """Schema validation for ADL passports.
 
 Loads the canonical JSON Schema from ``versions/0.2.0/schema.json`` and
-validates passports against it. The §10.3.1.2 step in the verification
+validates passports against it. The §1.1.2 step in the verification
 procedure runs *strict schema-only* validation — semantic checks like
-attestation expiry are handled by §10.3.1.6, not here.
+attestation expiry are handled by §1.1.6, not here.
 
 This is the clean separation that lets the Python and TypeScript ports
 share the same conformance vector pack.
@@ -80,7 +80,7 @@ def validate_document(document: dict[str, Any]) -> ValidationResult:
 def _translate_error(err: ValidationError) -> SchemaError:
     """Translate a jsonschema error to an ADL-style error code.
 
-    The conformance vector pack only asserts pass/fail at the §10.3.1.2
+    The conformance vector pack only asserts pass/fail at the §1.1.2
     step, not specific error codes — so any reasonable mapping works.
     Rough mapping of validator name to ADL error code family:
         required → ADL-1001 (missing required member)

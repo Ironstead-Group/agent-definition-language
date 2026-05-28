@@ -36,7 +36,7 @@ class TrustAnchor:
 
 @dataclass
 class VerificationOutcome:
-    """Aggregate outcome of running the verification procedure (§10.3.1.10)."""
+    """Aggregate outcome of running the verification procedure (§1.1.10)."""
 
     verified: bool
     steps: list[VerificationStepResult]

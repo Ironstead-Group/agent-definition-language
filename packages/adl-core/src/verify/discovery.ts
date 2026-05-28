@@ -4,7 +4,7 @@
  *   GET {baseUrl}/.well-known/adl-agents → DiscoveryDocument
  *   GET {agent.adl_document}             → ADL passport (YAML or JSON)
  *
- * Per the verification proposal §10.3.1.1, retrieval over the discovery
+ * Per the verification proposal §1.1.1, retrieval over the discovery
  * endpoint establishes a starting trust anchor (the discovery domain's
  * TLS authority) for the listed agents. The fetched results carry the
  * authority forward so downstream verification can use it.
@@ -31,9 +31,9 @@ export interface DiscoveryDocument {
 export interface DiscoveredPassport {
   entry: DiscoveryAgent;
   passport: ADLDocument;
-  /** Raw bytes as served, for canonical-bytes verification (§10.3.1.3) */
+  /** Raw bytes as served, for canonical-bytes verification (§1.1.3) */
   rawBytes: Uint8Array;
-  /** Domain authority that served the discovery document (§10.3.1.1) */
+  /** Domain authority that served the discovery document (§1.1.1) */
   discoveryAuthority: string;
 }
 

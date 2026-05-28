@@ -11,7 +11,7 @@ import type { ADLDocument } from "../types/document.js";
 export type EnforcementMode = "enforce" | "audit" | "permissive";
 
 export interface VerificationStepResult {
-  /** Spec section this step enforces (e.g. "10.3.1.1") */
+  /** Spec section this step enforces (e.g. "1.1.1") */
   section: string;
   name: string;
   passed: boolean;
@@ -51,7 +51,7 @@ export interface VerifyConfig {
   didLocalOverrides: Record<string, string>;
   /**
    * Provider domain allowlist. When non-empty, the provider URL authority
-   * must match one of these entries (§10.3.1.8).
+   * must match one of these entries (§1.1.8).
    */
   providerAllowlist: string[];
 }
@@ -78,8 +78,8 @@ export interface VerifyInput {
   retrievalChannel: "discovery" | "direct_url" | "header" | "local_file";
   /** TLS authority used for retrieval (host:port) */
   retrievalAuthority?: string;
-  /** Discovery domain authority if retrieved via discovery (§10.3.1.1) */
+  /** Discovery domain authority if retrieved via discovery (§1.1.1) */
   discoveryAuthority?: string;
-  /** When invoking the agent, the requesting agent's own passport (for §10.3.1.9) */
+  /** When invoking the agent, the requesting agent's own passport (for §1.1.9) */
   requestingAgent?: ADLDocument;
 }

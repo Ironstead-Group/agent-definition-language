@@ -42,19 +42,19 @@ def verify_passport(
     public_key_source: PublicKeySource = "none"
     did_document_authority: Optional[str] = None
 
-    # §10.3.1.1 Retrieval Integrity
+    # §1.1.1 Retrieval Integrity
     steps.append(_check_retrieval_integrity(input))
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.2 Schema Validation
+    # §1.1.2 Schema Validation
     text = input.passport_bytes.decode("utf-8")
     fmt = "json" if text.lstrip().startswith("{") else "yaml"
     document, parse_errors = parse_adl(text, fmt)
     if document is None:
         steps.append(
             VerificationStepResult(
-                section="10.3.1.2",
+                section="1.1.2",
                 name="Schema validation",
                 passed=False,
                 severity="block",
@@ -66,7 +66,7 @@ def verify_passport(
     val_result = validate_document(document)
     steps.append(
         VerificationStepResult(
-            section="10.3.1.2",
+            section="1.1.2",
             name="Schema validation",
             passed=val_result.valid,
             severity="block",
@@ -81,7 +81,7 @@ def verify_passport(
     if not val_result.valid:
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.3 Identity Resolution
+    # §1.1.3 Identity Resolution
     id_result_step, did_key, did_authority = _resolve_identity(
         document, config, fetch_impl
     )
@@ -91,7 +91,7 @@ def verify_passport(
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.4 Public Key Cross-Check
+    # §1.1.4 Public Key Cross-Check
     crypto_id = document.get("cryptographic_identity") or {}
     public_key_obj = crypto_id.get("public_key") or {}
     inline_key = public_key_obj.get("value")
@@ -109,7 +109,7 @@ def verify_passport(
             detail = "Public key bytes differ between inline and DID Document"
         steps.append(
             VerificationStepResult(
-                section="10.3.1.4",
+                section="1.1.4",
                 name="Public key cross-check",
                 passed=passed,
                 severity="block",
@@ -123,7 +123,7 @@ def verify_passport(
         public_key_source = "did_resolved"
         steps.append(
             VerificationStepResult(
-                section="10.3.1.4",
+                section="1.1.4",
                 name="Public key cross-check",
                 passed=True,
                 severity="warn",
@@ -135,7 +135,7 @@ def verify_passport(
         if not config.trust_on_first_use and config.require_did_resolution:
             steps.append(
                 VerificationStepResult(
-                    section="10.3.1.4",
+                    section="1.1.4",
                     name="Public key cross-check",
                     passed=False,
                     severity="block",
@@ -145,7 +145,7 @@ def verify_passport(
             return _finalize(steps, input, public_key_source, did_document_authority)
         steps.append(
             VerificationStepResult(
-                section="10.3.1.4",
+                section="1.1.4",
                 name="Public key cross-check",
                 passed=True,
                 severity="warn",
@@ -155,7 +155,7 @@ def verify_passport(
     else:
         steps.append(
             VerificationStepResult(
-                section="10.3.1.4",
+                section="1.1.4",
                 name="Public key cross-check",
                 passed=False,
                 severity="block",
@@ -166,27 +166,27 @@ def verify_passport(
 
     verification_key = (did_key["value"] if did_key else inline_key)
 
-    # §10.3.1.5 Signature Verification
+    # §1.1.5 Signature Verification
     steps.append(_verify_signature_step(document, verification_key, config))
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.6 Temporal Validity
+    # §1.1.6 Temporal Validity
     steps.append(_check_temporal_validity(document))
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.7 Lifecycle Gating
+    # §1.1.7 Lifecycle Gating
     steps.append(_check_lifecycle(document))
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.8 Provider–Identity Coherence
+    # §1.1.8 Provider–Identity Coherence
     steps.append(_check_provider_coherence(document, config))
     if _is_blocked(steps):
         return _finalize(steps, input, public_key_source, did_document_authority)
 
-    # §10.3.1.9 Permission/Classification Compatibility
+    # §1.1.9 Permission/Classification Compatibility
     if input.requesting_agent is not None:
         steps.append(_check_classification_compat(document, input.requesting_agent))
         if _is_blocked(steps):
@@ -208,7 +208,7 @@ def _is_blocked(steps: list[VerificationStepResult]) -> bool:
 def _check_retrieval_integrity(input: VerifyInput) -> VerificationStepResult:
     if input.retrieval_channel == "local_file":
         return VerificationStepResult(
-            section="10.3.1.1",
+            section="1.1.1",
             name="Retrieval integrity",
             passed=True,
             severity="warn",
@@ -217,7 +217,7 @@ def _check_retrieval_integrity(input: VerifyInput) -> VerificationStepResult:
     auth = input.retrieval_authority
     if auth and (auth.startswith("localhost:") or auth.startswith("127.0.0.1")):
         return VerificationStepResult(
-            section="10.3.1.1",
+            section="1.1.1",
             name="Retrieval integrity",
             passed=True,
             severity="warn",
@@ -225,14 +225,14 @@ def _check_retrieval_integrity(input: VerifyInput) -> VerificationStepResult:
         )
     if not auth:
         return VerificationStepResult(
-            section="10.3.1.1",
+            section="1.1.1",
             name="Retrieval integrity",
             passed=False,
             severity="block",
             detail="No retrieval authority recorded — cannot establish trust anchor",
         )
     return VerificationStepResult(
-        section="10.3.1.1",
+        section="1.1.1",
         name="Retrieval integrity",
         passed=True,
         severity="block",
@@ -250,7 +250,7 @@ def _resolve_identity(
     if not did:
         return (
             VerificationStepResult(
-                section="10.3.1.3",
+                section="1.1.3",
                 name="Identity resolution",
                 passed=not config.require_did_resolution,
                 severity="block" if config.require_did_resolution else "warn",
@@ -262,7 +262,7 @@ def _resolve_identity(
     if not did.startswith("did:web:"):
         return (
             VerificationStepResult(
-                section="10.3.1.3",
+                section="1.1.3",
                 name="Identity resolution",
                 passed=False,
                 severity="block",
@@ -280,7 +280,7 @@ def _resolve_identity(
     if not result.resolved or result.key is None:
         return (
             VerificationStepResult(
-                section="10.3.1.3",
+                section="1.1.3",
                 name="Identity resolution",
                 passed=(not config.require_did_resolution and config.trust_on_first_use),
                 severity="block" if config.require_did_resolution else "warn",
@@ -291,7 +291,7 @@ def _resolve_identity(
         )
     return (
         VerificationStepResult(
-            section="10.3.1.3",
+            section="1.1.3",
             name="Identity resolution",
             passed=True,
             severity="block",
@@ -308,7 +308,7 @@ def _verify_signature_step(
     sig = (document.get("security") or {}).get("attestation", {}).get("signature")
     if sig is None:
         return VerificationStepResult(
-            section="10.3.1.5",
+            section="1.1.5",
             name="Signature verification",
             passed=not config.require_signature,
             severity="block" if config.require_signature else "warn",
@@ -316,7 +316,7 @@ def _verify_signature_step(
         )
     if sig.get("algorithm") != "Ed25519":
         return VerificationStepResult(
-            section="10.3.1.5",
+            section="1.1.5",
             name="Signature verification",
             passed=False,
             severity="block",
@@ -324,7 +324,7 @@ def _verify_signature_step(
         )
     if sig.get("signed_content") != "canonical":
         return VerificationStepResult(
-            section="10.3.1.5",
+            section="1.1.5",
             name="Signature verification",
             passed=False,
             severity="block",
@@ -337,7 +337,7 @@ def _verify_signature_step(
     canonical = jcs_canonicalize(clone)
     valid = verify_canonical(public_key_base64, canonical.encode("utf-8"), sig["value"])
     return VerificationStepResult(
-        section="10.3.1.5",
+        section="1.1.5",
         name="Signature verification",
         passed=valid,
         severity="block",
@@ -353,7 +353,7 @@ def _check_temporal_validity(document: dict[str, Any]) -> VerificationStepResult
     expires_at = (document.get("security") or {}).get("attestation", {}).get("expires_at")
     if expires_at is None:
         return VerificationStepResult(
-            section="10.3.1.6",
+            section="1.1.6",
             name="Temporal validity",
             passed=True,
             severity="warn",
@@ -363,7 +363,7 @@ def _check_temporal_validity(document: dict[str, Any]) -> VerificationStepResult
         exp_dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
     except ValueError:
         return VerificationStepResult(
-            section="10.3.1.6",
+            section="1.1.6",
             name="Temporal validity",
             passed=False,
             severity="block",
@@ -372,7 +372,7 @@ def _check_temporal_validity(document: dict[str, Any]) -> VerificationStepResult
     now = datetime.now(timezone.utc)
     if exp_dt < now:
         return VerificationStepResult(
-            section="10.3.1.6",
+            section="1.1.6",
             name="Temporal validity",
             passed=False,
             severity="block",
@@ -381,14 +381,14 @@ def _check_temporal_validity(document: dict[str, Any]) -> VerificationStepResult
     days_until = (exp_dt - now).total_seconds() / 86400
     if days_until < 30:
         return VerificationStepResult(
-            section="10.3.1.6",
+            section="1.1.6",
             name="Temporal validity",
             passed=True,
             severity="warn",
             detail=f"Attestation expires in {int(days_until)} days (warn threshold: 30)",
         )
     return VerificationStepResult(
-        section="10.3.1.6",
+        section="1.1.6",
         name="Temporal validity",
         passed=True,
         severity="block",
@@ -402,7 +402,7 @@ def _check_lifecycle(document: dict[str, Any]) -> VerificationStepResult:
     if status == "retired":
         successor = lifecycle.get("successor", "(none declared)")
         return VerificationStepResult(
-            section="10.3.1.7",
+            section="1.1.7",
             name="Lifecycle gating",
             passed=False,
             severity="block",
@@ -415,7 +415,7 @@ def _check_lifecycle(document: dict[str, Any]) -> VerificationStepResult:
         if lifecycle.get("successor"):
             parts.append(f"— successor: {lifecycle['successor']}")
         return VerificationStepResult(
-            section="10.3.1.7",
+            section="1.1.7",
             name="Lifecycle gating",
             passed=True,
             severity="warn",
@@ -423,14 +423,14 @@ def _check_lifecycle(document: dict[str, Any]) -> VerificationStepResult:
         )
     if status == "draft":
         return VerificationStepResult(
-            section="10.3.1.7",
+            section="1.1.7",
             name="Lifecycle gating",
             passed=False,
             severity="block",
             detail="Agent is draft — production runtimes MUST refuse",
         )
     return VerificationStepResult(
-        section="10.3.1.7",
+        section="1.1.7",
         name="Lifecycle gating",
         passed=True,
         severity="block",
@@ -443,7 +443,7 @@ def _check_provider_coherence(
 ) -> VerificationStepResult:
     if not config.require_provider_coherence:
         return VerificationStepResult(
-            section="10.3.1.8",
+            section="1.1.8",
             name="Provider–identity coherence",
             passed=True,
             severity="warn",
@@ -453,7 +453,7 @@ def _check_provider_coherence(
     provider_url = provider.get("url")
     if not provider_url:
         return VerificationStepResult(
-            section="10.3.1.8",
+            section="1.1.8",
             name="Provider–identity coherence",
             passed=True,
             severity="warn",
@@ -465,7 +465,7 @@ def _check_provider_coherence(
         provider_host = None
     if not provider_host:
         return VerificationStepResult(
-            section="10.3.1.8",
+            section="1.1.8",
             name="Provider–identity coherence",
             passed=False,
             severity="block",
@@ -473,14 +473,14 @@ def _check_provider_coherence(
         )
     if config.provider_allowlist and provider_host not in config.provider_allowlist:
         return VerificationStepResult(
-            section="10.3.1.8",
+            section="1.1.8",
             name="Provider–identity coherence",
             passed=False,
             severity="block",
             detail=f"Provider {provider_host} not on allowlist: [{', '.join(config.provider_allowlist)}]",
         )
     return VerificationStepResult(
-        section="10.3.1.8",
+        section="1.1.8",
         name="Provider–identity coherence",
         passed=True,
         severity="block",
@@ -496,7 +496,7 @@ def _check_classification_compat(
     req_sens = (requesting.get("data_classification") or {}).get("sensitivity")
     if target_sens not in order or req_sens not in order:
         return VerificationStepResult(
-            section="10.3.1.9",
+            section="1.1.9",
             name="Permission/classification compatibility",
             passed=False,
             severity="block",
@@ -504,14 +504,14 @@ def _check_classification_compat(
         )
     if order.index(req_sens) < order.index(target_sens):
         return VerificationStepResult(
-            section="10.3.1.9",
+            section="1.1.9",
             name="Permission/classification compatibility",
             passed=False,
             severity="block",
             detail=f"Requesting agent ({req_sens}) cannot access {target_sens} data on {target.get('name')}",
         )
     return VerificationStepResult(
-        section="10.3.1.9",
+        section="1.1.9",
         name="Permission/classification compatibility",
         passed=True,
         severity="block",
@@ -520,7 +520,7 @@ def _check_classification_compat(
 
 
 # ---------------------------------------------------------------------------
-# Outcome assembly (§10.3.1.10)
+# Outcome assembly (§1.1.10)
 # ---------------------------------------------------------------------------
 
 
