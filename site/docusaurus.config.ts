@@ -119,13 +119,14 @@ const config: Config = {
         id: 'protocol',
         path: '../protocol/draft',
         routeBasePath: '/protocol',
-        sidebarPath: './sidebarsProtocol.ts',
+        sidebarPath: false,
         include: ['protocol.md'],
         beforeDefaultRemarkPlugins: [
           remarkBlockquoteAdmonitions,
           remarkStripTitle,
         ],
         remarkPlugins: [
+          remarkVersionBadge,
           remarkRewriteLinks,
         ],
       },
@@ -208,7 +209,7 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './sidebars.ts',
+          sidebarPath: false,
           editUrl: 'https://github.com/adl-spec/agent-definition-language/tree/main/',
           routeBasePath: '/',
           beforeDefaultRemarkPlugins: [

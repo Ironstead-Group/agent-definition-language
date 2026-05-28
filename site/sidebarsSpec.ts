@@ -17,11 +17,6 @@ const sidebarsSpec: SidebarsConfig = {
         'examples/production',
       ],
     },
-    {
-      type: 'link',
-      label: 'Passport Discovery',
-      href: '/demo',
-    },
   ],
 };
 
