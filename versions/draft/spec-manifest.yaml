@@ -1,9 +1,29 @@
-# ADL 0.2.0-draft spec manifest
+# ADL 0.3.0-draft spec manifest
 # Single source of truth for section structure. Used by scripts to generate
 # body-specific output (IETF RFC, ISO, Linux Foundation, etc.).
-version: "0.2.0-draft"
+version: "0.3.0-draft"
 source: spec.md
 schema: schema.json
+
+# Layer taxonomy (two orthogonal axes, tagged per section and subsection).
+# Generators (IETF, ISO, AAIF) use these to render the three-document split:
+# ADL Core (declarative) | Trust Protocol | Runtime Protocol.
+#
+#   nature       — what KIND of content the section is:
+#     constitutional  Declares what the agent IS / its standing posture.
+#     operational     A runtime control whose behavior needs enforcement.
+#     structural      Spec machinery / informative plumbing (neither claim
+#                     about the agent nor a runtime control).
+#
+#   enforced_by  — which document holds (or will hold) the procedure that
+#                  gives the section its teeth. Target-architecture basis:
+#                  operational members point at `runtime` even while the
+#                  Runtime Protocol is still a stub.
+#     core     Enforced by Core's own processing/validation rules (the act
+#              of validating the document already enforces the rule).
+#     trust    Enforced by a Trust Protocol procedure (a counterparty acts).
+#     runtime  Enforced by a Runtime Protocol procedure (a governor acts).
+#     none     No enforcing procedure (purely declarative or informative).
 
 # Section order and IDs. Generators use this to map spec sections to
 # body-specific numbering (rfc_section, iso_clause, etc.).
@@ -11,309 +31,519 @@ sections:
   - id: introduction
     number: "1"
     title: Introduction
+    nature: structural
+    enforced_by: none
     level: 1
     subsections:
       - id: purpose
         number: "1.1"
         title: Purpose
+        nature: structural
+        enforced_by: none
       - id: goals
         number: "1.2"
         title: Goals
+        nature: structural
+        enforced_by: none
       - id: design-model
         number: "1.3"
         title: Design Model
+        nature: structural
+        enforced_by: none
       - id: relationship-other-specs
         number: "1.4"
         title: Relationship to Other Specifications
+        nature: structural
+        enforced_by: none
 
   - id: requirements-language
     number: "2"
     title: Requirements Language
+    nature: structural
+    enforced_by: none
     level: 1
 
   - id: terminology
     number: "3"
     title: Terminology
+    nature: structural
+    enforced_by: none
     level: 1
 
   - id: document-structure
     number: "4"
     title: Document Structure
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: media-type
         number: "4.1"
         title: Media Type
+        nature: structural
+        enforced_by: core
       - id: top-level-object
         number: "4.2"
         title: Top-Level Object
+        nature: structural
+        enforced_by: core
       - id: extension-mechanism
         number: "4.3"
         title: Extension Mechanism
+        nature: structural
+        enforced_by: core
       - id: pattern-matching
         number: "4.4"
         title: Pattern Matching
+        nature: structural
+        enforced_by: core
 
   - id: core-members
     number: "5"
     title: Core Members
+    nature: constitutional
+    enforced_by: core
     level: 1
     subsections:
       - id: adl-spec
         number: "5.1"
         title: ADL Specification
+        nature: constitutional
+        enforced_by: core
       - id: schema
         number: "5.2"
         title: "$schema"
+        nature: structural
+        enforced_by: core
       - id: name
         number: "5.3"
         title: Name
+        nature: constitutional
+        enforced_by: core
       - id: description
         number: "5.4"
         title: Description
+        nature: constitutional
+        enforced_by: core
       - id: version
         number: "5.5"
         title: Version
+        nature: constitutional
+        enforced_by: core
       - id: lifecycle
         number: "5.6"
         title: Lifecycle
+        # Validation (VAL-09..12) only checks enum/format; the governance
+        # teeth is the provisioning gate in Trust Protocol §1.1.7.
+        nature: constitutional
+        enforced_by: trust
 
   - id: agent-identity
     number: "6"
     title: Agent Identity
+    nature: constitutional
+    enforced_by: trust
     level: 1
     subsections:
       - id: id
         number: "6.1"
         title: Id
+        nature: constitutional
+        enforced_by: trust
       - id: provider
         number: "6.2"
         title: Provider
+        nature: constitutional
+        enforced_by: trust
       - id: cryptographic-identity
         number: "6.3"
         title: Cryptographic Identity
+        nature: constitutional
+        enforced_by: trust
+      - id: discovery
+        number: "6.4"
+        title: Discovery
+        nature: structural
+        enforced_by: trust
 
   - id: model-configuration
     number: "7"
     title: Model Configuration
+    nature: constitutional
+    enforced_by: core
     level: 1
     subsections:
       - id: model
         number: "7.1"
         title: Model
+        # Declaration is Core; flips toward `trust` if/when model-provenance
+        # attestation verification lands as a Trust Protocol procedure.
+        nature: constitutional
+        enforced_by: core
       - id: system-prompt
         number: "7.2"
         title: System Prompt
+        nature: constitutional
+        enforced_by: core
 
   - id: capabilities
     number: "8"
     title: Capabilities
+    nature: constitutional
+    enforced_by: core
     level: 1
     subsections:
       - id: tools
         number: "8.1"
         title: Tools
+        nature: constitutional
+        enforced_by: core
       - id: resources
         number: "8.2"
         title: Resources
+        nature: constitutional
+        enforced_by: core
       - id: prompts
         number: "8.3"
         title: Prompts
+        nature: constitutional
+        enforced_by: core
 
   - id: permissions
     number: "9"
     title: Permissions
+    nature: operational
+    enforced_by: runtime
     level: 1
     subsections:
       - id: permissions-model
         number: "9.1"
         title: Permissions Model
+        nature: operational
+        enforced_by: runtime
       - id: network
         number: "9.2"
         title: Network
+        nature: operational
+        enforced_by: runtime
       - id: filesystem
         number: "9.3"
         title: Filesystem
+        nature: operational
+        enforced_by: runtime
       - id: environment
         number: "9.4"
         title: Environment
+        nature: operational
+        enforced_by: runtime
       - id: execution
         number: "9.5"
         title: Execution
+        nature: operational
+        enforced_by: runtime
       - id: resource-limits
         number: "9.6"
         title: Resource Limits
+        nature: operational
+        enforced_by: runtime
 
   - id: security
     number: "10"
     title: Security
+    nature: constitutional
+    enforced_by: trust
     level: 1
     subsections:
-      - id: authentication
-        number: "10.1"
-        title: Authentication
-      - id: encryption
-        number: "10.2"
-        title: Encryption
-      - id: attestation
-        number: "10.3"
-        title: Attestation
       - id: data-classification
-        number: "10.4"
+        number: "10.1"
         title: Data Classification
+        # High-water-mark (VAL-28) is a static aggregation invariant the
+        # Core validator enforces across §8.1 tools / §8.2 resources; the
+        # validation IS the rule. Composable attribute, cross-cuts §8.
+        nature: constitutional
+        enforced_by: core
+      - id: attestation
+        number: "10.2"
+        title: Attestation
+        nature: constitutional
+        enforced_by: trust
+      - id: authentication
+        number: "10.3"
+        title: Authentication
+        nature: operational
+        enforced_by: trust
+      - id: authorization-scopes
+        number: "10.4"
+        title: Authorization Scopes
+        nature: constitutional
+        enforced_by: trust
+      - id: encryption
+        number: "10.5"
+        title: Encryption
+        # ADL declares the encryption expectation; it does not itself
+        # enforce transport/at-rest encryption.
+        nature: constitutional
+        enforced_by: none
 
   - id: runtime-behavior
     number: "11"
     title: Runtime Behavior
+    nature: operational
+    enforced_by: runtime
     level: 1
     subsections:
       - id: input-handling
         number: "11.1"
         title: Input Handling
+        nature: operational
+        enforced_by: runtime
       - id: output-handling
         number: "11.2"
         title: Output Handling
+        nature: operational
+        enforced_by: runtime
       - id: tool-invocation
         number: "11.3"
         title: Tool Invocation
+        nature: operational
+        enforced_by: runtime
       - id: error-handling
         number: "11.4"
         title: Error Handling
+        nature: operational
+        enforced_by: runtime
 
   - id: metadata
     number: "12"
     title: Metadata
+    nature: structural
+    enforced_by: none
     level: 1
     subsections:
       - id: authors
         number: "12.1"
         title: Authors
+        nature: structural
+        enforced_by: none
       - id: license
         number: "12.2"
         title: License
+        nature: structural
+        enforced_by: none
       - id: documentation
         number: "12.3"
         title: Documentation
+        nature: structural
+        enforced_by: none
       - id: repository
         number: "12.4"
         title: Repository
+        nature: structural
+        enforced_by: none
       - id: tags
         number: "12.5"
         title: Tags
+        nature: structural
+        enforced_by: none
+      - id: metadata-example
+        number: "12.6"
+        title: Example
+        nature: structural
+        enforced_by: none
 
   - id: profiles
     number: "13"
     title: Profiles
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: profile-schema-composition
         number: "13.1"
         title: Profile Schema Composition
+        nature: structural
+        enforced_by: core
       - id: multi-profile-composition
         number: "13.2"
         title: Multi-Profile Composition
+        nature: structural
+        enforced_by: core
       - id: profile-dependencies
         number: "13.3"
         title: Profile Dependencies
+        nature: structural
+        enforced_by: core
       - id: vendor-profiles
         number: "13.4"
         title: Vendor Profiles
+        nature: structural
+        enforced_by: core
       - id: profile-registration
         number: "13.5"
-        title: Profile Registration
+        title: Standard Profile Registration
+        nature: structural
+        enforced_by: core
       - id: profile-example
         number: "13.6"
         title: Example
+        nature: structural
+        enforced_by: none
 
   - id: processing
     number: "14"
     title: Processing ADL Documents
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: parsing
         number: "14.1"
         title: Parsing
+        nature: structural
+        enforced_by: core
       - id: validation
         number: "14.2"
         title: Validation
+        nature: structural
+        enforced_by: core
       - id: unknown-members
         number: "14.3"
         title: Unknown Members
+        nature: structural
+        enforced_by: core
 
   - id: interoperability
     number: "15"
     title: Interoperability
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: a2a-agent-card
         number: "15.1"
         title: A2A Agent Card Generation
+        nature: structural
+        enforced_by: core
       - id: mcp-server-config
         number: "15.2"
         title: MCP Server Configuration
+        nature: structural
+        enforced_by: core
       - id: openapi-integration
         number: "15.3"
         title: OpenAPI Integration
+        nature: structural
+        enforced_by: core
 
   - id: errors
     number: "16"
     title: Errors
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: error-format
         number: "16.1"
         title: Error Format
+        nature: structural
+        enforced_by: core
       - id: error-codes
         number: "16.2"
         title: Error Codes
+        nature: structural
+        enforced_by: core
+      - id: error-source-examples
+        number: "16.3"
+        title: Error Source Examples
+        nature: structural
+        enforced_by: none
 
   - id: iana-considerations
     number: "17"
     title: IANA Considerations
+    nature: structural
+    enforced_by: none
     level: 1
     subsections:
       - id: media-type
         number: "17.1"
         title: Media Type
+        nature: structural
+        enforced_by: none
       - id: profile-registry
         number: "17.2"
         title: Profile Registry
+        nature: structural
+        enforced_by: none
+      - id: urn-namespace
+        number: "17.3"
+        title: URN Namespace
+        nature: structural
+        enforced_by: none
+      - id: well-known-uri
+        number: "17.4"
+        title: Well-Known URI
+        nature: structural
+        enforced_by: none
 
   - id: security-considerations
     number: "18"
     title: Security Considerations
+    nature: structural
+    enforced_by: none
     level: 1
 
   - id: references
     number: "19"
     title: References
+    nature: structural
+    enforced_by: none
     level: 1
     subsections:
       - id: normative-references
         number: "19.1"
         title: Normative References
+        nature: structural
+        enforced_by: none
       - id: informative-references
         number: "19.2"
         title: Informative References
+        nature: structural
+        enforced_by: none
 
   - id: appendix-a
     number: "A"
     title: JSON Schema
+    nature: structural
+    enforced_by: core
     level: 1
 
   - id: appendix-b
     number: "B"
     title: Examples
+    nature: structural
+    enforced_by: none
     level: 1
 
   - id: appendix-c
     number: "C"
     title: Profiles
+    nature: structural
+    enforced_by: core
     level: 1
     subsections:
       - id: available-profiles
         number: "C.1"
         title: Available Profiles
+        nature: structural
+        enforced_by: none
+
+  - id: appendix-d
+    number: "D"
+    title: ABNF Grammar
+    nature: structural
+    enforced_by: core
+    level: 1
 
 # Body-specific template hints (for generators).
 # Generators use these to insert boilerplate or reorder sections.
