@@ -247,6 +247,11 @@ sections:
         title: Resource Limits
         nature: operational
         enforced_by: runtime
+      - id: sub-agents
+        number: "9.7"
+        title: Sub-Agents
+        nature: operational
+        enforced_by: runtime
 
   - id: security
     number: "10"
@@ -311,6 +316,11 @@ sections:
       - id: error-handling
         number: "11.4"
         title: Error Handling
+        nature: operational
+        enforced_by: runtime
+      - id: degradation
+        number: "11.5"
+        title: Degradation
         nature: operational
         enforced_by: runtime
 
