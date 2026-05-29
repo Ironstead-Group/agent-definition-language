@@ -119,8 +119,8 @@ const config: Config = {
         id: 'protocol',
         path: '../protocol/draft',
         routeBasePath: '/protocol',
-        sidebarPath: false,
-        include: ['trust-protocol.md'],
+        sidebarPath: './sidebarsProtocol.ts',
+        include: ['index.md', 'trust-protocol.md', 'runtime-protocol.md'],
         beforeDefaultRemarkPlugins: [
           remarkBlockquoteAdmonitions,
           remarkStripTitle,
@@ -342,7 +342,7 @@ const config: Config = {
         },
         {
           to: '/protocol',
-          label: 'Trust Protocol',
+          label: 'Protocol',
           position: 'left',
         },
         {
