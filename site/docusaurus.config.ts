@@ -120,7 +120,7 @@ const config: Config = {
         path: '../protocol/draft',
         routeBasePath: '/protocol',
         sidebarPath: false,
-        include: ['protocol.md'],
+        include: ['trust-protocol.md'],
         beforeDefaultRemarkPlugins: [
           remarkBlockquoteAdmonitions,
           remarkStripTitle,
