@@ -6,8 +6,8 @@ source: spec.md
 schema: schema.json
 
 # Layer taxonomy (two orthogonal axes, tagged per section and subsection).
-# Generators (IETF, ISO, AAIF) use these to render the three-document split:
-# ADL Core (declarative) | Trust Protocol | Runtime Protocol.
+# Generators (IETF, ISO, AAIF) use these to render the Core/protocol split:
+# ADL Core (declarative) and an open protocol layer (Trust, Runtime, ...).
 #
 #   nature       — what KIND of content the section is:
 #     constitutional  Declares what the agent IS / its standing posture.
@@ -24,6 +24,7 @@ schema: schema.json
 #     trust    Enforced by a Trust Protocol procedure (a counterparty acts).
 #     runtime  Enforced by a Runtime Protocol procedure (a governor acts).
 #     none     No enforcing procedure (purely declarative or informative).
+#   This list grows by one value when a new protocol joins the layer.
 
 # Section order and IDs. Generators use this to map spec sections to
 # body-specific numbering (rfc_section, iso_clause, etc.).
