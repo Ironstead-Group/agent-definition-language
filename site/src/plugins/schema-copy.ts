@@ -48,11 +48,15 @@ export default function schemaCopyPlugin(context: LoadContext): Plugin {
           JSON.stringify(schemaContent, null, 2) + '\n'
         );
 
-        // Copy auxiliary artifact schemas when present (e.g. the enforcement
-        // record, Runtime Protocol §8), so they resolve at their $id URL.
-        const enforcementSchema = path.join(versionsDir, versionId, 'schema-enforcement-record.json');
-        if (fs.existsSync(enforcementSchema)) {
-          fs.copyFileSync(enforcementSchema, path.join(staticDir, 'schema-enforcement-record.json'));
+        // Copy auxiliary artifact schemas when present (the enforcement record
+        // for Runtime Protocol §8, the discovery document for §6.4), so they
+        // resolve at their $id URLs.
+        const auxSchemas = ['schema-enforcement-record.json', 'schema-discovery.json'];
+        for (const aux of auxSchemas) {
+          const auxPath = path.join(versionsDir, versionId, aux);
+          if (fs.existsSync(auxPath)) {
+            fs.copyFileSync(auxPath, path.join(staticDir, aux));
+          }
         }
       }
     },
