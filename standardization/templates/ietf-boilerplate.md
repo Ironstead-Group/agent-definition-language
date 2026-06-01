@@ -44,8 +44,8 @@ normative:
 
 informative:
   A2A:
-    title: "Agent-to-Agent Protocol Specification"
-    target: https://a2a-protocol.org/specification
+    title: "Agent2Agent (A2A) Protocol Specification"
+    target: https://a2a-protocol.org/latest/specification/
     author:
       - org: A2A Protocol Working Group
     date: 2025
@@ -83,12 +83,12 @@ informative:
         name: Manu Sporny
     date: 2022
   W3C.VC:
-    title: "Verifiable Credentials Data Model v1.1"
-    target: https://www.w3.org/TR/vc-data-model/
+    title: "Verifiable Credentials Data Model v2.0"
+    target: https://www.w3.org/TR/vc-data-model-2.0/
     author:
       - ins: M. Sporny
         name: Manu Sporny
-    date: 2022
+    date: 2025
   ISO-22989:
     title: "Information technology -- Artificial intelligence -- Artificial intelligence concepts and terminology"
     target: https://www.iso.org/standard/74296.html
