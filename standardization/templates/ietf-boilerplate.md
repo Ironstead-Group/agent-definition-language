@@ -28,16 +28,21 @@ author:
 normative:
   RFC2119:
   RFC3986:
+  RFC6749:
   RFC6838:
   RFC6901:
+  RFC7636:
   RFC8126:
   RFC8141:
   RFC8174:
   RFC8259:
   RFC8615:
+  RFC8705:
+  RFC8785:
+  RFC9449:
+  RFC9700:
 
 informative:
-  RFC8785:
   A2A:
     title: "Agent-to-Agent Protocol Specification"
     target: https://a2a-protocol.org/specification
@@ -63,6 +68,13 @@ informative:
     author:
       - org: OpenAPI Initiative
     date: 2024
+  OPENID-CONNECT:
+    title: "OpenID Connect Core 1.0"
+    target: https://openid.net/specs/openid-connect-core-1_0.html
+    author:
+      - ins: N. Sakimura
+        name: Nat Sakimura
+    date: 2014
   W3C.DID:
     title: "Decentralized Identifiers (DIDs) v1.0"
     target: https://www.w3.org/TR/did-core/
