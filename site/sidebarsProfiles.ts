@@ -17,6 +17,18 @@ const sidebarsProfiles: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Portfolio Profile',
+      collapsible: false,
+      collapsed: false,
+      items: [
+        'portfolio/overview',
+        'portfolio/1.0/specification',
+        'portfolio/compatibility',
+        'portfolio/1.0/examples',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Registry Profile',
       collapsible: false,
       collapsed: false,
@@ -25,18 +37,6 @@ const sidebarsProfiles: SidebarsConfig = {
         'registry/1.0/specification',
         'registry/compatibility',
         'registry/1.0/examples',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Healthcare Profile',
-      collapsible: false,
-      collapsed: false,
-      items: [
-        'healthcare/overview',
-        'healthcare/1.0/specification',
-        'healthcare/compatibility',
-        'healthcare/1.0/examples',
       ],
     },
     {
@@ -53,14 +53,14 @@ const sidebarsProfiles: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Portfolio Profile',
+      label: 'Healthcare Profile',
       collapsible: false,
       collapsed: false,
       items: [
-        'portfolio/overview',
-        'portfolio/1.0/specification',
-        'portfolio/compatibility',
-        'portfolio/1.0/examples',
+        'healthcare/overview',
+        'healthcare/1.0/specification',
+        'healthcare/compatibility',
+        'healthcare/1.0/examples',
       ],
     },
   ],
