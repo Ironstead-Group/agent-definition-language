@@ -193,6 +193,7 @@ proposals/pvt/
 
 # Playwright
 .playwright-cli/
+.playwright-mcp/
 playwright-report/
 test-results/
 playwright/.cache/

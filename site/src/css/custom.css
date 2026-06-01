@@ -940,6 +940,35 @@ table tr:hover td {
   text-align: center;
 }
 
+/* Center diagrams embedded as plain markdown images (![](...)) in .md docs —
+   spec.md, protocol/*.md, patterns/*.md. The image renders as the only child
+   of its paragraph, so :only-child centers standalone diagrams while leaving
+   any inline image that sits alongside text left-aligned. */
+.markdown p:has(> img:only-child) {
+  text-align: center;
+}
+
+/* Scale those standalone diagrams up to the content-column width (vector SVGs
+   upscale losslessly), so their labels are legible instead of rendering at the
+   figure's smaller native size. Capped so one figure doesn't dominate an
+   ultra-wide window, and height:auto preserves each diagram's aspect ratio.
+   The diagram SVGs bake in a white background so their dark strokes stay
+   readable; the white/padding/radius/border here turns that into a deliberate
+   figure card instead of a bare white slab (most visible in dark mode). */
+.markdown p:has(> img:only-child) > img {
+  width: 100%;
+  max-width: 1280px;
+  height: auto;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: var(--ifm-global-radius);
+  box-sizing: border-box;
+}
+
+[data-theme='dark'] .markdown p:has(> img:only-child) > img {
+  border: 1px solid var(--adl-border-subtle);
+}
+
 /* ============================================
    Animations
    ============================================ */
