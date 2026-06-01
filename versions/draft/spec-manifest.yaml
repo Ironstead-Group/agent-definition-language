@@ -249,7 +249,7 @@ sections:
         enforced_by: runtime
       - id: sub-agents
         number: "9.7"
-        title: Sub-Agents
+        title: Sub-Agents and Delegation
         nature: operational
         enforced_by: runtime
 
