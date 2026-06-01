@@ -211,3 +211,6 @@ __pycache__/
 
 # Keys / secrets — never commit private keys
 *.pem
+
+# Internal working reviews — local-only notes for agents/maintainers, not published
+reviews/
