@@ -66,7 +66,7 @@ The **Regime** column applies the test above. Regime-A figures use UML. Regime-B
 | D9 | End-to-end "what an agent does" lifecycle | **B** | **Not** a sequence diagram. A representative **trace** (labeled "one run") and/or a **journey/scenario narrative**; the structural spine (describe → distill → admit → govern → evidence) can be an A component view, but the agent's *work* between those points is Regime B |
 | D10 | Conformance tiers R1/R2/R3 | **A** | Ladder/table (not agent behavior at all) |
 | D11 | Data classification high-water mark | **A** | Object diagram (sensitivities roll up to the max) — deterministic validation |
-| D12 | Discovery & triage | **A + B** | The retrieve/verify exchange is A (sequence OK). The *"which agents are worth engaging"* judgment is B — show the candidate set and selection criteria, not a fixed decision path |
+| D12 | Governed discovery (was "Discovery & triage") | **A + B** | **Built** (`governed-discovery.svg`, Core §6.4). Reframed and **elevated to Priority 2** — see the update note below. Two regions: the agent's **own reach** (acts itself by default; reaching out is the exception on a capability gap) and the deterministic **governed-discovery** funnel (registry → triage → `delegation.match` envelope → admit). The self-vs-delegate judgment and peer selection are B (labelled emergent); the registry format, envelope gate, and admission are A |
 | D13 | Permission deny-by-default resolution | **A** | Activity diagram (allow/deny → deny-takes-precedence) — deterministic |
 | — | Multi-hop authorization (exists) | **A** (representative trace) | Sequence diagram of the per-hop authorization mechanics, captioned as one representative run |
 
@@ -174,8 +174,26 @@ These carry the novelty *and* the reader-orientation load. Each is both a standa
 | D9 | End-to-end lifecycle ribbon: describe → distill → publish/discover → admit (Trust) → govern (Runtime) → evidence | family-wide | The single "big picture" for a landing page; complements D1 | Low (covered by D1) |
 | D10 | Conformance tiers R1/R2/R3 ladder | Runtime "Conformance Tiers" | Cumulative-capability ladder reads better as a figure than a table | Low |
 | D11 | Data classification high-water mark roll-up | Core §10.1 | Tool/resource sensitivities roll up to top-level max | Low (known FIPS 199 principle — likely unpatentable) |
-| D12 | Discovery triage flow: domain publishes `.well-known/adl-agents` → agent triages by `description`/`keywords` → fetches full doc → verifies | Core §6.4 | Shows "publishing = inviting connection" and the triage-before-fetch economy | Low–Moderate |
+| D12 | **Elevated to Priority 2 and built** — see "Update (2026-06-01)" below | Core §6.4 | — | — |
 | D13 | Deny-by-default + deny-takes-precedence permission resolution | Core §9.1 | Clarifies conflict resolution | Low (known model) |
+
+---
+
+## Update (2026-06-01): D12 reframed as "Governed discovery" and elevated to Priority 2
+
+D12 was written when Core §6.4 was a standalone lookup convenience. It no longer is. The 2026-06-01 sub-agent work (proposal `2026-06-01-internal-vs-external-sub-agents.md`) split delegation into two domains, and **§6.4 discovery is now the runtime front-end of the external one**: `permissions.delegation` is declared as an *envelope* (`match`/`deny`/`attenuation`) precisely because the peers it governs are **discovered at runtime**, not enumerated. That makes a §6.4 figure carry far more weight than the original "triage flow."
+
+**What changed about the figure:**
+
+- **Reframed** from "discovery & triage" to **governed discovery**: the deterministic pipeline registry (`.well-known/adl-agents`) → triage (by `description`/`keywords`, fetch-only-selected) → **`delegation.match` envelope gate (§9.7.2)** → **Trust admission (§1.1 passport + §9.7.2 attenuation)** → engage peer. This visually completes the discover → envelope → admit chain the delegation work introduced.
+- **Self-first emphasis (the load-bearing addition).** The figure leads with the agent doing the work **itself** by default; reaching out to a discovered peer is the **exception**, taken only on a *capability gap* when a task exceeds the agent's own reach. Delegation is a conditional branch, never the pipeline. This keeps the Regime-B honesty: *whether* the agent needs help and *which* peer it picks are emergent (labelled per-run); only the machinery (registry format, envelope gate, admission) is deterministic. **Not** a sequence diagram.
+- **Forward-compat:** a future trusted directory / "yellow pages" an agent queries to find collaborators is pure emergent delegation — it slots into the same figure (the registry box) and the same `delegation` envelope without change.
+
+**Standards value:** High — §6.4 was prose + a JSON example only; this is its first orientation figure, and it ties §6.4 to §9.7.2 and the Trust Protocol.
+
+**Patent value: upgraded to Moderate–High.** The novelty is **not** "a well-known discovery endpoint" (RFC 8615 prior art). The claimable method is **governed discovery**: an agent discovers counterparties at runtime, triages them against a bounded summary *without fetching full descriptions*, and a governor admits each *discovered* agent against a **declared delegation envelope** before engagement — authority bounded at admission, not at enumeration. This maps to a **method claim** and pairs with FIG. 7 (multi-hop) as the discovery front-end; see the addition to the consolidated patent set below.
+
+**Artifact:** `versions/draft/diagrams/governed-discovery.svg`, embedded in Core §6.4. Audited (stance / spec-faithfulness / geometry) — passes; the agent-conduct judgment is drawn emergent, the machinery deterministic, consistent with the stance correction at the top of this document.
 
 ---
 
@@ -191,6 +209,7 @@ If the goal is the non-provisional drawings, the minimum compelling set is:
 6. **FIG. 6** — Enforcement-record data structure + verification method (**D4**).
 7. **FIG. 7** — Multi-hop authorization (**existing** `multi-hop-authorization`, redrawn as line art).
 8. *(Optional)* **FIG. 8** — Presentation-proof replay-binding method (**D6**), if claimed.
+9. *(Optional)* **FIG. 9** — Governed-discovery method (**D12**): runtime discovery → triage-before-fetch → declared `delegation` envelope gate → admission, as the front-end of FIG. 7. Claim the *governed* discovery (envelope-bounded admission of discovered peers), not the well-known endpoint (RFC 8615 prior art).
 
 These map to the likely claim structure: **apparatus claims** (FIG 1–3, 6) + **method claims** (FIG 4–7). Have patent counsel confirm which mechanisms are claimed before investing in formal renders — draw the conceptual versions first (cheap, reusable for the site), formalize only what's claimed.
 
