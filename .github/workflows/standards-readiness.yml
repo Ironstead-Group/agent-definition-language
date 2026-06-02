@@ -1,0 +1,52 @@
+name: standards-readiness
+
+# Posts an IETF + USPTO standards-readiness report as a single sticky comment on
+# every PR to main, updating it in place on each push. IETF errors block the
+# merge (gate the job → mark this check Required in branch protection). The
+# USPTO lens is advisory and never gates. See scripts/standards_readiness.py.
+#
+# Runs on every PR (no path filter) so the required check never stalls in
+# "Expected — Waiting for status".
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  standards-readiness:
+    name: standards-readiness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run standards-readiness checks
+        id: readiness
+        run: |
+          set +e
+          python scripts/standards_readiness.py --output report.md
+          echo "ietf_errors=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Post / update the report comment
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: standards-readiness
+          path: report.md
+
+      - name: Gate on IETF errors
+        if: steps.readiness.outputs.ietf_errors != '0'
+        run: |
+          echo "::error::IETF readiness errors must be resolved before merge -- see the standards-readiness comment."
+          exit 1
