@@ -14,10 +14,15 @@ import {
 } from './src/remark';
 import schemaCopyPlugin from './src/plugins/schema-copy';
 import {bridgeSpecVersions} from './src/plugins/spec-version-bridge';
+import {bridgeProtocolVersions} from './src/plugins/protocol-version-bridge';
 
 // Bridge released versions from versions/{id}/ → spec_versioned_docs/
 // Must run before Docusaurus initializes the spec docs plugin.
 bridgeSpecVersions(__dirname);
+
+// Bridge frozen protocol releases from protocol/{id}/ → protocol_versioned_docs/
+// Returns the released version ids (newest first) for the plugin config below.
+const protocolVersions = bridgeProtocolVersions(__dirname);
 
 const config: Config = {
   title: 'Agent Definition Language',
@@ -120,7 +125,8 @@ const config: Config = {
         path: '../protocol/draft',
         routeBasePath: '/protocol',
         sidebarPath: './sidebarsProtocol.ts',
-        include: ['index.md', 'trust-protocol.md', 'runtime-protocol.md'],
+        // Every top-level protocol doc — new protocols are picked up automatically.
+        include: ['*.md'],
         beforeDefaultRemarkPlugins: [
           remarkBlockquoteAdmonitions,
           remarkStripTitle,
@@ -129,6 +135,19 @@ const config: Config = {
           remarkVersionBadge,
           remarkRewriteLinks,
         ],
+        // The working draft is the current (unreleased) version; frozen
+        // protocol/<id>/ releases are bridged in by protocol-version-bridge.
+        lastVersion: protocolVersions[0] ?? 'current',
+        versions: {
+          current: {
+            label: 'Draft',
+            path: 'next',
+            banner: 'unreleased',
+          },
+          ...Object.fromEntries(
+            protocolVersions.map((v) => [v, {label: v, banner: 'none' as const}]),
+          ),
+        },
       },
     ],
     [
@@ -363,6 +382,11 @@ const config: Config = {
         {
           type: 'docsVersionDropdown',
           docsPluginId: 'spec',
+          position: 'left',
+        },
+        {
+          type: 'docsVersionDropdown',
+          docsPluginId: 'protocol',
           position: 'left',
         },
         {
