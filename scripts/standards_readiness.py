@@ -76,12 +76,25 @@ ALLCAP_KEYWORD = re.compile(
 
 # Prior-art mechanisms the patent review says to keep in BACKGROUND, with the
 # term variants used to detect claim-like usage (Part II.2 of the review).
+#
+# DPoP / RFC 9449 is intentionally NOT here: it is a legitimately-integrated
+# external credential standard (Section 10.3.3 OAuth/DPoP/mTLS), so keyword
+# matching only surfaces honest integration (config members, recommendations,
+# analogies). The genuine "presentation proof is DPoP-equivalent" claim concern
+# is tracked as a patent note, not by this line check.
 PRIOR_ART_TERMS = [
-    ("DPoP / RFC 9449", re.compile(r"\bDPoP\b|\bRFC ?9449\b")),
     ("OAuth Token Exchange / RFC 8693", re.compile(r"Token[- ]Exchange|\bRFC ?8693\b")),
     ("XACML / NIST.SP.800-162 ABAC", re.compile(r"\bXACML\b|800-162")),
     ("Certificate Transparency / RFC 6962", re.compile(r"Certificate Transparency|\bRFC ?6962\b")),
 ]
+
+# Lines reviewed as honest prior-art acknowledgment and tracked as patent-filing
+# background items (review Part II.2). Matched by a stable substring so that
+# editing the surrounding prose produces a fresh flag for re-review.
+ACKNOWLEDGED_PRIOR_ART = (
+    "conceptually equivalent to OAuth 2.1 Token Exchange",  # Trust delegated reduction
+    "transparency-log model",                               # Runtime reserved witness tier (8.8)
+)
 
 # Claimable mechanisms (review Part II.1), as keyword probes into Core spec.md.
 CLAIMABLE = [
@@ -312,6 +325,8 @@ def uspto_prior_art_in_claims(spec: str, trust: str, runtime: str) -> list[Findi
                             ("Runtime", runtime, "protocol/draft/runtime-protocol.md")):
         for i, line in enumerate(strip_code_fences(doc).split("\n"), 1):
             if not ALLCAP_KEYWORD.search(line):
+                continue
+            if any(ack in line for ack in ACKNOWLEDGED_PRIOR_ART):
                 continue
             for term, rx in PRIOR_ART_TERMS:
                 if rx.search(line):
