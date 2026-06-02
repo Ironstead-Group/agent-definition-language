@@ -109,6 +109,10 @@ export const ADL_ERRORS: Record<
     category: "Semantic",
     description: "High-water mark violation",
   },
+  "ADL-2024": {
+    category: "Semantic",
+    description: "Undefined template variable",
+  },
   "ADL-2025": {
     category: "Semantic",
     description: "Invalid ADL URN format",
@@ -138,6 +142,44 @@ export const ADL_ERRORS: Record<
   "ADL-5003": {
     category: "Lifecycle",
     description: "Sunset date in the past with non-retired status",
+  },
+
+  // Runtime errors (ADL 0.3.0+)
+  "ADL-6001": {
+    category: "Runtime",
+    description: "Resource-limit budget cap not greater than zero",
+  },
+  "ADL-6002": {
+    category: "Runtime",
+    description: "Budget per_session exceeds per_day",
+  },
+  "ADL-6003": {
+    category: "Runtime",
+    description: "Invalid degradation response action",
+  },
+  "ADL-6004": {
+    category: "Runtime",
+    description: "Invalid tool-invocation iteration limit",
+  },
+  "ADL-6005": {
+    category: "Runtime",
+    description: "Invalid loop-detection window",
+  },
+  "ADL-6006": {
+    category: "Runtime",
+    description: "Invalid delegation pattern syntax",
+  },
+  "ADL-6007": {
+    category: "Runtime",
+    description: "Invalid delegation max_depth",
+  },
+  "ADL-6008": {
+    category: "Runtime",
+    description: "Invalid degradation cause key",
+  },
+  "ADL-6009": {
+    category: "Runtime",
+    description: "Invalid sub-agent declaration",
   },
 };
 

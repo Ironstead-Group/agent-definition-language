@@ -5,6 +5,7 @@
 
 import type { ADLDocument } from "../../types/document.js";
 import { createError, type ADLError } from "../../types/errors.js";
+import { specAtLeast } from "../version.js";
 
 /**
  * Check if a string is a valid ISO 8601 date-time.
@@ -40,24 +41,6 @@ const ADL_PROFILE_URN_RE =
 
 function isValidAdlUrn(value: string): boolean {
   return ADL_AGENT_URN_RE.test(value) || ADL_PROFILE_URN_RE.test(value);
-}
-
-/**
- * True when the document's declared adl_spec is at least major.minor.
- * VAL-37 (the urn:adl: {type}-segment requirement) is a 0.3.0 rule; documents
- * declaring an earlier version used the type-less URN form and are exempt.
- */
-function specAtLeast(
-  adlSpec: string | undefined,
-  major: number,
-  minor: number,
-): boolean {
-  if (typeof adlSpec !== "string") return false;
-  const m = /^(\d+)\.(\d+)/.exec(adlSpec);
-  if (!m) return false;
-  const maj = Number(m[1]);
-  const min = Number(m[2]);
-  return maj > major || (maj === major && min >= minor);
 }
 
 /**

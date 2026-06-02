@@ -193,6 +193,187 @@ describe("validate", () => {
     });
   });
 
+  describe("semantic: runtime + templates (ADL-2024, ADL-6001..6008, 0.3.0+)", () => {
+    const DOC_030 = { ...BASE_DOC, adl_spec: "0.3.0" };
+
+    test("a fully valid 0.3.0 document raises none of these codes", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: {
+          resource_limits: {
+            budget: {
+              tokens: { per_session: 100000, per_day: 1000000 },
+              cost_usd: { per_session: 1, per_day: 10 },
+            },
+          },
+          delegation: {
+            match: ["urn:adl:agent:acme:*"],
+            deny: ["urn:adl:agent:acme:legacy:*"],
+            max_depth: 3,
+          },
+        },
+        runtime: {
+          tool_invocation: {
+            max_iterations: 25,
+            max_tool_calls_per_session: 500,
+            loop_detection: { window: 6, on_detected: { action: "halt" } },
+          },
+          degradation: {
+            on_budget_exhausted: { action: "pause" },
+            on_tool_error: { action: "fallback", value: {} },
+          },
+        },
+        system_prompt: { template: "Hello {{name}}", variables: { name: "x" } },
+      });
+      const codes = new Set(errors.map((e) => e.code));
+      for (const c of [
+        "ADL-2024",
+        "ADL-6001",
+        "ADL-6002",
+        "ADL-6003",
+        "ADL-6004",
+        "ADL-6005",
+        "ADL-6006",
+        "ADL-6007",
+        "ADL-6008",
+        "ADL-6009",
+      ]) {
+        expect(codes.has(c)).toBe(false);
+      }
+    });
+
+    test("ADL-6001: budget cap not greater than zero", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: {
+          resource_limits: { budget: { tokens: { per_session: 0 } } },
+        },
+      });
+      expect(errors.some((e) => e.code === "ADL-6001")).toBe(true);
+    });
+
+    test("ADL-6002: budget per_session exceeds per_day", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: {
+          resource_limits: {
+            budget: { tokens: { per_session: 100, per_day: 50 } },
+          },
+        },
+      });
+      expect(errors.some((e) => e.code === "ADL-6002")).toBe(true);
+    });
+
+    test("ADL-6003: invalid degradation response action", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        runtime: { degradation: { on_tool_error: { action: "stop" } } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6003")).toBe(true);
+    });
+
+    test("ADL-6004: tool-invocation iteration limit below 1", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        runtime: { tool_invocation: { max_iterations: 0 } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6004")).toBe(true);
+    });
+
+    test("ADL-6005: loop-detection window below 2", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        runtime: { tool_invocation: { loop_detection: { window: 1 } } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6005")).toBe(true);
+    });
+
+    test("ADL-6006: invalid delegation pattern syntax", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: { delegation: { match: ["urn:adl:agent:acme:**"] } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6006")).toBe(true);
+    });
+
+    test("ADL-6007: invalid delegation max_depth", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: { delegation: { match: ["*"], max_depth: 0 } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6007")).toBe(true);
+    });
+
+    test("ADL-6008: invalid degradation cause key", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        runtime: { degradation: { before_run: { action: "halt" } } },
+      });
+      expect(errors.some((e) => e.code === "ADL-6008")).toBe(true);
+    });
+
+    test("ADL-2024: undefined system_prompt template variable", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        system_prompt: { template: "Hi {{name}}", variables: {} },
+      });
+      expect(errors.some((e) => e.code === "ADL-2024")).toBe(true);
+    });
+
+    test("ADL-2024: escaped \\{{ is not treated as a variable reference", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        system_prompt: { template: "Literal \\{{not_a_var}}", variables: {} },
+      });
+      expect(errors.some((e) => e.code === "ADL-2024")).toBe(false);
+    });
+
+    test("ADL-6009: duplicate sub-agent name", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        permissions: { sub_agents: [{ name: "worker" }, { name: "worker" }] },
+      });
+      expect(errors.some((e) => e.code === "ADL-6009")).toBe(true);
+    });
+
+    test("ADL-6009: sub-agent tool not in parent's tools", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        tools: [{ name: "search", description: "Search." }],
+        permissions: {
+          sub_agents: [{ name: "worker", tools: ["search", "delete_all"] }],
+        },
+      });
+      expect(errors.some((e) => e.code === "ADL-6009")).toBe(true);
+    });
+
+    test("ADL-6009: valid sub-agents (unique names, tools subset) pass", () => {
+      const { errors } = validateInline({
+        ...DOC_030,
+        tools: [
+          { name: "search", description: "Search." },
+          { name: "summarize", description: "Summarize." },
+        ],
+        permissions: {
+          sub_agents: [
+            { name: "researcher", tools: ["search", "summarize"] },
+            { name: "writer" },
+          ],
+        },
+      });
+      expect(errors.some((e) => e.code === "ADL-6009")).toBe(false);
+    });
+
+    test("runtime rules are gated: a pre-0.3.0 doc raises no ADL-600x", () => {
+      const { errors } = validateInline({
+        ...BASE_DOC,
+        adl_spec: "0.2.0",
+        runtime: { degradation: { before_run: { action: "stop" } } },
+      });
+      expect(errors.some((e) => e.code.startsWith("ADL-600"))).toBe(false);
+    });
+  });
+
   describe("semantic: model and enums (ADL-2008 through ADL-2015)", () => {
     test("ADL-2008: invalid tool name pattern", () => {
       const { validationErrors } = loadAndValidate(

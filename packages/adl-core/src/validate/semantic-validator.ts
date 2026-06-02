@@ -13,6 +13,8 @@ import { checkFormats } from "./rules/formats.js";
 import { checkPermissions } from "./rules/permissions.js";
 import { checkSecurity } from "./rules/security.js";
 import { checkProfiles } from "./rules/profiles.js";
+import { checkRuntime } from "./rules/runtime.js";
+import { checkTemplates } from "./rules/templates.js";
 
 export function validateSemantic(doc: ADLDocument): ADLError[] {
   return [
@@ -25,5 +27,7 @@ export function validateSemantic(doc: ADLDocument): ADLError[] {
     ...checkSecurity(doc),
     ...checkProfiles(doc),
     ...checkLifecycle(doc),
+    ...checkRuntime(doc),
+    ...checkTemplates(doc),
   ];
 }
