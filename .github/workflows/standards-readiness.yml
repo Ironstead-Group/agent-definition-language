@@ -38,9 +38,15 @@ jobs:
           set +e
           python scripts/standards_readiness.py --output report.md
           echo "ietf_errors=$?" >> "$GITHUB_OUTPUT"
+          # Always surface the report in the run summary -- this needs no token
+          # permissions, so it works even on fork PRs where the comment can't post.
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Post / update the report comment
         uses: marocchino/sticky-pull-request-comment@v3
+        # Fork PRs get a read-only GITHUB_TOKEN, so the comment can't be posted;
+        # don't fail the gate over it -- the report is in the run summary above.
+        continue-on-error: true
         with:
           header: standards-readiness
           path: report.md
@@ -48,5 +54,5 @@ jobs:
       - name: Gate on IETF errors
         if: steps.readiness.outputs.ietf_errors != '0'
         run: |
-          echo "::error::IETF readiness errors must be resolved before merge -- see the standards-readiness comment."
+          echo "::error::IETF readiness errors must be resolved before merge -- see the run summary / standards-readiness comment."
           exit 1
