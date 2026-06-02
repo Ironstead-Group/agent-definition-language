@@ -62,6 +62,15 @@ informative:
     author:
       - org: Anthropic
     date: 2024
+  OAUTH2.1:
+    title: "The OAuth 2.1 Authorization Framework"
+    target: https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1
+    author:
+      - ins: A. Parecki
+        name: Aaron Parecki
+    date: 2025
+    seriesinfo:
+      Internet-Draft: draft-ietf-oauth-v2-1
   OPENAPI:
     title: "OpenAPI Specification"
     target: https://spec.openapis.org/oas/v3.1.0
