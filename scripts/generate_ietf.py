@@ -62,17 +62,26 @@ BCP14_KEYWORDS = [
 ]
 
 # Inline citation replacements: spec text -> kramdown-rfc citation.
+# Keep in sync with the references defined in spec.md Section 19 (and the
+# normative/informative blocks of the kramdown boilerplate).
 INLINE_CITATIONS = {
     "[RFC2119]": "{{RFC2119}}",
     "[RFC3986]": "{{RFC3986}}",
+    "[RFC6749]": "{{RFC6749}}",
     "[RFC6838]": "{{RFC6838}}",
     "[RFC6901]": "{{RFC6901}}",
+    "[RFC7636]": "{{RFC7636}}",
     "[RFC8126]": "{{RFC8126}}",
     "[RFC8141]": "{{RFC8141}}",
     "[RFC8174]": "{{RFC8174}}",
     "[RFC8259]": "{{RFC8259}}",
     "[RFC8615]": "{{RFC8615}}",
+    "[RFC8705]": "{{RFC8705}}",
     "[RFC8785]": "{{RFC8785}}",
+    "[RFC9449]": "{{RFC9449}}",
+    "[RFC9700]": "{{RFC9700}}",
+    "[OAUTH2.1]": "{{OAUTH2.1}}",
+    "[OPENID-CONNECT]": "{{OPENID-CONNECT}}",
     "[A2A]": "{{A2A}}",
     "[JSON-SCHEMA]": "{{JSON-SCHEMA}}",
     "[MCP]": "{{MCP}}",
@@ -81,7 +90,14 @@ INLINE_CITATIONS = {
     "[W3C.VC]": "{{W3C.VC}}",
     "[ISO-22989]": "{{ISO-22989}}",
     "[AI-PROTOCOLS]": "{{AI-PROTOCOLS}}",
+    "[CLTC-AGENTIC]": "{{CLTC-AGENTIC}}",
+    "[IMDA-AGENTIC]": "{{IMDA-AGENTIC}}",
 }
+
+# Base URL for the published spec site (Docusaurus `url` in site config).
+# Site-relative links such as /protocol/runtime are rewritten to absolute
+# URLs under this origin so companion pages resolve from the draft.
+SITE_BASE_URL = "https://adl-spec.org"
 
 
 def load_text(path: Path) -> str:
@@ -146,6 +162,17 @@ def convert_spec_links(text: str) -> str:
 
     # Replace any remaining <a> tags with their label text + citation
     text = re.sub(r'<a\s+href="[^"]*"[^>]*>(.*?)</a>', replace_html_link, text)
+
+    # Rewrite site-relative links (e.g. /protocol/runtime, /spec/next#...) to
+    # absolute URLs under the published site origin so companion pages resolve
+    # from the draft. Runs after the http-link handling above so these are not
+    # stripped to plain text.
+    text = re.sub(
+        r'\[([^\[\]]+)\]\((/[^)]*)\)',
+        lambda m: f'[{m.group(1)}]({SITE_BASE_URL}{m.group(2)})',
+        text,
+    )
+
     # Clean up doubled bold markers from **[link](url)** → ****Label** {{CIT}}**
     text = text.replace("****", "**")
     # Remove stray trailing bold after citations: {{CIT}}** → {{CIT}}
