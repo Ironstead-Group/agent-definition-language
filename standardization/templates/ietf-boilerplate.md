@@ -115,6 +115,18 @@ informative:
     date: 2025
     seriesinfo:
       Internet-Draft: draft-rosenberg-ai-protocols-00
+  CLTC-AGENTIC:
+    title: "Agentic AI Risk-Management Standards Profile"
+    target: https://cltc.berkeley.edu/wp-content/uploads/2026/02/Agentic-AI-Risk-Management-Standards-Profile.pdf
+    author:
+      - org: Center for Long-Term Cybersecurity (CLTC), UC Berkeley
+    date: 2026
+  IMDA-AGENTIC:
+    title: "Model AI Governance Framework for Agentic AI"
+    target: https://www.imda.gov.sg/-/media/imda/files/about/emerging-tech-and-research/artificial-intelligence/mgf-for-agentic-ai.pdf
+    author:
+      - org: Infocomm Media Development Authority (IMDA)
+    date: 2026
 
 --- abstract
 
