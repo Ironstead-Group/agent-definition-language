@@ -95,12 +95,16 @@ const config: Config = {
           remarkVersionBadge,
           remarkRewriteLinks,
         ],
-        lastVersion: '0.2.0',
+        lastVersion: '0.3.0',
         versions: {
           current: {
-            label: '0.3.0 (Draft)',
+            label: '0.4.0 (Draft)',
             path: 'next',
             banner: 'unreleased',
+          },
+          '0.3.0': {
+            label: '0.3.0',
+            banner: 'none',
           },
           '0.2.0': {
             label: '0.2.0',

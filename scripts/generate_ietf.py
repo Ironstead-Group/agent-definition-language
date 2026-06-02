@@ -32,7 +32,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SPEC = REPO_ROOT / "versions" / "draft" / "spec.md"
 DEFAULT_MANIFEST = REPO_ROOT / "versions" / "draft" / "spec-manifest.yaml"
 DEFAULT_BOILERPLATE = REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate.md"
-DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-03.md"
+DEFAULT_OUTPUT = REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-04.md"
 
 # Map link text to kramdown-rfc citation keys.
 # Used to convert [label](url) or <a href="...">label</a> to {{label}} citations.
