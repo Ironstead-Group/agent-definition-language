@@ -109,6 +109,10 @@ export const ADL_ERRORS: Record<
     category: "Semantic",
     description: "High-water mark violation",
   },
+  "ADL-2025": {
+    category: "Semantic",
+    description: "Invalid ADL URN format",
+  },
 
   // Profile errors
   "ADL-3001": {

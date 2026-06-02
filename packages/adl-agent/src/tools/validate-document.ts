@@ -76,7 +76,9 @@ function getErrorExplanation(code: string): string {
     "ADL-1006":
       "A field value does not match the expected pattern. Check the spec for the required format.",
     "ADL-2001":
-      "The adl_spec version is not supported. Currently supported versions are 0.1.0 and 0.2.0.",
+      "The adl_spec version is not supported. Currently supported versions are 0.1.0, 0.2.0, and 0.3.0.",
+    "ADL-2025":
+      "An adl_spec 0.3.0+ document has a urn:adl: identifier that is missing or has an invalid {type} segment. Use urn:adl:agent:{namespace}:{name}:{version} or urn:adl:profile:{name}:{version}.",
     "ADL-2002":
       "Two or more tools have the same name. Each tool must have a unique name.",
     "ADL-2003":

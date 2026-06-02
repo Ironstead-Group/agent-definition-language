@@ -94,6 +94,14 @@ describe("validate", () => {
       );
       expect(validationErrors.some((e) => e.code === "ADL-2002")).toBe(true);
     });
+
+    test("0.3.0 is a supported version (no ADL-2001)", () => {
+      const { errors } = validateInline({
+        ...BASE_DOC,
+        adl_spec: "0.3.0",
+      });
+      expect(errors.some((e) => e.code === "ADL-2001")).toBe(false);
+    });
   });
 
   describe("semantic: formats (ADL-2005, ADL-2006, ADL-2007)", () => {
@@ -155,6 +163,33 @@ describe("validate", () => {
         ],
       });
       expect(errors.some((e) => e.code === "ADL-2007")).toBe(true);
+    });
+
+    test("ADL-2025: 0.3.0 doc with type-less urn:adl: id is rejected (VAL-37)", () => {
+      const { errors } = validateInline({
+        ...BASE_DOC,
+        adl_spec: "0.3.0",
+        id: "urn:adl:acme:research-assistant:2.1.0",
+      });
+      expect(errors.some((e) => e.code === "ADL-2025")).toBe(true);
+    });
+
+    test("ADL-2025: 0.3.0 doc with valid agent URN id passes", () => {
+      const { errors } = validateInline({
+        ...BASE_DOC,
+        adl_spec: "0.3.0",
+        id: "urn:adl:agent:acme:research-assistant:2.1.0",
+      });
+      expect(errors.some((e) => e.code === "ADL-2025")).toBe(false);
+    });
+
+    test("ADL-2025: pre-0.3.0 doc with type-less urn:adl: id is exempt (VAL-37 gating)", () => {
+      const { errors } = validateInline({
+        ...BASE_DOC,
+        adl_spec: "0.2.0",
+        id: "urn:adl:acme:research-assistant:2.1.0",
+      });
+      expect(errors.some((e) => e.code === "ADL-2025")).toBe(false);
     });
   });
 
