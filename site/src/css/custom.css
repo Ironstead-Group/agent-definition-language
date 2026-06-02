@@ -133,6 +133,26 @@ body {
   transition: all var(--adl-transition-normal);
 }
 
+/* Two-row navbar on desktop: logo/title/version on the primary row, section
+   navigation on the secondary row. --ifm-navbar-height is widened so sticky
+   doc sidebars and the table of contents offset below both rows. */
+@media (min-width: 997px) {
+  :root {
+    --adl-navbar-primary-height: 4rem;
+    --adl-navbar-secondary-height: 2.75rem;
+    --ifm-navbar-height: calc(
+      var(--adl-navbar-primary-height) + var(--adl-navbar-secondary-height)
+    );
+  }
+
+  .navbar {
+    height: var(--ifm-navbar-height);
+    align-items: stretch;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 .navbar__title {
   font-weight: 700;
   font-size: 1.25rem;
@@ -156,6 +176,11 @@ body {
 
 .navbar__link--active {
   color: var(--ifm-color-primary);
+}
+
+/* Home lives in the top-level nav, so drop the redundant home breadcrumb. */
+.breadcrumbs__item:first-child {
+  display: none;
 }
 
 /* GitHub repo widget (A2A-style) */
@@ -517,18 +542,36 @@ div[class*='codeBlockTitle'] {
   border-radius: 8px;
 }
 
-/* Top-level sidebar items — categories and doc links */
-.menu__link--sublist,
-.theme-doc-sidebar-menu > .menu__list-item > .menu__link {
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--adl-text-subtle);
+/* Top-level standalone doc links use the same style as nested links so every
+   sidebar reads consistently. Grouping is expressed only through section
+   headers (non-collapsible category labels), styled below. */
+
+/* Section headers: a non-collapsible category label (e.g. "Governance
+   Profile") is the heading for the doc links nested beneath it. Make it
+   bold, bright, and a touch larger so it reads as a section header — clearly
+   heavier than the regular-weight items below it (MCP-style grouping). The
+   category label here lives inside `.menu__list-item-collapsible`, so it is
+   NOT caught by the top-level doc-link rule above. */
+.theme-doc-sidebar-menu > .menu__list-item > .menu__list-item-collapsible > .menu__link {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ifm-font-color-base);
 }
 
-.theme-doc-sidebar-menu > .menu__list-item > .menu__link--active {
-  color: var(--ifm-color-primary);
+/* The header is a label, not a destination — neutralize the link's hover and
+   active affordances so it doesn't look selectable. */
+.theme-doc-sidebar-menu > .menu__list-item > .menu__list-item-collapsible > .menu__link:hover,
+.theme-doc-sidebar-menu > .menu__list-item > .menu__list-item-collapsible > .menu__link--active {
+  background: transparent;
+  color: var(--ifm-font-color-base);
+  cursor: default;
+}
+
+/* Separate one section from the next, like grouped sidebar headers. */
+.theme-doc-sidebar-menu > .theme-doc-sidebar-item-category-level-1 + .theme-doc-sidebar-item-category-level-1 {
+  margin-top: 0.85rem;
 }
 
 /* ============================================
@@ -871,6 +914,59 @@ table tr:hover td {
   transform: translateY(-4px);
   box-shadow: var(--adl-glow-primary);
   border-color: var(--ifm-color-primary-lighter);
+}
+
+/* ============================================
+   Diagram (Excalidraw SVG) Styles
+   ============================================ */
+.adl-diagram {
+  background: #ffffff; /* white card so Excalidraw's dark strokes stay readable in dark mode */
+  padding: 1rem;
+  border-radius: var(--ifm-global-radius);
+  margin: 2rem 0;
+  overflow-x: auto; /* wide diagrams scroll instead of overflowing */
+  text-align: center;
+}
+
+.adl-diagram img {
+  max-width: 100%;
+  height: auto;
+}
+
+.adl-diagram figcaption {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--adl-text-muted);
+  text-align: center;
+}
+
+/* Center diagrams embedded as plain markdown images (![](...)) in .md docs —
+   spec.md, protocol/*.md, patterns/*.md. The image renders as the only child
+   of its paragraph, so :only-child centers standalone diagrams while leaving
+   any inline image that sits alongside text left-aligned. */
+.markdown p:has(> img:only-child) {
+  text-align: center;
+}
+
+/* Scale those standalone diagrams up to the content-column width (vector SVGs
+   upscale losslessly), so their labels are legible instead of rendering at the
+   figure's smaller native size. Capped so one figure doesn't dominate an
+   ultra-wide window, and height:auto preserves each diagram's aspect ratio.
+   The diagram SVGs bake in a white background so their dark strokes stay
+   readable; the white/padding/radius/border here turns that into a deliberate
+   figure card instead of a bare white slab (most visible in dark mode). */
+.markdown p:has(> img:only-child) > img {
+  width: 100%;
+  max-width: 1280px;
+  height: auto;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: var(--ifm-global-radius);
+  box-sizing: border-box;
+}
+
+[data-theme='dark'] .markdown p:has(> img:only-child) > img {
+  border: 1px solid var(--adl-border-subtle);
 }
 
 /* ============================================

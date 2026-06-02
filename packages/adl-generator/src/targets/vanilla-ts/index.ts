@@ -3,6 +3,7 @@
  */
 
 import type { AgentIR } from "../../ir/types.js";
+import { defineFormatterPlugin } from "../../plugin.js";
 import type { GeneratedFile, TargetRenderer } from "../../renderer.js";
 import { renderAgent, renderPackageJson, renderTypes } from "./templates.js";
 
@@ -21,3 +22,5 @@ export class VanillaTsRenderer implements TargetRenderer {
     return files;
   }
 }
+
+export const vanillaTsPlugin = defineFormatterPlugin(new VanillaTsRenderer());

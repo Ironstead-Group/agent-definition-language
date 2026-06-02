@@ -1,0 +1,59 @@
+.navbarContent {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.primaryRow {
+  min-height: var(--adl-navbar-primary-height, 4rem);
+}
+
+.secondaryRow {
+  min-height: var(--adl-navbar-secondary-height, 2.75rem);
+  border-top: 1px solid var(--adl-border-subtle);
+}
+
+.secondaryRow .navbar__items {
+  gap: 0.25rem;
+}
+
+.homeLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+  color: var(--ifm-navbar-link-color);
+}
+
+.homeLink:hover {
+  color: var(--ifm-color-primary);
+}
+
+/* Contextual version dropdown sits next to the title; collapses when empty
+   (the docs version dropdown renders nothing off its plugin's pages). */
+.versionSlot {
+  display: flex;
+  align-items: center;
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--adl-border-subtle);
+}
+
+.versionSlot:empty {
+  display: none;
+}
+
+.colorModeToggle {
+  margin: 0 0.25rem;
+}
+
+/* On mobile the two-row layout collapses to the hamburger sidebar. */
+@media (max-width: 996px) {
+  .secondaryRow {
+    display: none;
+  }
+
+  .versionSlot {
+    display: none;
+  }
+}

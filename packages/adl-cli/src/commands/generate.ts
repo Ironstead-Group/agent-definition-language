@@ -5,7 +5,11 @@ import chalk from "chalk";
 import { loadDocument } from "../core/loader.js";
 import { validateDocument } from "../core/validator.js";
 import { formatErrorsTerminal } from "../core/errors.js";
-import { generateAgent, listTargets } from "@adl-spec/generator";
+import {
+  generateAgent,
+  listTargets,
+  loadFormatterPlugins,
+} from "@adl-spec/generator";
 import type { ADLDocument } from "@adl-spec/core";
 
 export function registerGenerateCommand(program: Command): void {
@@ -14,13 +18,31 @@ export function registerGenerateCommand(program: Command): void {
     .description("Generate agent code from an ADL document")
     .argument("[file]", "ADL document file to generate from")
     .option("--target <targets...>", "Target framework(s) to generate for")
+    .option("--plugin <modules...>", "Formatter plugin module(s) to load")
     .option("--output <dir>", "Output directory", "./generated")
     .option("--list-targets", "List all available generation targets")
     .action(
       async (
         file: string | undefined,
-        opts: { target?: string[]; output: string; listTargets?: boolean },
+        opts: {
+          target?: string[];
+          plugin?: string[];
+          output: string;
+          listTargets?: boolean;
+        },
       ) => {
+        if (opts.plugin && opts.plugin.length > 0) {
+          try {
+            await loadFormatterPlugins(opts.plugin, {
+              baseDir: process.cwd(),
+            });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            console.error(chalk.red("✗") + ` Failed to load plugin: ${message}`);
+            process.exit(1);
+          }
+        }
+
         if (opts.listTargets) {
           const targets = listTargets();
           console.log(chalk.bold("Available targets:\n"));

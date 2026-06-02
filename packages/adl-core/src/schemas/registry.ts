@@ -4,10 +4,12 @@
 
 import schema010 from "./0.1.0.json";
 import schema020 from "./0.2.0.json";
+import schema030 from "./0.3.0.json";
 
 const SCHEMAS: Record<string, object> = {
   "0.1.0": schema010,
   "0.2.0": schema020,
+  "0.3.0": schema030,
 };
 
 export const SUPPORTED_VERSIONS = Object.keys(SCHEMAS);

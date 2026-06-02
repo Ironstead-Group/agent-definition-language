@@ -42,3 +42,5 @@ export type ToolErrorAction = "abort" | "continue" | "retry";
 export type FallbackAction = "return_error" | "use_default" | "skip";
 
 export type BackoffStrategy = "fixed" | "exponential" | "linear";
+
+export type DegradationAction = "halt" | "pause" | "fallback" | "continue";

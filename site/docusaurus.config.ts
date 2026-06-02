@@ -116,6 +116,42 @@ const config: Config = {
     [
       '@docusaurus/plugin-content-docs',
       {
+        id: 'protocol',
+        path: '../protocol/draft',
+        routeBasePath: '/protocol',
+        sidebarPath: './sidebarsProtocol.ts',
+        include: ['index.md', 'trust-protocol.md', 'runtime-protocol.md'],
+        beforeDefaultRemarkPlugins: [
+          remarkBlockquoteAdmonitions,
+          remarkStripTitle,
+        ],
+        remarkPlugins: [
+          remarkVersionBadge,
+          remarkRewriteLinks,
+        ],
+      },
+    ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'patterns',
+        path: '../patterns/draft',
+        routeBasePath: '/patterns',
+        sidebarPath: './sidebarsPatterns.ts',
+        include: ['**/*.{md,mdx}'],
+        exclude: ['**/README.md'],
+        beforeDefaultRemarkPlugins: [
+          remarkBlockquoteAdmonitions,
+          remarkStripTitle,
+        ],
+        remarkPlugins: [
+          remarkRewriteLinks,
+        ],
+      },
+    ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
         id: 'profiles',
         path: '../profiles',
         routeBasePath: '/profiles',
@@ -152,7 +188,7 @@ const config: Config = {
         siteDescription: 'The standard for trusted AI agents. ADL provides a standardized way to define agent identity, permissions, lifecycle, compliance, and governance in one auditable document.',
         depth: 2,
         enableDescriptions: true,
-        includeOrder: ['/spec/**', '/spec/examples/**', '/profiles/**', '/standardization/**'],
+        includeOrder: ['/spec/**', '/spec/examples/**', '/protocol/**', '/patterns/**', '/profiles/**', '/standardization/**'],
       },
     ],
   ],
@@ -163,7 +199,7 @@ const config: Config = {
       {
         hashed: true,
         indexBlog: false,
-        docsRouteBasePath: ['/', '/spec', '/profiles'],
+        docsRouteBasePath: ['/', '/spec', '/protocol', '/patterns', '/profiles'],
       },
     ],
   ],
@@ -173,7 +209,7 @@ const config: Config = {
       'classic',
       {
         docs: {
-          sidebarPath: './sidebars.ts',
+          sidebarPath: false,
           editUrl: 'https://github.com/adl-spec/agent-definition-language/tree/main/',
           routeBasePath: '/',
           beforeDefaultRemarkPlugins: [
@@ -294,6 +330,36 @@ const config: Config = {
         src: 'img/logo.svg',
       },
       items: [
+        {
+          to: '/spec',
+          label: 'Specification',
+          position: 'left',
+        },
+        {
+          to: '/profiles',
+          label: 'Profiles',
+          position: 'left',
+        },
+        {
+          to: '/protocol',
+          label: 'Protocol',
+          position: 'left',
+        },
+        {
+          to: '/patterns',
+          label: 'Patterns',
+          position: 'left',
+        },
+        {
+          to: '/implementations',
+          label: 'Implementations',
+          position: 'left',
+        },
+        {
+          to: '/standardization/roadmap',
+          label: 'Standardization',
+          position: 'left',
+        },
         {
           type: 'docsVersionDropdown',
           docsPluginId: 'spec',

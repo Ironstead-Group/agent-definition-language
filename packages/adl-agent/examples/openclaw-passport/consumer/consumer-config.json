@@ -1,0 +1,35 @@
+{
+  "_comment": "OpenClaw-style configuration for a consumer running an ADL-governed agent. The @adl-spec/openclaw-plugin loads the passport at gateway start, validates it, and applies its permissions to the agent's runtime. See proposals/2026-03-21-openclaw-runtime-layer.md.",
+  "plugins": [
+    {
+      "name": "@adl-spec/openclaw-plugin",
+      "config": {
+        "documents": ["./consumer-agent.adl.yaml"],
+        "discovery": [],
+        "discovery_interval": 0,
+        "serve_discovery": false,
+        "mode": "enforce",
+        "verification": {
+          "require_signature": true,
+          "require_did_resolution": false,
+          "trust_on_first_use": true
+        }
+      }
+    }
+  ],
+  "agents": {
+    "list": [
+      {
+        "id": "personal-assistant",
+        "identity": {
+          "name": "Personal Assistant",
+          "passport": "./consumer-agent.adl.yaml"
+        },
+        "model": {
+          "primary": "anthropic/claude-sonnet-4-5"
+        },
+        "workspace": "~/openclaw/workspaces/personal-assistant"
+      }
+    ]
+  }
+}

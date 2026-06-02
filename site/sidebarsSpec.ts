@@ -4,11 +4,6 @@ const sidebarsSpec: SidebarsConfig = {
   specSidebar: [
     {type: 'doc', id: 'specification', label: 'Specification'},
     {
-      type: 'link',
-      label: 'Profiles',
-      href: '/profiles',
-    },
-    {
       type: 'category',
       label: 'Examples',
       collapsed: false,
@@ -21,21 +16,6 @@ const sidebarsSpec: SidebarsConfig = {
         'examples/with-tools',
         'examples/production',
       ],
-    },
-    {
-      type: 'link',
-      label: 'Passport Discovery',
-      href: '/demo',
-    },
-    {
-      type: 'link',
-      label: 'Standardization',
-      href: '/standardization/roadmap',
-    },
-    {
-      type: 'link',
-      label: 'Implementations',
-      href: '/implementations',
     },
   ],
 };

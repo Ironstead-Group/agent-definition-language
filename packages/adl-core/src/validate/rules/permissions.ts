@@ -14,6 +14,7 @@
 
 import type { ADLDocument } from "../../types/document.js";
 import { createError, type ADLError } from "../../types/errors.js";
+import { specAtLeast } from "../version.js";
 
 // Printable ASCII excluding control characters
 const VALID_PATTERN_CHARS = /^[\x21-\x7e]+$/;
@@ -171,6 +172,129 @@ export function checkPermissions(doc: ADLDocument): ADLError[] {
             { pointer: `/permissions/execution/allowed_commands/${i}` },
           ),
         );
+      }
+    }
+  }
+
+  // ADL 0.3.0+ permission rules: budget caps (ADL-6001/6002) and the
+  // delegation envelope (ADL-6006/6007). These members are 0.3.0 additions.
+  if (specAtLeast(doc.adl_spec, 0, 3)) {
+    const budget = doc.permissions?.resource_limits?.budget;
+    if (budget) {
+      const dims = ["tokens", "cost_usd", "wall_clock_sec"] as const;
+      for (const dim of dims) {
+        const d = budget[dim];
+        if (!d) continue;
+        // ADL-6001 (VAL-29): every present cap must be a number > 0
+        for (const cap of ["per_session", "per_day"] as const) {
+          const v = d[cap];
+          if (v !== undefined && (typeof v !== "number" || !(v > 0))) {
+            errors.push(
+              createError(
+                "ADL-6001",
+                `Budget cap ${dim}.${cap} must be a number greater than 0`,
+                {
+                  pointer: `/permissions/resource_limits/budget/${dim}/${cap}`,
+                },
+              ),
+            );
+          }
+        }
+        // ADL-6002 (VAL-30): per_session <= per_day when both are present
+        if (
+          typeof d.per_session === "number" &&
+          typeof d.per_day === "number" &&
+          d.per_session > d.per_day
+        ) {
+          errors.push(
+            createError(
+              "ADL-6002",
+              `Budget ${dim}.per_session (${d.per_session}) exceeds per_day (${d.per_day})`,
+              {
+                pointer: `/permissions/resource_limits/budget/${dim}/per_session`,
+              },
+            ),
+          );
+        }
+      }
+    }
+
+    const delegation = doc.permissions?.delegation;
+    if (delegation) {
+      // ADL-6006 (VAL-34): match/deny patterns conform to Section 4.4
+      for (const key of ["match", "deny"] as const) {
+        const patterns = delegation[key];
+        if (!patterns) continue;
+        for (let i = 0; i < patterns.length; i++) {
+          const result = validateNonFsPattern(patterns[i]);
+          if (!result.valid) {
+            errors.push(
+              createError(
+                "ADL-6006",
+                `Invalid delegation ${key} pattern "${patterns[i]}": ${result.reason}`,
+                { pointer: `/permissions/delegation/${key}/${i}` },
+              ),
+            );
+          }
+        }
+      }
+      // ADL-6007 (VAL-35): max_depth, when present, must be an integer >= 1
+      if (delegation.max_depth !== undefined) {
+        const md = delegation.max_depth;
+        if (typeof md !== "number" || !Number.isInteger(md) || md < 1) {
+          errors.push(
+            createError(
+              "ADL-6007",
+              `Delegation max_depth must be an integer >= 1 (got ${md})`,
+              { pointer: `/permissions/delegation/max_depth` },
+            ),
+          );
+        }
+      }
+    }
+
+    // ADL-6009 (VAL-35a): sub-agent (persona) declarations — name presence,
+    // uniqueness within the array, and tools as a subset of the parent's.
+    const subAgents = doc.permissions?.sub_agents;
+    if (Array.isArray(subAgents)) {
+      const parentTools = new Set((doc.tools ?? []).map((t) => t.name));
+      const seenNames = new Set<string>();
+      for (let i = 0; i < subAgents.length; i++) {
+        const sa = subAgents[i];
+        if (typeof sa?.name !== "string" || sa.name.length === 0) {
+          errors.push(
+            createError(
+              "ADL-6009",
+              `Sub-agent at index ${i} must declare a non-empty name`,
+              { pointer: `/permissions/sub_agents/${i}/name` },
+            ),
+          );
+        } else {
+          if (seenNames.has(sa.name)) {
+            errors.push(
+              createError(
+                "ADL-6009",
+                `Duplicate sub-agent name "${sa.name}"`,
+                { pointer: `/permissions/sub_agents/${i}/name` },
+              ),
+            );
+          }
+          seenNames.add(sa.name);
+        }
+        if (Array.isArray(sa?.tools)) {
+          for (let j = 0; j < sa.tools.length; j++) {
+            const tool = sa.tools[j];
+            if (!parentTools.has(tool)) {
+              errors.push(
+                createError(
+                  "ADL-6009",
+                  `Sub-agent "${sa.name ?? i}" references tool "${tool}" not in the parent's tools`,
+                  { pointer: `/permissions/sub_agents/${i}/tools/${j}` },
+                ),
+              );
+            }
+          }
+        }
       }
     }
   }

@@ -1,0 +1,72 @@
+$schema: https://adl-spec.org/0.2/schema.json
+adl_spec: "0.2.0"
+name: Legacy Analyzer
+description: >-
+  An older analytics agent superseded by Research Assistant. Kept available
+  for in-flight work but not recommended for new integrations.
+version: "1.0.0"
+id: https://agents.acme.example/legacy-analyzer
+
+data_classification:
+  sensitivity: internal
+
+lifecycle:
+  status: deprecated
+  effective_date: "2025-06-01T00:00:00Z"
+  sunset_date: "2026-06-01T00:00:00Z"
+  successor: https://agents.acme.example/research-assistant
+
+provider:
+  name: Acme Corp
+  url: https://agents.acme.example
+  contact: ai-platform@acme.example
+
+cryptographic_identity:
+  did: did:web:agents.acme.example:legacy-analyzer
+  public_key:
+    algorithm: Ed25519
+    value: REPLACED_AT_GATEWAY_STARTUP
+
+model:
+  provider: anthropic
+  name: claude-sonnet-4-5
+  capabilities:
+    - function_calling
+
+tools:
+  - name: analyze_dataset
+    description: Run a deprecated analysis pipeline.
+    parameters:
+      type: object
+      properties:
+        dataset_id:
+          type: string
+      required:
+        - dataset_id
+    read_only: true
+
+permissions:
+  network:
+    allowed_hosts:
+      - api.acme.example
+    allowed_protocols:
+      - https
+    deny_private: true
+  resource_limits:
+    max_memory_mb: 1024
+    max_duration_sec: 60
+
+security:
+  authentication:
+    type: api_key
+    required: true
+  attestation:
+    type: self
+    issued_at: "2025-06-01T00:00:00Z"
+    expires_at: "2026-06-01T00:00:00Z"
+
+metadata:
+  license: Proprietary
+  tags:
+    - deprecated
+    - analytics

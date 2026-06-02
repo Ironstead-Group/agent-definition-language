@@ -1,0 +1,136 @@
+$schema: https://adl-spec.org/0.2/schema.json
+adl_spec: "0.2.0"
+name: Invoice Processor
+description: >-
+  Reviews vendor invoices, matches them against purchase orders, and routes
+  exceptions to AP staff. Operates under SOC 2 Type II controls with Tier 2
+  conditional autonomy.
+version: "2.0.0"
+id: https://agents.acme.example/invoice-processor
+
+data_classification:
+  sensitivity: confidential
+  categories:
+    - financial
+    - pii
+  retention:
+    max_days: 2555
+  handling:
+    encryption_required: true
+    logging_required: true
+
+lifecycle:
+  status: active
+  effective_date: "2026-01-15T00:00:00Z"
+
+provider:
+  name: Acme Corp
+  url: https://agents.acme.example
+  contact: ai-platform@acme.example
+
+cryptographic_identity:
+  did: did:web:agents.acme.example:invoice-processor
+  public_key:
+    algorithm: Ed25519
+    # Public key value is provisioned at gateway startup and substituted here.
+    value: REPLACED_AT_GATEWAY_STARTUP
+
+model:
+  provider: anthropic
+  name: claude-opus-4-7
+  context_window: 200000
+  temperature: 0.1
+  capabilities:
+    - function_calling
+
+system_prompt: >-
+  You are an accounts-payable assistant. Match invoices to purchase orders,
+  flag discrepancies, and never approve payment without explicit AP approval.
+
+tools:
+  - name: search_invoices
+    description: Search invoices by vendor, date range, or status.
+    parameters:
+      type: object
+      properties:
+        vendor:
+          type: string
+        date_from:
+          type: string
+          format: date
+        date_to:
+          type: string
+          format: date
+      required:
+        - vendor
+    read_only: true
+  - name: match_purchase_order
+    description: Match an invoice to its purchase order and return discrepancies.
+    parameters:
+      type: object
+      properties:
+        invoice_id:
+          type: string
+      required:
+        - invoice_id
+    read_only: true
+    idempotent: true
+
+permissions:
+  network:
+    allowed_hosts:
+      - api.acme.example
+      - finance.acme.example
+    allowed_protocols:
+      - https
+    deny_private: true
+  filesystem:
+    allowed_paths:
+      - path: /data/invoices/**
+        access: read
+      - path: /data/audit/**
+        access: read_write
+  resource_limits:
+    max_memory_mb: 4096
+    max_duration_sec: 300
+
+security:
+  authentication:
+    type: oauth2
+    required: true
+    scopes:
+      - invoices:read
+      - purchase_orders:read
+    token_endpoint: https://auth.acme.example/oauth/token
+  encryption:
+    in_transit:
+      required: true
+      min_version: "1.3"
+    at_rest:
+      required: true
+      algorithm: AES-256-GCM
+  attestation:
+    type: third_party
+    issuer: https://trust.acme.example
+    issued_at: "2026-04-01T00:00:00Z"
+    expires_at: "2027-04-01T00:00:00Z"
+
+runtime:
+  tool_invocation:
+    parallel: false
+    timeout_ms: 60000
+  error_handling:
+    on_tool_error: retry
+    max_retries: 2
+
+metadata:
+  authors:
+    - name: Acme AP Platform Team
+      email: ap-platform@acme.example
+  license: Proprietary
+  documentation: https://docs.acme.example/agents/invoice-processor
+  tags:
+    - finance
+    - accounts-payable
+    - soc2
+    - enterprise

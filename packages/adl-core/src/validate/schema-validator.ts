@@ -18,7 +18,7 @@ export function validateSchema(doc: ADLDocument): ADLError[] {
   if (!schema) {
     // If version is not supported, semantic validator will catch it.
     // Fall back to latest schema for structural validation.
-    return validateAgainstSchema(doc, getSchema("0.2.0")!);
+    return validateAgainstSchema(doc, getSchema("0.3.0")!);
   }
 
   return validateAgainstSchema(doc, schema);

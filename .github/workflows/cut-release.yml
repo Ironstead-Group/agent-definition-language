@@ -1,0 +1,64 @@
+name: cut-release
+
+# Manual "cut the release" button. Freezes versions/draft into
+# versions/<version>/, bumps the working draft to the next minor version, builds
+# a changelog from Conventional Commits since the last release tag, and opens a
+# "release: <version>" PR. The standards-readiness check runs on that PR; a
+# maintainer reviews and merges it, which triggers publish-release.yml.
+#
+# It does NOT generate or publish the IETF Internet-Draft -- that stays the
+# maintainer's local procedure (generate_ietf.py + kramdown-rfc/xml2rfc ->
+# gitignored standardization/output/ -> manual upload to the datatracker).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to cut (MAJOR.MINOR.PATCH, e.g. 0.3.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  cut:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for the changelog
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Freeze the release
+        run: python scripts/cut_release.py "${{ inputs.version }}"
+
+      - name: Build changelog
+        run: |
+          last_tag=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          range=${last_tag:+${last_tag}..HEAD}
+          {
+            echo "## ADL ${{ inputs.version }}"
+            echo
+            git log --no-merges --pretty='- %s' ${range} || true
+          } > "${{ runner.temp }}/changelog.md"
+
+      - name: Open the release PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: release/${{ inputs.version }}
+          base: main
+          title: "release: ${{ inputs.version }}"
+          body-path: ${{ runner.temp }}/changelog.md
+          commit-message: "feat(spec): release ${{ inputs.version }}"
+          labels: release
+          delete-branch: true

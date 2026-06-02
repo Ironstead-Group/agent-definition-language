@@ -193,6 +193,7 @@ proposals/pvt/
 
 # Playwright
 .playwright-cli/
+.playwright-mcp/
 playwright-report/
 test-results/
 playwright/.cache/
@@ -200,3 +201,16 @@ playwright/.cache/
 # Debug/snapshot artifacts
 *.snapshot.yaml
 gov-record-snapshot.yaml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# Keys / secrets — never commit private keys
+*.pem
+
+# Internal working reviews — local-only notes for agents/maintainers, not published
+reviews/

@@ -126,6 +126,18 @@ describe("spec conformance", () => {
     const specPath = path.join(VERSIONS_DIR, latestVersion, "spec.md");
     const specCodes = extractErrorCodesFromSpec(specPath);
 
+    // The catalog may implement codes from the in-development (next) spec ahead
+    // of its release — e.g. ADL-2025 (VAL-37). Such "extra" codes are allowed
+    // only if they are real codes defined in the draft spec, so true orphans are
+    // still caught. The catalog must still cover every released-spec code.
+    const draftSpecPath = path.join(VERSIONS_DIR, manifest.next, "spec.md");
+    const allowedCodes = new Set([
+      ...specCodes,
+      ...(fs.existsSync(draftSpecPath)
+        ? extractErrorCodesFromSpec(draftSpecPath)
+        : []),
+    ]);
+
     test("spec has error codes defined", () => {
       expect(specCodes.length).toBeGreaterThan(0);
     });
@@ -141,7 +153,7 @@ describe("spec conformance", () => {
     test("no extra error codes in catalog that are not in the spec", () => {
       const catalogCodes = Object.keys(ADL_ERRORS).sort();
       for (const code of catalogCodes) {
-        expect(specCodes).toContain(code);
+        expect([...allowedCodes]).toContain(code);
       }
     });
   });

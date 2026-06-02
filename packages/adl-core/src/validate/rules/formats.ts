@@ -5,6 +5,7 @@
 
 import type { ADLDocument } from "../../types/document.js";
 import { createError, type ADLError } from "../../types/errors.js";
+import { specAtLeast } from "../version.js";
 
 /**
  * Check if a string is a valid ISO 8601 date-time.
@@ -24,6 +25,22 @@ function isValidDateTime(value: string): boolean {
 function isValidURI(value: string): boolean {
   // A URI must have a scheme (letters followed by colon)
   return /^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(value);
+}
+
+/**
+ * ADL URN structure per the `adl-urn` production (spec Appendix D).
+ * Two type-discriminated forms:
+ *   agent:   urn:adl:agent:{namespace}:{name}:{version}   (version is semver)
+ *   profile: urn:adl:profile:{name}:{version}             (version is MAJOR.MINOR[.PATCH])
+ * The {type} segment (VAL-37) MUST be "agent" or "profile".
+ */
+const ADL_AGENT_URN_RE =
+  /^urn:adl:agent:[a-z0-9]+:[a-z0-9][a-z0-9-]*:[0-9]+\.[0-9]+\.[0-9]+$/;
+const ADL_PROFILE_URN_RE =
+  /^urn:adl:profile:[a-z0-9][a-z0-9-]*:[0-9]+\.[0-9]+(\.[0-9]+)?$/;
+
+function isValidAdlUrn(value: string): boolean {
+  return ADL_AGENT_URN_RE.test(value) || ADL_PROFILE_URN_RE.test(value);
 }
 
 /**
@@ -92,6 +109,32 @@ export function checkFormats(doc: ADLDocument): ADLError[] {
           { pointer },
         ),
       );
+    }
+  }
+
+  // ADL-2025 (VAL-37): from ADL 0.3.0, any urn:adl: value MUST conform to the
+  // adl-urn production — i.e. carry a {type} segment of "agent" or "profile".
+  // Pre-0.3.0 documents used the type-less URN form and are exempt.
+  if (specAtLeast(doc.adl_spec, 0, 3)) {
+    const adlUrnFields: Array<{ value: string | undefined; pointer: string }> = [
+      { value: doc.id, pointer: "/id" },
+      { value: doc.lifecycle?.successor, pointer: "/lifecycle/successor" },
+    ];
+
+    for (const { value, pointer } of adlUrnFields) {
+      if (
+        typeof value === "string" &&
+        value.startsWith("urn:adl:") &&
+        !isValidAdlUrn(value)
+      ) {
+        errors.push(
+          createError(
+            "ADL-2025",
+            `Invalid ADL URN "${value}" at ${pointer}: must be urn:adl:agent:{namespace}:{name}:{version} or urn:adl:profile:{name}:{version}`,
+            { pointer },
+          ),
+        );
+      }
     }
   }
 

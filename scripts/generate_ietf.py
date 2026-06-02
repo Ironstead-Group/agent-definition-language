@@ -62,17 +62,26 @@ BCP14_KEYWORDS = [
 ]
 
 # Inline citation replacements: spec text -> kramdown-rfc citation.
+# Keep in sync with the references defined in spec.md Section 19 (and the
+# normative/informative blocks of the kramdown boilerplate).
 INLINE_CITATIONS = {
     "[RFC2119]": "{{RFC2119}}",
     "[RFC3986]": "{{RFC3986}}",
+    "[RFC6749]": "{{RFC6749}}",
     "[RFC6838]": "{{RFC6838}}",
     "[RFC6901]": "{{RFC6901}}",
+    "[RFC7636]": "{{RFC7636}}",
     "[RFC8126]": "{{RFC8126}}",
     "[RFC8141]": "{{RFC8141}}",
     "[RFC8174]": "{{RFC8174}}",
     "[RFC8259]": "{{RFC8259}}",
     "[RFC8615]": "{{RFC8615}}",
+    "[RFC8705]": "{{RFC8705}}",
     "[RFC8785]": "{{RFC8785}}",
+    "[RFC9449]": "{{RFC9449}}",
+    "[RFC9700]": "{{RFC9700}}",
+    "[OAUTH2.1]": "{{OAUTH2.1}}",
+    "[OPENID-CONNECT]": "{{OPENID-CONNECT}}",
     "[A2A]": "{{A2A}}",
     "[JSON-SCHEMA]": "{{JSON-SCHEMA}}",
     "[MCP]": "{{MCP}}",
@@ -81,7 +90,14 @@ INLINE_CITATIONS = {
     "[W3C.VC]": "{{W3C.VC}}",
     "[ISO-22989]": "{{ISO-22989}}",
     "[AI-PROTOCOLS]": "{{AI-PROTOCOLS}}",
+    "[CLTC-AGENTIC]": "{{CLTC-AGENTIC}}",
+    "[IMDA-AGENTIC]": "{{IMDA-AGENTIC}}",
 }
+
+# Base URL for the published spec site (Docusaurus `url` in site config).
+# Site-relative links such as /protocol/runtime are rewritten to absolute
+# URLs under this origin so companion pages resolve from the draft.
+SITE_BASE_URL = "https://adl-spec.org"
 
 
 def load_text(path: Path) -> str:
@@ -146,6 +162,17 @@ def convert_spec_links(text: str) -> str:
 
     # Replace any remaining <a> tags with their label text + citation
     text = re.sub(r'<a\s+href="[^"]*"[^>]*>(.*?)</a>', replace_html_link, text)
+
+    # Rewrite site-relative links (e.g. /protocol/runtime, /spec/next#...) to
+    # absolute URLs under the published site origin so companion pages resolve
+    # from the draft. Runs after the http-link handling above so these are not
+    # stripped to plain text.
+    text = re.sub(
+        r'\[([^\[\]]+)\]\((/[^)]*)\)',
+        lambda m: f'[{m.group(1)}]({SITE_BASE_URL}{m.group(2)})',
+        text,
+    )
+
     # Clean up doubled bold markers from **[link](url)** → ****Label** {{CIT}}**
     text = text.replace("****", "**")
     # Remove stray trailing bold after citations: {{CIT}}** → {{CIT}}
@@ -364,37 +391,139 @@ def adjust_heading_levels(text: str) -> str:
     return "\n".join(result)
 
 
-def strip_section_numbers(text: str) -> str:
-    """Remove manual section numbers from headings.
+def slug_anchor(number: str, is_appendix: bool) -> str:
+    """Stable kramdown-rfc anchor for a section/appendix number.
 
-    kramdown-rfc auto-numbers sections, so we strip "1. ", "1.1 ", etc.
-    Also converts "Appendix A." style to just the title.
+    "17.3" -> "sec-17-3"; appendix "D" -> "app-d"; "C.1" -> "app-c-1".
+    """
+    norm = number.replace(".", "-").lower()
+    return ("app-" if is_appendix else "sec-") + norm
+
+
+def build_anchor_map(spec_text: str) -> dict:
+    """Map Core section/appendix numbers to anchors, from the spec headings.
+
+    Only numbers that end up in the draft body get an entry: sections 1-18
+    (Section 19 References is rendered from the YAML front matter, not the body)
+    and appendices A-D. Used to convert in-text cross-references to xrefs.
+    """
+    amap: dict[str, str] = {}
+    for line in spec_text.split("\n"):
+        m = re.match(r'^##\s+Appendix\s+([A-Z])\.\s+', line)
+        if m:
+            amap[m.group(1)] = slug_anchor(m.group(1), True)
+            continue
+        m = re.match(r'^#{3,6}\s+([A-Z]\.\d+)\s+', line)
+        if m:
+            amap[m.group(1)] = slug_anchor(m.group(1), True)
+            continue
+        m = re.match(r'^#{2,6}\s+(\d+(?:\.\d+)*)\.?\s+\S', line)
+        if m:
+            num = m.group(1)
+            if int(num.split(".")[0]) <= 18:
+                amap[num] = slug_anchor(num, False)
+    return amap
+
+
+def _external_ref_before(line: str, start: int) -> bool:
+    """True if the reference at `start` is qualified by another document and so
+    must NOT be rewritten to a Core anchor.
+
+    Catches an external RFC ("RFC 5234 Section 6", "RFC 5234, Appendix B", or the
+    converted "{{RFC5234}}" form), a companion protocol ("... Protocol ..."), and
+    an explicit "that document".
+    """
+    pre = line[max(0, start - 35):start]
+    return bool(re.search(
+        r'(?:RFC\s*\d+|\{\{RFC\d+\}\})[\s,)]*$'
+        r'|[Pp]rotocol\b\W*$|that document\W*$|/protocol/\w+\)?\s*(?:as\s+)?$',
+        pre,
+    ))
+
+
+def _xref_line(line: str, amap: dict) -> str:
+    """Convert in-text cross-references on a single (non-code) line to xrefs.
+
+    Converts the provably-Core reference forms to kramdown-rfc (#anchor):
+    - "Section N(.M...)" and "Appendix X(.N)" (the word disambiguates Core from
+      the companion protocols, which always use the "§" form), unless the
+      reference is qualified by another document (an RFC number, a companion
+      Protocol, or "that document") -- see _external_ref_before.
+    - bare "§N.M..." only when the top-level number is >= 4 AND it has a
+      subsection AND it is in the Core map AND it is not qualified by another
+      document. The low-numbered "§" forms (§1.x, §2.x, §3.x and bare top-level)
+      collide with the Trust/Runtime protocols' own section numbers, so they are
+      left as literal text.
+    """
+    def sec_repl(m: re.Match) -> str:
+        if _external_ref_before(line, m.start()):
+            return m.group(0)
+        anc = amap.get(m.group(1))
+        return f"(#{anc})" if anc else m.group(0)
+
+    line = re.sub(r'\bSection\s+(\d+(?:\.\d+)*)', sec_repl, line)
+    line = re.sub(r'\bAppendix\s+([A-Z](?:\.\d+)?)', sec_repl, line)
+
+    def para_repl(m: re.Match) -> str:
+        num = m.group(1)
+        if "." not in num or int(num.split(".")[0]) < 4:
+            return m.group(0)
+        anc = amap.get(num)
+        if not anc:
+            return m.group(0)
+        if _external_ref_before(line, m.start()):
+            return m.group(0)
+        return f"(#{anc})"
+
+    return re.sub(r'§(\d+(?:\.\d+)*)', para_repl, line)
+
+
+def convert_xrefs(text: str, amap: dict) -> str:
+    """Convert in-text section/appendix cross-references to kramdown-rfc xrefs.
+
+    Skips fenced code blocks so references inside examples/ABNF are untouched.
+    """
+    lines = text.split("\n")
+    result = []
+    in_code_block = False
+    for line in lines:
+        if line.strip().startswith("```"):
+            in_code_block = not in_code_block
+            result.append(line)
+            continue
+        result.append(line if in_code_block else _xref_line(line, amap))
+    return "\n".join(result)
+
+
+def strip_section_numbers(text: str) -> str:
+    """Remove manual section numbers from headings and assign stable anchors.
+
+    kramdown-rfc auto-numbers sections, so we strip "1. ", "1.1 ", etc., and
+    attach a `{#anchor}` derived from the original number so in-text xrefs
+    (see convert_xrefs) resolve.
     """
     lines = text.split("\n")
     result = []
     for line in lines:
-        # # 1. Introduction -> # Introduction
-        m = re.match(r'^(#+)\s+\d+\.\s+(.+)', line)
+        # # Appendix A. JSON Schema -> # JSON Schema {#app-a}
+        m = re.match(r'^(#+)\s+Appendix\s+([A-Z])\.\s+(.+)', line)
         if m:
-            result.append(f"{m.group(1)} {m.group(2)}")
+            anc = slug_anchor(m.group(2), True)
+            result.append(f"{m.group(1)} {m.group(3)} {{#{anc}}}")
             continue
 
-        # ## 1.1 Purpose -> ## Purpose
-        m = re.match(r'^(#+)\s+\d+\.\d+\s+(.+)', line)
+        # ## C.1 Title -> ## Title {#app-c-1} (appendix subsections)
+        m = re.match(r'^(#+)\s+([A-Z]\.\d+)\s+(.+)', line)
         if m:
-            result.append(f"{m.group(1)} {m.group(2)}")
+            anc = slug_anchor(m.group(2), True)
+            result.append(f"{m.group(1)} {m.group(3)} {{#{anc}}}")
             continue
 
-        # # Appendix A. JSON Schema -> # JSON Schema
-        m = re.match(r'^(#+)\s+Appendix\s+[A-Z]\.\s+(.+)', line)
+        # # 1. Introduction / ## 1.1 Purpose / ### 10.3.3 Title -> Title {#sec-...}
+        m = re.match(r'^(#+)\s+(\d+(?:\.\d+)*)\.?\s+(.+)', line)
         if m:
-            result.append(f"{m.group(1)} {m.group(2)}")
-            continue
-
-        # ## C.1 Title -> ## Title (appendix subsections)
-        m = re.match(r'^(#+)\s+[A-Z]\.\d+\s+(.+)', line)
-        if m:
-            result.append(f"{m.group(1)} {m.group(2)}")
+            anc = slug_anchor(m.group(2), False)
+            result.append(f"{m.group(1)} {m.group(3)} {{#{anc}}}")
             continue
 
         result.append(line)
@@ -440,6 +569,9 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     load_manifest(manifest_path)  # validate it loads; structure used for future features
     boilerplate_text = load_text(boilerplate_path)
 
+    # Section/appendix number -> anchor map, for in-text cross-reference xrefs.
+    anchor_map = build_anchor_map(spec_text)
+
     # Split boilerplate into parts
     front_and_abstract, middle_marker, back_marker = split_boilerplate(boilerplate_text)
 
@@ -461,6 +593,7 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     middle_content = strip_horizontal_rules(middle_content)
     middle_content = adjust_heading_levels(middle_content)
     middle_content = strip_section_numbers(middle_content)
+    middle_content = convert_xrefs(middle_content, anchor_map)
     middle_content = normalize_ascii(middle_content)
 
     # Apply transformations to back content
@@ -471,6 +604,7 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     back_content = strip_horizontal_rules(back_content)
     back_content = adjust_heading_levels(back_content)
     back_content = strip_section_numbers(back_content)
+    back_content = convert_xrefs(back_content, anchor_map)
     back_content = add_code_markers(back_content)
     back_content = normalize_ascii(back_content)
 

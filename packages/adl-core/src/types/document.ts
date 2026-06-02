@@ -7,6 +7,7 @@ import type {
   AuthType,
   BackoffStrategy,
   DataCategory,
+  DegradationAction,
   FallbackAction,
   FileAccess,
   LifecycleStatus,
@@ -164,11 +165,49 @@ export interface ExecutionPermissions {
   extensions?: Extensions;
 }
 
+export interface BudgetDimension {
+  per_session?: number;
+  per_day?: number;
+  extensions?: Extensions;
+}
+
+export interface Budget {
+  tokens?: BudgetDimension;
+  cost_usd?: BudgetDimension;
+  wall_clock_sec?: BudgetDimension;
+  extensions?: Extensions;
+}
+
 export interface ResourceLimits {
   max_memory_mb?: number;
   max_cpu_percent?: number;
   max_duration_sec?: number;
   max_concurrent?: number;
+  budget?: Budget;
+  extensions?: Extensions;
+}
+
+export interface SubAgent {
+  name: string;
+  description?: string;
+  prompt_resource?: string;
+  tools?: string[];
+  max_parallel?: number;
+  budget_share?: Budget;
+  extensions?: Extensions;
+}
+
+export interface DelegationAttenuation {
+  scopes_subset?: boolean;
+  budget_subset?: boolean;
+  extensions?: Extensions;
+}
+
+export interface Delegation {
+  match?: string[];
+  deny?: string[];
+  max_depth?: number;
+  attenuation?: DelegationAttenuation;
   extensions?: Extensions;
 }
 
@@ -178,6 +217,8 @@ export interface Permissions {
   environment?: EnvironmentPermissions;
   execution?: ExecutionPermissions;
   resource_limits?: ResourceLimits;
+  sub_agents?: SubAgent[];
+  delegation?: Delegation;
   extensions?: Extensions;
 }
 
@@ -263,11 +304,28 @@ export interface RetryPolicy {
   extensions?: Extensions;
 }
 
+export interface DegradationResponse {
+  action: DegradationAction;
+  value?: unknown;
+  message?: string;
+  notify?: boolean;
+  extensions?: Extensions;
+}
+
+export interface LoopDetection {
+  window?: number;
+  on_detected?: DegradationResponse;
+  extensions?: Extensions;
+}
+
 export interface ToolInvocation {
   parallel?: boolean;
   max_concurrent?: number;
   timeout_ms?: number;
   retry_policy?: RetryPolicy;
+  max_iterations?: number;
+  max_tool_calls_per_session?: number;
+  loop_detection?: LoopDetection;
   extensions?: Extensions;
 }
 
@@ -290,6 +348,7 @@ export interface Runtime {
   output_handling?: OutputHandling;
   tool_invocation?: ToolInvocation;
   error_handling?: ErrorHandling;
+  degradation?: Record<string, DegradationResponse>;
   extensions?: Extensions;
 }
 

@@ -94,6 +94,50 @@ export type { ValidateOptions, ValidationResult } from "./validate/validator.js"
 export { convertToA2A } from "./convert/a2a.js";
 export { convertToMCP } from "./convert/mcp.js";
 
+// Verify (passport verification procedure per proposed §10.3)
+export { verifyPassport } from "./verify/verify.js";
+export {
+  generateKeyPair,
+  signCanonical,
+  verifyCanonical,
+  jcsCanonicalize,
+  base64UrlEncode,
+  base64UrlDecode,
+} from "./verify/crypto.js";
+export type { KeyPair } from "./verify/crypto.js";
+export {
+  resolveDIDWeb,
+  didWebToUrl,
+  buildDIDDocument,
+} from "./verify/did-resolver.js";
+export type {
+  DIDDocument,
+  VerificationMethod,
+  DIDResolutionResult,
+  ResolvedKey,
+  ResolveOptions,
+} from "./verify/did-resolver.js";
+export {
+  fetchDiscoveryDocument,
+  fetchPassportFromUrl,
+  discoverAndFetchAll,
+} from "./verify/discovery.js";
+export type {
+  DiscoveryAgent,
+  DiscoveryDocument,
+  DiscoveredPassport,
+} from "./verify/discovery.js";
+export { buildPassport, signPassport } from "./verify/builder.js";
+export type { BuildPassportInput } from "./verify/builder.js";
+export type {
+  EnforcementMode,
+  VerificationStepResult,
+  VerificationOutcome,
+  VerifyConfig,
+  VerifyInput,
+} from "./verify/types.js";
+export { DEFAULT_VERIFY_CONFIG } from "./verify/types.js";
+
 // Schema registry
 export {
   getSchema,

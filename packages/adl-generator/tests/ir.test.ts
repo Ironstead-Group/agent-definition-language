@@ -107,7 +107,7 @@ describe("transformToIR", () => {
       ir = transformToIR(doc);
       expect(ir.identity.name).toBe("Research Assistant");
       expect(ir.identity.id).toBe(
-        "urn:adl:acme:research-assistant:2.1.0",
+        "urn:adl:agent:acme:research-assistant:2.1.0",
       );
     });
 

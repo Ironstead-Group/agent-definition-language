@@ -3,6 +3,7 @@
  */
 
 import type { AgentIR } from "../../ir/types.js";
+import { defineFormatterPlugin } from "../../plugin.js";
 import type { GeneratedFile, TargetRenderer } from "../../renderer.js";
 import {
   renderAgent,
@@ -29,3 +30,5 @@ export class ClaudeSdkTsRenderer implements TargetRenderer {
     return files;
   }
 }
+
+export const claudeSdkTsPlugin = defineFormatterPlugin(new ClaudeSdkTsRenderer());
