@@ -11,7 +11,7 @@
  *   ANY  /agents/:slug            — Proxy to enterprise gateway with verification
  *
  * Passport transport:
- *   X-ADL-Passport: Base64-encoded YAML or JSON of the requesting agent's passport
+ *   ADL-Passport: Base64-encoded YAML or JSON of the requesting agent's passport
  *
  * Modes (per the OpenClaw runtime layer proposal):
  *   enforce    — Block on any failed block-severity step (HTTP 403)
@@ -89,7 +89,7 @@ const server = Bun.serve({
         {
           error: "missing_passport",
           detail:
-            "X-ADL-Passport header required. Send the requesting agent's passport (Base64-encoded YAML or JSON).",
+            "ADL-Passport header required. Send the requesting agent's passport (Base64-encoded YAML or JSON).",
         },
         { status: 401 },
       );
@@ -99,7 +99,7 @@ const server = Bun.serve({
     if (!passportBytes) {
       stats.blocked++;
       return Response.json(
-        { error: "invalid_passport_encoding", detail: "X-ADL-Passport must be valid Base64" },
+        { error: "invalid_passport_encoding", detail: "ADL-Passport must be valid Base64" },
         { status: 400 },
       );
     }
@@ -157,8 +157,8 @@ const server = Bun.serve({
     const responseHeaders = new Headers(upstream.headers);
 
     if (config.mode === "permissive") {
-      responseHeaders.set("X-ADL-Validation", outcome.verified ? "passed" : "failed");
-      responseHeaders.set("X-ADL-Validation-Summary", outcome.summary);
+      responseHeaders.set("ADL-Validation", outcome.verified ? "passed" : "failed");
+      responseHeaders.set("ADL-Validation-Summary", outcome.summary);
     }
     if (config.mode === "audit" && block) {
       console.warn(

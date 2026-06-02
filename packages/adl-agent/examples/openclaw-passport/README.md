@@ -35,7 +35,7 @@ procedure is demonstrated under both pass and fail conditions.
 │      → builds + signs passport (JCS canonicalization, §10.3)   │
 │      → publishes did.json (§10.3.1.3)                            │
 └────────────────────────────┬───────────────────────────────────┘
-                             │ X-ADL-Passport header
+                             │ ADL-Passport header
                              ▼
 ┌────────────────────────────────────────────────────────────────┐
 │  Platform Validator (port 3003)                                │
@@ -197,7 +197,7 @@ VALIDATOR_MODE=audit bun run packages/adl-agent/examples/openclaw-passport/run-d
 ```
 
 Audit mode passes failing requests through but logs the structured outcome.
-Permissive mode does the same and attaches `X-ADL-Validation` headers to
+Permissive mode does the same and attaches `ADL-Validation` headers to
 the upstream response.
 
 ## Spec sections exercised

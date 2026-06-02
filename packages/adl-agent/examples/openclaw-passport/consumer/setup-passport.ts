@@ -159,7 +159,7 @@ async function main() {
     "  - When the consumer agent calls another agent, it attaches the passport",
   );
   console.log(
-    "    in an X-ADL-Passport header. The receiving platform runs the",
+    "    in an ADL-Passport header. The receiving platform runs the",
   );
   console.log(
     "    verification procedure (§10.3) and either allows or rejects the request.",
