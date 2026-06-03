@@ -107,6 +107,45 @@ def freeze_docusaurus(text: str, version: str, next_version: str, old_latest: st
     return text.replace(anchor, new_entry + anchor, 1)
 
 
+VERSION_HEADER = re.compile(r"\*\*Version:\*\* (\d+\.\d+\.\d+)-draft")
+
+
+def freeze_protocol(ed: "Editor", version: str, next_version: str, dry_run: bool) -> None:
+    """Freeze protocol/draft -> protocol/<version> on the spec's cadence.
+
+    Protocols are cut together with the spec and aligned to the spec version:
+    the frozen copy is stamped `**Version:** <version>` / Posted, and the working
+    drafts are bumped to <next_version>-draft.
+    """
+    proto_draft = REPO / "protocol" / "draft"
+    if not proto_draft.exists():
+        return
+    frozen = REPO / "protocol" / version
+    if frozen.exists():
+        fail(f"protocol/{version}/ already exists -- protocol {version} is already cut")
+
+    print(f"  freeze protocol/draft -> protocol/{version}")
+    if not dry_run:
+        shutil.copytree(proto_draft, frozen)
+
+    # Discover every protocol doc by its version header rather than a fixed list,
+    # so protocols added later are frozen automatically. A doc qualifies if it
+    # carries a `**Version:** X.Y.Z-draft` header (index/overview pages don't).
+    for draft_file in sorted(proto_draft.glob("*.md")):
+        m = VERSION_HEADER.search(draft_file.read_text(encoding="utf-8"))
+        if not m:
+            continue
+        cur = m.group(1)
+        frozen_file = frozen / draft_file.name
+        read_from = None if not dry_run else draft_file
+        # Finalize the frozen header.
+        ed.replace(frozen_file, f"**Version:** {cur}-draft", f"**Version:** {version}",
+                   read_from=read_from)
+        ed.replace(frozen_file, "**Status:** Draft", "**Status:** Posted", read_from=read_from)
+        # Bump the working draft to the next spec version.
+        ed.replace(draft_file, f"**Version:** {cur}-draft", f"**Version:** {next_version}-draft")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Cut an ADL spec release (freeze + draft bump)")
     ap.add_argument("version", nargs="?", help="version to cut, e.g. 0.3.0 (default: manifest draft label)")
@@ -162,6 +201,10 @@ def main() -> None:
         ed.replace(ex, f'adl_spec: "{version}"', f'adl_spec: "{next_version}"', count=None)
     ed.replace(draft_dir / "examples" / "index.md",
                f'adl_spec: "{version}"', f'adl_spec: "{next_version}"', count=None)
+
+    # Step 5b -- freeze the protocol layer on the same cadence, aligned to the
+    # spec version (always together with the spec cut).
+    freeze_protocol(ed, version, next_version, args.dry_run)
 
     # Step 6 -- manifest
     new_manifest = freeze_manifest(manifest_path.read_text(encoding="utf-8"),
