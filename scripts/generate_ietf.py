@@ -139,6 +139,12 @@ def convert_spec_links(text: str) -> str:
     Handles both [label](url) Markdown links and <a href>label</a> HTML links.
     Known spec references are converted to kramdown-rfc {{citation}} syntax.
     """
+    # Drop Markdown images: ![alt](path). The spec's figures are external SVG
+    # diagrams that cannot render in a text I-D; kramdown-rfc would otherwise emit
+    # an element invalid as a section child. The following italic "*Figure N
+    # (informative): ...*" caption is retained and describes the figure.
+    text = re.sub(r'!\[[^\]]*\]\([^)]*\)\n?', '', text)
+
     # Replace known Markdown links with kramdown-rfc citations.
     # Handle nested brackets like [JSON [RFC8259]](url) by matching each known label.
     for link_text, citation in LINK_CITATIONS.items():
@@ -167,9 +173,12 @@ def convert_spec_links(text: str) -> str:
     # absolute URLs under the published site origin so companion pages resolve
     # from the draft. Runs after the http-link handling above so these are not
     # stripped to plain text.
+    # Strip emphasis inside the label (e.g. [**ADL Trust Protocol**](...)) so the
+    # link does not become <eref><strong>...</strong></eref>, which xml2rfc rejects.
     text = re.sub(
         r'\[([^\[\]]+)\]\((/[^)]*)\)',
-        lambda m: f'[{m.group(1)}]({SITE_BASE_URL}{m.group(2)})',
+        lambda m: f'[{m.group(1).replace("**", "").replace("__", "")}]'
+                  f'({SITE_BASE_URL}{m.group(2)})',
         text,
     )
 
@@ -459,7 +468,9 @@ def _xref_line(line: str, amap: dict) -> str:
         if _external_ref_before(line, m.start()):
             return m.group(0)
         anc = amap.get(m.group(1))
-        return f"(#{anc})" if anc else m.group(0)
+        # kramdown-rfc resolves {{anchor}} to a self-filling <xref> ("Section N");
+        # a bare (#anchor) is left as literal text, so it must not be used.
+        return "{{" + anc + "}}" if anc else m.group(0)
 
     line = re.sub(r'\bSection\s+(\d+(?:\.\d+)*)', sec_repl, line)
     line = re.sub(r'\bAppendix\s+([A-Z](?:\.\d+)?)', sec_repl, line)
@@ -473,7 +484,8 @@ def _xref_line(line: str, amap: dict) -> str:
             return m.group(0)
         if _external_ref_before(line, m.start()):
             return m.group(0)
-        return f"(#{anc})"
+        # {{anchor}} renders as "Section N.M"; replaces the "§N.M" source token.
+        return "{{" + anc + "}}"
 
     return re.sub(r'§(\d+(?:\.\d+)*)', para_repl, line)
 
