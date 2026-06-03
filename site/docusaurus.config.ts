@@ -135,19 +135,27 @@ const config: Config = {
           remarkVersionBadge,
           remarkRewriteLinks,
         ],
-        // The working draft is the current (unreleased) version; frozen
-        // protocol/<id>/ releases are bridged in by protocol-version-bridge.
-        lastVersion: protocolVersions[0] ?? 'current',
-        versions: {
-          current: {
-            label: 'Draft',
-            path: 'next',
-            banner: 'unreleased',
-          },
-          ...Object.fromEntries(
-            protocolVersions.map((v) => [v, {label: v, banner: 'none' as const}]),
-          ),
-        },
+        // Only enable versioning once a frozen protocol/<id>/ release exists.
+        // Before the first release, the draft stays at /protocol unchanged; with
+        // releases, the latest is served at /protocol and the draft at /protocol/next.
+        ...(protocolVersions.length
+          ? {
+              lastVersion: protocolVersions[0],
+              versions: {
+                current: {
+                  label: 'Draft',
+                  path: 'next',
+                  banner: 'unreleased' as const,
+                },
+                ...Object.fromEntries(
+                  protocolVersions.map((v) => [
+                    v,
+                    {label: v, banner: 'none' as const},
+                  ]),
+                ),
+              },
+            }
+          : {}),
       },
     ],
     [
