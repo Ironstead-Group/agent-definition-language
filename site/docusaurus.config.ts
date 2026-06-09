@@ -423,7 +423,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/adl-spec/agent-definition-language',
+              href: 'https://github.com/ironstead-group/agent-definition-language',
             },
           ],
         },
@@ -457,7 +457,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/adl-spec/agent-definition-language',
+              href: 'https://github.com/ironstead-group/agent-definition-language',
             },
             {
               label: 'LLMs.txt',
@@ -474,7 +474,7 @@ const config: Config = {
             },
             {
               label: 'Get Involved',
-              href: 'https://github.com/adl-spec/agent-definition-language',
+              href: 'https://github.com/ironstead-group/agent-definition-language',
             },
           ],
         },
