@@ -1,6 +1,6 @@
 {
   "name": "@adl-spec/cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CLI tooling for the Agent Definition Language (ADL)",
   "type": "module",
   "bin": {
