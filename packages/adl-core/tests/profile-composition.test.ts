@@ -74,27 +74,54 @@ interface ExampleCase {
   rel: string;
   doc: Record<string, unknown>;
   profiles: string[];
+  /** true when the file lives under examples/composite/ */
+  composite: boolean;
 }
 const exampleCases: ExampleCase[] = [];
 for (const p of manifest.profiles) {
   const dir = path.join(PROFILES_DIR, p.id, p.version, "examples");
   if (!fs.existsSync(dir)) continue;
-  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".json"))) {
-    const file = path.join(dir, f);
-    const doc = readJson(file);
-    if (!doc.adl_spec || !Array.isArray(doc.profiles)) continue; // skip records
-    exampleCases.push({
-      file,
-      rel: path.relative(REPO_ROOT, file),
-      doc,
-      profiles: doc.profiles as string[],
-    });
+  // walk examples/ and examples/composite/ (one level of subdirectories)
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const files: { file: string; composite: boolean }[] = [];
+    if (entry.isDirectory()) {
+      for (const f of fs.readdirSync(path.join(dir, entry.name)))
+        if (f.endsWith(".json"))
+          files.push({ file: path.join(dir, entry.name, f), composite: true });
+    } else if (entry.name.endsWith(".json")) {
+      files.push({ file: path.join(dir, entry.name), composite: false });
+    }
+    for (const { file, composite } of files) {
+      const doc = readJson(file);
+      if (!doc.adl_spec || !Array.isArray(doc.profiles)) continue; // skip records
+      exampleCases.push({
+        file,
+        rel: path.relative(REPO_ROOT, file),
+        doc,
+        profiles: doc.profiles as string[],
+        composite,
+      });
+    }
   }
 }
 
 describe("profile composition", () => {
   test("discovered profile example documents", () => {
     expect(exampleCases.length).toBeGreaterThan(0);
+  });
+
+  describe("example layout: main is single-profile, composite is multi-profile", () => {
+    for (const c of exampleCases) {
+      if (c.composite) {
+        test(`composite ${c.rel} declares 2+ profiles`, () => {
+          expect(c.profiles.length).toBeGreaterThanOrEqual(2);
+        });
+      } else {
+        test(`main ${c.rel} declares exactly one profile`, () => {
+          expect(c.profiles.length).toBe(1);
+        });
+      }
+    }
   });
 
   describe("profile schemas are open additive mixins", () => {
