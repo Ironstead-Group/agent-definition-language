@@ -1,6 +1,8 @@
 # ADL CLI
 
-The official command-line tool for the [Agent Definition Language (ADL)](https://adl-spec.org). Validate agent definitions against the spec, convert them to A2A Agent Cards or MCP configurations, and scaffold new documents from templates.
+The official command-line tool for the [Agent Definition Language (ADL)](https://adl-spec.org). Validate agent definitions against the spec, convert them to A2A Agent Cards or MCP configurations, scaffold new documents, and generate agent code from a spec.
+
+Designed to be **agent- and CI-friendly**: every command is non-interactive, accepts stdin (`-`), has `--help` with examples, supports `--json` for machine-readable output, and fails fast with actionable errors.
 
 ## Quick start
 
@@ -20,32 +22,107 @@ adl validate agent.adl.yaml
 
 ## Commands
 
+Run `adl <command> --help` for the full options and examples for any command.
+
 ### `adl validate <files...>`
 
-Validate one or more ADL documents against the spec schema. Returns a non-zero exit code if any document is invalid — useful for CI pipelines and pre-commit hooks.
+Validate one or more ADL documents against the spec schema. Returns a non-zero exit code if any document is invalid — useful for CI pipelines and pre-commit hooks. Use `-` to read from stdin, and `--json` for machine-readable results.
 
 ```bash
 adl validate agent.adl.yaml
 adl validate agents/*.yaml
+cat agent.adl.json | adl validate -
+adl validate agent.adl.json --json
 ```
 
 ### `adl convert <file> --to <format>`
 
-Generate an [A2A Agent Card](https://google.github.io/A2A/) or [MCP](https://modelcontextprotocol.io/) configuration from an ADL document. One source of truth, multiple output formats.
+Generate an [A2A Agent Card](https://google.github.io/A2A/) or [MCP](https://modelcontextprotocol.io/) configuration from an ADL document. One source of truth, multiple output formats. Reads stdin with `-` and writes JSON to stdout (so it composes in pipelines).
 
 ```bash
 adl convert agent.adl.yaml --to a2a
 adl convert agent.adl.yaml --to mcp --output mcp-config.json
+cat agent.adl.json | adl convert - --to a2a | jq .name
 ```
 
 ### `adl init`
 
-Scaffold a new ADL document from a built-in template. Choose `minimal` for the basics, `full` for every field, or `governance` for compliance-ready definitions.
+Scaffold a new ADL document from a built-in template (`minimal`, `full`, or `governance`). Safe by default: it won't overwrite an existing file unless you pass `--force`. Use `--dry-run` to print to stdout instead of writing.
 
 ```bash
 adl init
 adl init --template governance --output my-agent.adl.json
+adl init --template minimal --dry-run > agent.adl.json
+adl init --template full --force
 ```
+
+### `adl generate`
+
+Generate agent code (types, interfaces, framework scaffolding) from an ADL document. Targets are **plugins** — built-in ones plus any you load with `--plugin`. List what's available with `--list-targets`.
+
+```bash
+adl generate --list-targets
+adl generate agent.adl.json --target vanilla-ts
+adl generate agent.adl.json --target vanilla-ts --output ./src/generated
+adl generate agent.adl.json --target acme-go --plugin @acme/adl-target-go
+adl generate agent.adl.json --target vanilla-ts --dry-run
+```
+
+For projects, declare everything in **`adl.config.json`** and run `adl generate` with no arguments (see below).
+
+## Spec-first builds
+
+The recommended pattern treats generated code as a **build artifact**, not a checked-in source file. The ADL document is the single source of truth; generated types/interfaces are regenerated on every build and imported by your application code. Because the generated output is never committed, the only way to build is to regenerate from the current spec — so the spec can never drift behind the code.
+
+1. **Declare** what to generate in `adl.config.json`:
+
+   ```json
+   {
+     "plugins": ["@acme/adl-target-go"],
+     "generate": [
+       { "source": "agents/billing.adl.json", "target": "vanilla-ts", "output": "src/generated/billing", "clean": true },
+       { "source": "agents/support.adl.json", "target": "acme-go",    "output": "internal/support",       "clean": true }
+     ]
+   }
+   ```
+
+   - `source` / `target` / `output` are required per entry; `target` is any built-in or plugin id.
+   - `clean: true` wipes the output directory before writing, so removing a tool from the spec removes its generated file too. (`--clean` forces this for all entries.)
+   - Top-level `plugins` are loaded before generation, so custom targets resolve.
+
+2. **Generate** with no arguments — it reads `adl.config.json` and overwrites each output:
+
+   ```bash
+   adl generate            # generate everything declared in adl.config.json
+   adl generate --clean    # same, wiping each output dir first
+   adl generate --json     # machine-readable result for tooling
+   ```
+
+3. **Gitignore** the generated output so it's never committed:
+
+   ```gitignore
+   # generated by `adl generate`
+   src/generated/
+   internal/support/
+   ```
+
+4. **Wire it into the build** as a prebuild step so local builds and CI both regenerate from the spec:
+
+   ```jsonc
+   // package.json
+   {
+     "scripts": {
+       "prebuild": "adl validate agents/*.adl.json && adl generate",
+       "build": "tsc"
+     }
+   }
+   ```
+
+Now any change to a tool signature must be made in the spec: the app imports the generated types, the build regenerates them from the spec, and the code only compiles against the current definition. The spec leads; the code follows.
+
+### Writing a custom target
+
+A target is a formatter plugin — an object (or module default export) with `id`, `label`, `outputLanguage`, and a `render(ir)` function returning `{ path, content }[]`. Publish it as an npm package or point at a local module, then reference it via `plugins` in the config or `--plugin` on the CLI. See [`@adl-spec/generator`](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-generator) for the plugin contract and built-in targets.
 
 ## Learn more
 

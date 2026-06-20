@@ -6,155 +6,226 @@ import { validateDocument } from "../core/validator.js";
 import { formatErrorsTerminal } from "../core/errors.js";
 import { loadInput } from "../core/input.js";
 import {
+  assertSafeCleanTarget,
+  loadConfig,
+  type GenerateEntry,
+} from "../core/config.js";
+import {
   generateAgent,
   listTargets,
   loadFormatterPlugins,
 } from "@adl-spec/generator";
 import type { ADLDocument } from "@adl-spec/core";
 
+interface GenerateOpts {
+  target?: string[];
+  plugin?: string[];
+  output: string;
+  config?: string;
+  clean?: boolean;
+  listTargets?: boolean;
+  dryRun?: boolean;
+  json?: boolean;
+}
+
+interface EntryResult {
+  source: string;
+  target: string;
+  output: string;
+  files: string[];
+}
+
+function fail(message: string): never {
+  console.error(chalk.red("✗") + " " + message);
+  process.exit(1);
+}
+
+/** Load + validate a document once, exiting on error. Cached by source path. */
+function loadValidated(
+  source: string,
+  cache: Map<string, ADLDocument>,
+): ADLDocument {
+  const cached = cache.get(source);
+  if (cached) return cached;
+
+  const { data, errors: loadErrors, source: label } = loadInput(source);
+  if (loadErrors.length > 0) {
+    console.error(formatErrorsTerminal(label, loadErrors));
+    process.exit(1);
+  }
+  const doc = data as Record<string, unknown>;
+  const validationErrors = validateDocument(doc);
+  if (validationErrors.length > 0) {
+    console.error(formatErrorsTerminal(label, validationErrors));
+    process.exit(1);
+  }
+  const typed = doc as unknown as ADLDocument;
+  cache.set(source, typed);
+  return typed;
+}
+
+/** Run a list of generation entries, writing (overwriting) or previewing. */
+function runEntries(entries: GenerateEntry[], opts: GenerateOpts): EntryResult[] {
+  const cache = new Map<string, ADLDocument>();
+  const results: EntryResult[] = [];
+
+  for (const entry of entries) {
+    const doc = loadValidated(entry.source, cache);
+    let files;
+    try {
+      files = generateAgent(doc, { target: entry.target }).files;
+    } catch (err) {
+      fail(
+        `Failed to generate ${chalk.bold(entry.target)} from ${entry.source}: ` +
+          (err instanceof Error ? err.message : String(err)),
+      );
+    }
+
+    const shouldClean = entry.clean || opts.clean;
+    if (shouldClean && !opts.dryRun) {
+      assertSafeCleanTarget(entry.output);
+      fs.rmSync(entry.output, { recursive: true, force: true });
+    }
+
+    const written: string[] = [];
+    for (const genFile of files) {
+      const outputPath = path.join(entry.output, genFile.path);
+      written.push(outputPath);
+      if (opts.dryRun) continue;
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      fs.writeFileSync(outputPath, genFile.content);
+    }
+    results.push({
+      source: entry.source,
+      target: entry.target,
+      output: entry.output,
+      files: written,
+    });
+
+    if (!opts.json) {
+      const verb = opts.dryRun ? "Would generate" : "Generated";
+      const cleaned = shouldClean && !opts.dryRun ? chalk.dim(" (cleaned)") : "";
+      console.log(
+        chalk.green(opts.dryRun ? "•" : "✓") +
+          ` ${verb} ${chalk.bold(entry.target)} from ${chalk.dim(entry.source)} → ${chalk.dim(entry.output)} (${written.length} files)${cleaned}`,
+      );
+      if (opts.dryRun) for (const f of written) console.log(`    ${chalk.dim(f)}`);
+    }
+  }
+
+  return results;
+}
+
+async function loadPlugins(specifiers: string[]): Promise<void> {
+  if (specifiers.length === 0) return;
+  try {
+    await loadFormatterPlugins(specifiers, { baseDir: process.cwd() });
+  } catch (err) {
+    fail(`Failed to load plugin: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 export function registerGenerateCommand(program: Command): void {
   program
     .command("generate")
-    .description("Generate agent code from an ADL document")
+    .description(
+      "Generate agent code from an ADL document, or from adl.config.json",
+    )
     .argument("[file]", 'ADL document file; use "-" to read from stdin')
     .option("--target <targets...>", "Target framework(s) to generate for")
     .option("--plugin <modules...>", "Formatter plugin module(s) to load")
     .option("--output <dir>", "Output directory", "./generated")
+    .option("--config <file>", "Path to a config file (default: adl.config.json)")
+    .option("--clean", "Wipe each output directory before writing")
     .option("--list-targets", "List all available generation targets")
     .option("--dry-run", "List files that would be generated without writing them")
     .option("--json", "Emit machine-readable JSON results")
-    .action(
-      async (
-        file: string | undefined,
-        opts: {
-          target?: string[];
-          plugin?: string[];
-          output: string;
-          listTargets?: boolean;
-          dryRun?: boolean;
-          json?: boolean;
-        },
-      ) => {
-        if (opts.plugin && opts.plugin.length > 0) {
-          try {
-            await loadFormatterPlugins(opts.plugin, {
-              baseDir: process.cwd(),
-            });
-          } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            console.error(chalk.red("✗") + ` Failed to load plugin: ${message}`);
-            process.exit(1);
-          }
-        }
+    .action(async (file: string | undefined, opts: GenerateOpts) => {
+      await loadPlugins(opts.plugin ?? []);
 
-        if (opts.listTargets) {
-          const targets = listTargets();
-          if (opts.json) {
-            process.stdout.write(JSON.stringify({ targets }, null, 2) + "\n");
-            return;
-          }
-          console.log(chalk.bold("Available targets:\n"));
-          for (const t of targets) {
-            console.log(
-              `  ${chalk.cyan(t.id.padEnd(20))} ${t.label} (${t.outputLanguage})`,
-            );
-          }
+      if (opts.listTargets) {
+        const targets = listTargets();
+        if (opts.json) {
+          process.stdout.write(JSON.stringify({ targets }, null, 2) + "\n");
           return;
         }
+        console.log(chalk.bold("Available targets:\n"));
+        for (const t of targets) {
+          console.log(
+            `  ${chalk.cyan(t.id.padEnd(20))} ${t.label} (${t.outputLanguage})`,
+          );
+        }
+        return;
+      }
 
+      // Config-driven mode: no explicit file/target → read adl.config.json.
+      const useConfig = !file && (!opts.target || opts.target.length === 0);
+      let entries: GenerateEntry[];
+
+      if (useConfig) {
+        let loaded;
+        try {
+          loaded = loadConfig(opts.config);
+        } catch (err) {
+          fail(err instanceof Error ? err.message : String(err));
+        }
+        await loadPlugins(loaded.config.plugins ?? []);
+        entries = loaded.config.generate;
+        if (!opts.json) {
+          console.log(chalk.dim(`Using ${path.relative(process.cwd(), loaded.path)}`));
+        }
+      } else {
+        // Explicit mode.
         if (!file) {
-          console.error(
-            "Error: file argument is required.\n" +
-              "  adl generate agent.adl.json --target typescript\n" +
-              "  adl generate --list-targets",
+          fail(
+            "file argument is required (or add adl.config.json).\n" +
+              "  adl generate agent.adl.json --target vanilla-ts\n" +
+              "  adl generate            # uses adl.config.json",
           );
-          process.exit(1);
         }
-
         if (!opts.target || opts.target.length === 0) {
-          console.error(
-            "Error: --target is required. Use --list-targets to see available targets.\n" +
-              `  adl generate ${file} --target typescript`,
-          );
-          process.exit(1);
-        }
-
-        // Load document (file or stdin)
-        const { data, errors: loadErrors, source } = loadInput(file);
-        if (loadErrors.length > 0) {
-          console.error(formatErrorsTerminal(source, loadErrors));
-          process.exit(1);
-        }
-
-        const doc = data as Record<string, unknown>;
-
-        // Validate first
-        const validationErrors = validateDocument(doc);
-        if (validationErrors.length > 0) {
-          console.error(formatErrorsTerminal(source, validationErrors));
-          process.exit(1);
-        }
-
-        // Generate for each target
-        const generated: { target: string; dir: string; files: string[] }[] = [];
-        for (const targetId of opts.target) {
-          try {
-            const result = generateAgent(doc as unknown as ADLDocument, {
-              target: targetId,
-            });
-
-            const targetDir = opts.target.length > 1
-              ? path.join(opts.output, targetId)
-              : opts.output;
-
-            const written: string[] = [];
-            for (const genFile of result.files) {
-              const outputPath = path.join(targetDir, genFile.path);
-              written.push(outputPath);
-              if (opts.dryRun) continue;
-              const dir = path.dirname(outputPath);
-              if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-              }
-              fs.writeFileSync(outputPath, genFile.content);
-            }
-            generated.push({ target: targetId, dir: targetDir, files: written });
-
-            if (!opts.json) {
-              const verb = opts.dryRun ? "Would generate" : "Generated";
-              console.log(
-                chalk.green(opts.dryRun ? "•" : "✓") +
-                  ` ${verb} ${chalk.bold(targetId)} → ${chalk.dim(targetDir)} (${written.length} files)`,
-              );
-              if (opts.dryRun) {
-                for (const f of written) console.log(`    ${chalk.dim(f)}`);
-              }
-            }
-          } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            console.error(
-              chalk.red("✗") +
-                ` Failed to generate ${chalk.bold(targetId)}: ${message}`,
-            );
-            process.exit(1);
-          }
-        }
-
-        if (opts.json) {
-          process.stdout.write(
-            JSON.stringify({ dryRun: !!opts.dryRun, generated }, null, 2) + "\n",
+          fail(
+            "--target is required. Use --list-targets to see available targets.\n" +
+              `  adl generate ${file} --target vanilla-ts`,
           );
         }
-      },
-    )
+        const multi = opts.target.length > 1;
+        entries = opts.target.map((target) => ({
+          source: file,
+          target,
+          output: multi ? path.join(opts.output, target) : opts.output,
+        }));
+      }
+
+      const results = runEntries(entries, opts);
+
+      if (opts.json) {
+        process.stdout.write(
+          JSON.stringify({ dryRun: !!opts.dryRun, generated: results }, null, 2) + "\n",
+        );
+      }
+    })
     .addHelpText(
       "after",
       `
 Examples:
   adl generate --list-targets
-  adl generate agent.adl.json --target typescript
-  adl generate agent.adl.json --target typescript python --output ./out
-  adl generate agent.adl.json --target typescript --dry-run
-  cat agent.adl.json | adl generate - --target typescript --json`,
+  adl generate                                  # generate everything in adl.config.json
+  adl generate --clean                          # same, wiping each output dir first
+  adl generate agent.adl.json --target vanilla-ts
+  adl generate agent.adl.json --target vanilla-ts --output ./out
+  adl generate agent.adl.json --target vanilla-ts --dry-run
+  cat agent.adl.json | adl generate - --target vanilla-ts --json
+
+Config (adl.config.json):
+  {
+    "plugins": ["@acme/adl-target-go"],
+    "generate": [
+      { "source": "agents/billing.adl.json", "target": "vanilla-ts", "output": "src/gen/billing", "clean": true },
+      { "source": "agents/support.adl.json", "target": "acme-go",    "output": "internal/support" }
+    ]
+  }
+Generated output is a build artifact: gitignore it and run 'adl generate'
+as a prebuild step so the spec stays the source of truth.`,
     );
 }

@@ -19,12 +19,13 @@ const MINIMAL_DOC = JSON.stringify({
   data_classification: { sensitivity: "internal" },
 });
 
-function run(args: string[], stdin?: string) {
+function run(args: string[], stdin?: string, cwd?: string) {
   const proc = Bun.spawnSync({
     cmd: ["bun", ENTRY, ...args],
     stdin: stdin !== undefined ? Buffer.from(stdin) : undefined,
     stdout: "pipe",
     stderr: "pipe",
+    cwd,
   });
   return {
     code: proc.exitCode,
@@ -139,6 +140,86 @@ describe("adl CLI", () => {
       const out = JSON.parse(r.stdout);
       expect(out.dryRun).toBe(true);
       expect(out.generated[0].files.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("generate from adl.config.json (multi-source)", () => {
+    function makeProject(): string {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "adl-cfg-"));
+      fs.mkdirSync(path.join(dir, "agents"));
+      const billing = JSON.parse(MINIMAL_DOC);
+      billing.name = "billing-agent";
+      const support = JSON.parse(MINIMAL_DOC);
+      support.name = "support-agent";
+      fs.writeFileSync(path.join(dir, "agents/billing.adl.json"), JSON.stringify(billing));
+      fs.writeFileSync(path.join(dir, "agents/support.adl.json"), JSON.stringify(support));
+      fs.writeFileSync(
+        path.join(dir, "adl.config.json"),
+        JSON.stringify({
+          generate: [
+            { source: "agents/billing.adl.json", target: "vanilla-ts", output: "gen/billing", clean: true },
+            { source: "agents/support.adl.json", target: "vanilla-ts", output: "gen/support" },
+          ],
+        }),
+      );
+      return dir;
+    }
+
+    test("generates every entry from all sources, overwriting", () => {
+      const dir = makeProject();
+      try {
+        const r = run(["generate", "--json"], undefined, dir);
+        expect(r.code).toBe(0);
+        const out = JSON.parse(r.stdout);
+        expect(out.generated.map((g: { source: string }) => g.source).sort()).toEqual([
+          "agents/billing.adl.json",
+          "agents/support.adl.json",
+        ]);
+        expect(fs.existsSync(path.join(dir, "gen/billing/types.ts"))).toBe(true);
+        expect(fs.existsSync(path.join(dir, "gen/support/types.ts"))).toBe(true);
+
+        // Re-run is a clean overwrite (idempotent build step).
+        expect(run(["generate", "--json"], undefined, dir).code).toBe(0);
+        expect(fs.existsSync(path.join(dir, "gen/billing/types.ts"))).toBe(true);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test("clean:true removes stale files from the output dir", () => {
+      const dir = makeProject();
+      try {
+        run(["generate"], undefined, dir);
+        const stale = path.join(dir, "gen/billing/STALE.ts");
+        fs.writeFileSync(stale, "// left over from an old spec");
+        run(["generate"], undefined, dir); // billing entry has clean:true
+        expect(fs.existsSync(stale)).toBe(false); // wiped
+        expect(fs.existsSync(path.join(dir, "gen/billing/types.ts"))).toBe(true);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test("--dry-run writes nothing", () => {
+      const dir = makeProject();
+      try {
+        const r = run(["generate", "--dry-run"], undefined, dir);
+        expect(r.code).toBe(0);
+        expect(fs.existsSync(path.join(dir, "gen"))).toBe(false);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test("missing config gives an actionable error", () => {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "adl-nocfg-"));
+      try {
+        const r = run(["generate"], undefined, dir);
+        expect(r.code).not.toBe(0);
+        expect(r.stderr).toContain("adl.config.json");
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 });
