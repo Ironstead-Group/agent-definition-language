@@ -122,15 +122,9 @@ export function jcsCanonicalize(value: unknown): string {
 // ---------------------------------------------------------------------------
 
 export function base64UrlEncode(buf: Uint8Array | Buffer): string {
-  return Buffer.from(buf)
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return Buffer.from(buf).toString("base64url");
 }
 
 export function base64UrlDecode(s: string): Buffer {
-  const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = b64.length % 4 === 0 ? "" : "=".repeat(4 - (b64.length % 4));
-  return Buffer.from(b64 + pad, "base64");
+  return Buffer.from(s, "base64url");
 }
