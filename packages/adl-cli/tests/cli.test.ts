@@ -222,4 +222,79 @@ describe("adl CLI", () => {
       }
     });
   });
+
+  describe("scaffold + continuous generate (role-aware)", () => {
+    function project(): string {
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), "adl-scaffold-"));
+      fs.writeFileSync(path.join(dir, "agent.adl.json"), MINIMAL_DOC);
+      return dir;
+    }
+
+    test("scaffold writes the full framework and emits config marking managed files", () => {
+      const dir = project();
+      try {
+        const r = run(
+          ["scaffold", "agent.adl.json", "--target", "vanilla-ts", "--output", "src/agent", "--json"],
+          undefined,
+          dir,
+        );
+        expect(r.code).toBe(0);
+        const out = JSON.parse(r.stdout);
+        // types.ts is spec-derived (managed); agent.ts is business logic (scaffold)
+        expect(out.regenerate).toContain("types.ts");
+        expect(out.regenerate).not.toContain("agent.ts");
+
+        // full framework written
+        for (const f of ["types.ts", "agent.ts", "package.json"]) {
+          expect(fs.existsSync(path.join(dir, "src/agent", f))).toBe(true);
+        }
+        // config emitted with the managed globs
+        const cfg = JSON.parse(fs.readFileSync(path.join(dir, "adl.config.json"), "utf-8"));
+        expect(cfg.generate[0].regenerate).toEqual(["types.ts"]);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test("generate regenerates managed files but preserves edited scaffold files", () => {
+      const dir = project();
+      try {
+        run(["scaffold", "agent.adl.json", "--target", "vanilla-ts", "--output", "src/agent"], undefined, dir);
+
+        const agentPath = path.join(dir, "src/agent/agent.ts");
+        const typesPath = path.join(dir, "src/agent/types.ts");
+        // user edits business logic; someone scribbles in the managed file
+        fs.appendFileSync(agentPath, "\n// MY BUSINESS LOGIC\n");
+        fs.appendFileSync(typesPath, "\n// stray edit\n");
+
+        const r = run(["generate"], undefined, dir);
+        expect(r.code).toBe(0);
+
+        // scaffold edit preserved, managed file overwritten back to generated form
+        expect(fs.readFileSync(agentPath, "utf-8")).toContain("MY BUSINESS LOGIC");
+        expect(fs.readFileSync(typesPath, "utf-8")).not.toContain("stray edit");
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+
+    test("re-scaffold keeps edited scaffold files unless --force", () => {
+      const dir = project();
+      try {
+        run(["scaffold", "agent.adl.json", "--target", "vanilla-ts", "--output", "src/agent"], undefined, dir);
+        const agentPath = path.join(dir, "src/agent/agent.ts");
+        fs.appendFileSync(agentPath, "\n// EDIT\n");
+
+        // second scaffold without --force preserves the edit
+        run(["scaffold", "agent.adl.json", "--target", "vanilla-ts", "--output", "src/agent"], undefined, dir);
+        expect(fs.readFileSync(agentPath, "utf-8")).toContain("EDIT");
+
+        // with --force it overwrites the scaffold file
+        run(["scaffold", "agent.adl.json", "--target", "vanilla-ts", "--output", "src/agent", "--force"], undefined, dir);
+        expect(fs.readFileSync(agentPath, "utf-8")).not.toContain("EDIT");
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    });
+  });
 });

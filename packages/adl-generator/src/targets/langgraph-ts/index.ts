@@ -22,12 +22,12 @@ export class LangGraphTsRenderer implements TargetRenderer {
   render(ir: AgentIR): GeneratedFile[] {
     const files: GeneratedFile[] = [];
 
-    files.push({ path: "types.ts", content: renderTypes(ir) });
-    files.push({ path: "tools.ts", content: renderTools(ir) });
-    files.push({ path: "agent.ts", content: renderAgent(ir) });
-    files.push({ path: "package.json", content: renderPackageJson(ir) });
-    files.push({ path: "tsconfig.json", content: renderTsConfig() });
-    files.push({ path: "README.md", content: renderReadme(ir) });
+    files.push({ path: "types.ts", content: renderTypes(ir), role: "managed" });
+    files.push({ path: "tools.ts", content: renderTools(ir), role: "managed" });
+    files.push({ path: "agent.ts", content: renderAgent(ir), role: "scaffold" });
+    files.push({ path: "package.json", content: renderPackageJson(ir), role: "scaffold" });
+    files.push({ path: "tsconfig.json", content: renderTsConfig(), role: "scaffold" });
+    files.push({ path: "README.md", content: renderReadme(ir), role: "scaffold" });
 
     return files;
   }

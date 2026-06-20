@@ -29,6 +29,23 @@ describe("generateAgent", () => {
     expect(ids).toContain("vanilla-ts");
   });
 
+  it("tags spec-derived files managed and business-logic files scaffold", () => {
+    const doc = loadFixture("production.json");
+    for (const target of ["vanilla-ts", "claude-sdk-ts", "langgraph-ts"]) {
+      const { files } = generateAgent(doc, { target });
+      const byPath = new Map(files.map((f) => [f.path, f.role]));
+      // every file must declare a role
+      for (const f of files) {
+        expect([f.path, f.role]).toEqual([f.path, byPath.get(f.path)!]);
+        expect(["managed", "scaffold"]).toContain(f.role);
+      }
+      // models/interfaces regenerate; business logic + project setup are scaffold
+      expect(byPath.get("types.ts")).toBe("managed");
+      expect(byPath.get("agent.ts")).toBe("scaffold");
+      expect(byPath.get("package.json")).toBe("scaffold");
+    }
+  });
+
   it("generates claude-sdk-ts output from production fixture", () => {
     const doc = loadFixture("production.json");
     const result = generateAgent(doc, { target: "claude-sdk-ts" });

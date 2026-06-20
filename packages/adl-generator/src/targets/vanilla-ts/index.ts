@@ -15,9 +15,9 @@ export class VanillaTsRenderer implements TargetRenderer {
   render(ir: AgentIR): GeneratedFile[] {
     const files: GeneratedFile[] = [];
 
-    files.push({ path: "types.ts", content: renderTypes(ir) });
-    files.push({ path: "agent.ts", content: renderAgent(ir) });
-    files.push({ path: "package.json", content: renderPackageJson(ir) });
+    files.push({ path: "types.ts", content: renderTypes(ir), role: "managed" });
+    files.push({ path: "agent.ts", content: renderAgent(ir), role: "scaffold" });
+    files.push({ path: "package.json", content: renderPackageJson(ir), role: "scaffold" });
 
     return files;
   }

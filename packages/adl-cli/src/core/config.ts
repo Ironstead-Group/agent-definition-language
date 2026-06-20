@@ -19,6 +19,13 @@ export interface GenerateEntry {
   target: string;
   /** Output directory for this entry's generated files. */
   output: string;
+  /**
+   * Glob patterns (relative to output) for files that are continuously
+   * recreated — overwritten on every run. Files that do not match are
+   * scaffold: written once, then owned by the user. When omitted, each file's
+   * generator-declared role is used (managed = regenerate, scaffold = once).
+   */
+  regenerate?: string[];
   /** Wipe the output directory before writing (removes stale files). */
   clean?: boolean;
 }
@@ -103,10 +110,18 @@ function validateConfig(value: unknown, configPath: string): AdlConfig {
     if (e.clean !== undefined && typeof e.clean !== "boolean") {
       fail(`generate[${i}].clean must be a boolean`);
     }
+    if (
+      e.regenerate !== undefined &&
+      (!Array.isArray(e.regenerate) ||
+        !e.regenerate.every((g) => typeof g === "string"))
+    ) {
+      fail(`generate[${i}].regenerate must be an array of glob strings`);
+    }
     return {
       source: e.source as string,
       target: e.target as string,
       output: e.output as string,
+      regenerate: e.regenerate as string[] | undefined,
       clean: e.clean as boolean | undefined,
     };
   });
@@ -115,6 +130,64 @@ function validateConfig(value: unknown, configPath: string): AdlConfig {
     plugins: obj.plugins as string[] | undefined,
     generate: entries,
   };
+}
+
+/** Compile a minimal glob (supports `*`, `**`, `?`) to an anchored RegExp. */
+function globToRegExp(glob: string): RegExp {
+  const specials = /[.+^${}()|[\]\\]/g;
+  let re = "^";
+  let i = 0;
+  while (i < glob.length) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        re += ".*";
+        i += 2;
+        if (glob[i] === "/") i++; // consume the slash after **
+      } else {
+        re += "[^/]*";
+        i++;
+      }
+    } else if (c === "?") {
+      re += "[^/]";
+      i++;
+    } else {
+      re += c.replace(specials, "\\$&");
+      i++;
+    }
+  }
+  return new RegExp(re + "$");
+}
+
+/** True if a (POSIX-style) relative path matches any of the glob patterns. */
+export function matchesGlobs(filePath: string, globs: string[]): boolean {
+  const normalized = filePath.split("\\").join("/");
+  return globs.some((g) => globToRegExp(g).test(normalized));
+}
+
+/**
+ * Insert or replace a generate entry in a config file (keyed by output dir),
+ * creating the file if needed. Used by `adl scaffold` to emit the config.
+ */
+export function upsertGenerateEntry(
+  configPath: string,
+  entry: GenerateEntry,
+): { created: boolean } {
+  let config: AdlConfig = { generate: [] };
+  let created = true;
+  if (fs.existsSync(configPath)) {
+    created = false;
+    config = validateConfig(
+      JSON.parse(fs.readFileSync(configPath, "utf-8")),
+      configPath,
+    );
+  }
+  const idx = config.generate.findIndex((e) => e.output === entry.output);
+  if (idx >= 0) config.generate[idx] = entry;
+  else config.generate.push(entry);
+
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
+  return { created };
 }
 
 /**

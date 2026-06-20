@@ -4,6 +4,7 @@ import { registerValidateCommand } from "./commands/validate.js";
 import { registerConvertCommand } from "./commands/convert.js";
 import { registerInitCommand } from "./commands/init.js";
 import { registerGenerateCommand } from "./commands/generate.js";
+import { registerScaffoldCommand } from "./commands/scaffold.js";
 
 const program = new Command();
 
@@ -28,6 +29,7 @@ Run 'adl <command> --help' for command-specific options and examples.`,
 registerValidateCommand(program);
 registerConvertCommand(program);
 registerInitCommand(program);
+registerScaffoldCommand(program);
 registerGenerateCommand(program);
 
 // No subcommand → show help instead of exiting silently.

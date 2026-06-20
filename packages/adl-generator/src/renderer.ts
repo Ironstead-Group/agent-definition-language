@@ -11,10 +11,21 @@ import {
 } from "./plugin.js";
 import type { FormatterPlugin, FormatterRenderContext } from "./plugin.js";
 
+/**
+ * Role of a generated file in the spec-first lifecycle:
+ * - "managed": spec-derived, non-business-logic (models, interfaces, tool
+ *   schemas). Safe to regenerate on every build; should not be hand-edited.
+ * - "scaffold": business logic and project setup (agent implementation,
+ *   package manifests). Written once, then owned and edited by the user.
+ * Defaults to "scaffold" when unset, so unknown files are never clobbered.
+ */
+export type GeneratedFileRole = "managed" | "scaffold";
+
 /** A single generated output file. */
 export interface GeneratedFile {
   path: string;
   content: string;
+  role?: GeneratedFileRole;
 }
 
 /** Interface that all code-generation targets must implement. */

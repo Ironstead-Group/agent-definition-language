@@ -8,6 +8,7 @@ import { loadInput } from "../core/input.js";
 import {
   assertSafeCleanTarget,
   loadConfig,
+  matchesGlobs,
   type GenerateEntry,
 } from "../core/config.js";
 import {
@@ -28,11 +29,17 @@ interface GenerateOpts {
   json?: boolean;
 }
 
+interface WrittenFile {
+  path: string;
+  role: "managed" | "scaffold";
+  action: "written" | "skipped";
+}
+
 interface EntryResult {
   source: string;
   target: string;
   output: string;
-  files: string[];
+  files: WrittenFile[];
 }
 
 function fail(message: string): never {
@@ -87,29 +94,55 @@ function runEntries(entries: GenerateEntry[], opts: GenerateOpts): EntryResult[]
       fs.rmSync(entry.output, { recursive: true, force: true });
     }
 
-    const written: string[] = [];
+    // A file is "managed" (overwritten every run) if it matches the entry's
+    // regenerate globs, or — when no globs are configured — if the generator
+    // tagged it managed. Everything else is scaffold: written once.
+    const isManaged = (file: { path: string; role?: string }): boolean =>
+      entry.regenerate
+        ? matchesGlobs(file.path, entry.regenerate)
+        : file.role === "managed";
+
+    const writtenFiles: WrittenFile[] = [];
     for (const genFile of files) {
       const outputPath = path.join(entry.output, genFile.path);
-      written.push(outputPath);
-      if (opts.dryRun) continue;
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      fs.writeFileSync(outputPath, genFile.content);
+      const role: "managed" | "scaffold" = isManaged(genFile) ? "managed" : "scaffold";
+      const exists = fs.existsSync(outputPath);
+      // managed → always overwrite; scaffold → write only if absent.
+      const willWrite = role === "managed" || !exists;
+
+      if (willWrite && !opts.dryRun) {
+        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+        fs.writeFileSync(outputPath, genFile.content);
+      }
+      writtenFiles.push({
+        path: outputPath,
+        role,
+        action: willWrite ? "written" : "skipped",
+      });
     }
     results.push({
       source: entry.source,
       target: entry.target,
       output: entry.output,
-      files: written,
+      files: writtenFiles,
     });
 
     if (!opts.json) {
       const verb = opts.dryRun ? "Would generate" : "Generated";
+      const wrote = writtenFiles.filter((f) => f.action === "written").length;
+      const kept = writtenFiles.length - wrote;
       const cleaned = shouldClean && !opts.dryRun ? chalk.dim(" (cleaned)") : "";
+      const keptNote = kept > 0 ? chalk.dim(` (${kept} scaffold kept)`) : "";
       console.log(
         chalk.green(opts.dryRun ? "•" : "✓") +
-          ` ${verb} ${chalk.bold(entry.target)} from ${chalk.dim(entry.source)} → ${chalk.dim(entry.output)} (${written.length} files)${cleaned}`,
+          ` ${verb} ${chalk.bold(entry.target)} from ${chalk.dim(entry.source)} → ${chalk.dim(entry.output)} (${wrote} files)${keptNote}${cleaned}`,
       );
-      if (opts.dryRun) for (const f of written) console.log(`    ${chalk.dim(f)}`);
+      if (opts.dryRun) {
+        for (const f of writtenFiles) {
+          const tag = f.action === "written" ? f.role : "skip";
+          console.log(`    ${chalk.dim(`[${tag}]`)} ${chalk.dim(f.path)}`);
+        }
+      }
     }
   }
 
