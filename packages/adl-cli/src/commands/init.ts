@@ -139,33 +139,86 @@ export function registerInitCommand(program: Command): void {
     .description("Scaffold a new ADL document")
     .option(
       "--template <name>",
-      "Template: minimal, full, or governance",
+      `Template: ${Object.keys(TEMPLATES).join(", ")}`,
       "minimal",
     )
     .option("--output <file>", "Output file path", "agent.adl.json")
-    .action(async (opts: { template: string; output: string }) => {
-      const templateName = opts.template.toLowerCase();
-      const template = TEMPLATES[templateName];
+    .option("--force", "Overwrite the output file if it already exists")
+    .option("--dry-run", "Print the document to stdout without writing a file")
+    .option("--json", "Emit a machine-readable result object")
+    .action(
+      async (opts: {
+        template: string;
+        output: string;
+        force?: boolean;
+        dryRun?: boolean;
+        json?: boolean;
+      }) => {
+        const templateName = opts.template.toLowerCase();
+        const template = TEMPLATES[templateName];
 
-      if (!template) {
-        console.error(
-          `Error: Unknown template "${opts.template}". Available: ${Object.keys(TEMPLATES).join(", ")}`,
-        );
-        process.exit(1);
-      }
+        if (!template) {
+          const names = Object.keys(TEMPLATES).join(", ");
+          console.error(
+            `Error: unknown template "${opts.template}". Available: ${names}.\n` +
+              `  adl init --template ${Object.keys(TEMPLATES)[0]} --output agent.adl.json`,
+          );
+          process.exit(1);
+        }
 
-      if (fs.existsSync(opts.output)) {
-        console.error(
-          `Error: ${opts.output} already exists. Use --output to specify a different path.`,
-        );
-        process.exit(1);
-      }
+        const content = JSON.stringify(template, null, 2) + "\n";
 
-      const content = JSON.stringify(template, null, 2) + "\n";
-      fs.writeFileSync(opts.output, content);
-      console.log(
-        chalk.green("✓") +
-          ` Created ${chalk.bold(opts.output)} (template: ${templateName})`,
-      );
-    });
+        // --dry-run: preview to stdout, never touch the filesystem.
+        if (opts.dryRun) {
+          if (opts.json) {
+            process.stdout.write(
+              JSON.stringify(
+                { wrote: false, dryRun: true, output: opts.output, template: templateName },
+                null,
+                2,
+              ) + "\n",
+            );
+          } else {
+            process.stdout.write(content);
+          }
+          return;
+        }
+
+        const exists = fs.existsSync(opts.output);
+        if (exists && !opts.force) {
+          console.error(
+            `Error: ${opts.output} already exists. Re-run with --force to overwrite, ` +
+              `or pass --output <file> to write elsewhere.`,
+          );
+          process.exit(1);
+        }
+
+        fs.writeFileSync(opts.output, content);
+
+        if (opts.json) {
+          process.stdout.write(
+            JSON.stringify(
+              { wrote: true, output: opts.output, template: templateName, overwritten: exists },
+              null,
+              2,
+            ) + "\n",
+          );
+        } else {
+          console.log(
+            chalk.green("✓") +
+              ` ${exists ? "Overwrote" : "Created"} ${chalk.bold(opts.output)} (template: ${templateName})`,
+          );
+        }
+      },
+    )
+    .addHelpText(
+      "after",
+      `
+Examples:
+  adl init
+  adl init --template governance --output governed-agent.adl.json
+  adl init --template full --force
+  adl init --template minimal --dry-run > agent.adl.json
+  adl init --template minimal --dry-run --json`,
+    );
 }
