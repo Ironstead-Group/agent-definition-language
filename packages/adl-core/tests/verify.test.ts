@@ -86,7 +86,7 @@ describe("buildPassport + signPassport", () => {
   test("builds a passport that schema-validates", () => {
     const { publicKey } = generateKeyPair();
     const doc = buildPassport({ ...baseInput, publicKey });
-    expect(doc.adl_spec).toBe("0.2.0");
+    expect(doc.adl_spec).toBe("0.3.0");
     expect(doc.id).toBe(baseInput.id);
     expect(doc.cryptographic_identity?.public_key?.value).toBe(publicKey);
   });

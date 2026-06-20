@@ -81,7 +81,7 @@ An interactive AI agent that explains ADL concepts through conversation. Built w
 - **Language:** TypeScript (Bun runtime)
 - **Source:** [packages/adl-agent](https://github.com/Ironstead-Group/agent-definition-language/tree/main/packages/adl-agent)
 
-### [ADL JSON Schema](https://adl-spec.org/0.2/schema.json)
+### [ADL JSON Schema](https://adl-spec.org/0.3/schema.json)
 
 The official JSON Schema for ADL 0.2.0. Use it for validation in any language with a JSON Schema library, or wire it into your editor for autocomplete and inline diagnostics.
 
@@ -100,12 +100,12 @@ Get autocomplete, inline errors, and hover docs for ADL documents in VS Code wit
 {
   "json.schemas": [
     {
-      "url": "https://adl-spec.org/0.2/schema.json",
+      "url": "https://adl-spec.org/0.3/schema.json",
       "fileMatch": ["*.adl.json"]
     }
   ],
   "yaml.schemas": {
-    "https://adl-spec.org/0.2/schema.json": "*.adl.yaml"
+    "https://adl-spec.org/0.3/schema.json": "*.adl.yaml"
   }
 }
 ```
@@ -116,7 +116,7 @@ Get autocomplete, inline errors, and hover docs for ADL documents in VS Code wit
 
 ### JetBrains IDEs — JSON Schema Validation
 
-IntelliJ IDEA, WebStorm, and other JetBrains IDEs support JSON Schema mapping natively. Go to **Settings > Languages & Frameworks > Schemas and DTDs > JSON Schema Mappings**, add a new mapping with the schema URL `https://adl-spec.org/0.2/schema.json`, and map it to your `*.adl.json` files.
+IntelliJ IDEA, WebStorm, and other JetBrains IDEs support JSON Schema mapping natively. Go to **Settings > Languages & Frameworks > Schemas and DTDs > JSON Schema Mappings**, add a new mapping with the schema URL `https://adl-spec.org/0.3/schema.json`, and map it to your `*.adl.json` files.
 
 - **Type:** IDE Integration
 - **ADL Version:** 0.2.0

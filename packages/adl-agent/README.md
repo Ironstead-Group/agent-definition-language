@@ -89,7 +89,7 @@ signal that travels with an agent. It declares the agent's identity,
 capabilities, permissions, and trust signals...
 
 > Validate this:
-> adl_spec: "0.2.0"
+> adl_spec: "0.3.0"
 > name: My Agent
 The document is missing required fields: description, version, and
 data_classification...
@@ -153,7 +153,7 @@ The tool behavior is identical across all 6 implementations. Only the agent loop
 The agent describes itself using ADL (`agent.adl.yaml`). This is the demo of the passport model — the same document that describes the agent is also validated by the agent at startup:
 
 ```yaml
-adl_spec: "0.2.0"
+adl_spec: "0.3.0"
 name: ADL Spec Explainer
 description: >-
   An AI agent that explains ADL concepts, validates documents,

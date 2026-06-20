@@ -22,7 +22,7 @@ describe("agent passport", () => {
   test("passport has correct metadata", () => {
     const { document } = loadADLSync(PASSPORT_PATH);
     expect(document!.name).toBe("ADL Spec Explainer");
-    expect(document!.adl_spec).toBe("0.2.0");
+    expect(document!.adl_spec).toBe("0.3.0");
     expect(document!.version).toBe("0.1.0");
     expect(document!.data_classification.sensitivity).toBe("public");
   });

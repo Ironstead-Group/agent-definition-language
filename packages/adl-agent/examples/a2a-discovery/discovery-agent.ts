@@ -232,7 +232,7 @@ async function communicateWithAgent(baseUrl: string, card: A2AAgentCard) {
   // 2. Validate a document
   console.log(`\n--- Task 2: Validate a document ---`);
   const validateResult = await sendTask(baseUrl, "validate_document", {
-    document: `adl_spec: "0.2.0"\nname: Test Agent\ndescription: A test\nversion: "1.0.0"\ndata_classification:\n  sensitivity: public`,
+    document: `adl_spec: "0.3.0"\nname: Test Agent\ndescription: A test\nversion: "1.0.0"\ndata_classification:\n  sensitivity: public`,
   });
   if (validateResult.status === "completed") {
     const output = validateResult.output as { valid: boolean; summary: string };

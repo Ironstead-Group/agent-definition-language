@@ -37,7 +37,7 @@ export function buildPassport(input: BuildPassportInput): ADLDocument {
     new Date(Date.parse(issuedAt) + 365 * 24 * 60 * 60 * 1000).toISOString();
 
   return {
-    adl_spec: "0.2.0",
+    adl_spec: "0.3.0",
     name: input.name,
     description: input.description,
     version: input.version,

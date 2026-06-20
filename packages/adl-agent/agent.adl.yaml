@@ -1,4 +1,4 @@
-adl_spec: "0.2.0"
+adl_spec: "0.3.0"
 name: ADL Spec Explainer
 description: >-
   An AI agent that explains ADL concepts, validates documents,

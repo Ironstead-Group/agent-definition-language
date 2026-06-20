@@ -1,5 +1,5 @@
-$schema: https://adl-spec.org/0.2/schema.json
-adl_spec: "0.2.0"
+$schema: https://adl-spec.org/0.3/schema.json
+adl_spec: "0.3.0"
 name: Invoice Processor
 description: >-
   Reviews vendor invoices, matches them against purchase orders, and routes

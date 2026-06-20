@@ -1,4 +1,4 @@
-adl_spec: 0.2.0
+adl_spec: 0.3.0
 name: Personal Assistant
 description: A consumer AI assistant running on a local Mac Mini via OpenClaw.
   Presents this passport when interacting with other agents.
