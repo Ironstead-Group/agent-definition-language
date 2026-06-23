@@ -139,6 +139,12 @@ def convert_spec_links(text: str) -> str:
     Handles both [label](url) Markdown links and <a href>label</a> HTML links.
     Known spec references are converted to kramdown-rfc {{citation}} syntax.
     """
+    # Drop Markdown images: ![alt](path). The spec's figures are external SVG
+    # diagrams that cannot render in a text I-D; kramdown-rfc would otherwise emit
+    # an element invalid as a section child. The following italic "*Figure N
+    # (informative): ...*" caption is retained and describes the figure.
+    text = re.sub(r'!\[[^\]]*\]\([^)]*\)\n?', '', text)
+
     # Replace known Markdown links with kramdown-rfc citations.
     # Handle nested brackets like [JSON [RFC8259]](url) by matching each known label.
     for link_text, citation in LINK_CITATIONS.items():
@@ -167,9 +173,17 @@ def convert_spec_links(text: str) -> str:
     # absolute URLs under the published site origin so companion pages resolve
     # from the draft. Runs after the http-link handling above so these are not
     # stripped to plain text.
+    # Strip emphasis/code inside the label (e.g. [**ADL Trust Protocol**](...) or
+    # [`anomaly_baseline`](...)) so the resulting <eref> has plain-text content;
+    # xml2rfc rejects <strong>/<tt> nested inside <eref>.
+    def _clean_label(text_label: str) -> str:
+        for mark in ("**", "__", "`", "*", "_"):
+            text_label = text_label.replace(mark, "")
+        return text_label
+
     text = re.sub(
         r'\[([^\[\]]+)\]\((/[^)]*)\)',
-        lambda m: f'[{m.group(1)}]({SITE_BASE_URL}{m.group(2)})',
+        lambda m: f'[{_clean_label(m.group(1))}]({SITE_BASE_URL}{m.group(2)})',
         text,
     )
 
@@ -459,7 +473,9 @@ def _xref_line(line: str, amap: dict) -> str:
         if _external_ref_before(line, m.start()):
             return m.group(0)
         anc = amap.get(m.group(1))
-        return f"(#{anc})" if anc else m.group(0)
+        # kramdown-rfc resolves {{anchor}} to a self-filling <xref> ("Section N");
+        # a bare (#anchor) is left as literal text, so it must not be used.
+        return "{{" + anc + "}}" if anc else m.group(0)
 
     line = re.sub(r'\bSection\s+(\d+(?:\.\d+)*)', sec_repl, line)
     line = re.sub(r'\bAppendix\s+([A-Z](?:\.\d+)?)', sec_repl, line)
@@ -473,7 +489,8 @@ def _xref_line(line: str, amap: dict) -> str:
             return m.group(0)
         if _external_ref_before(line, m.start()):
             return m.group(0)
-        return f"(#{anc})"
+        # {{anchor}} renders as "Section N.M"; replaces the "§N.M" source token.
+        return "{{" + anc + "}}"
 
     return re.sub(r'§(\d+(?:\.\d+)*)', para_repl, line)
 
@@ -629,9 +646,183 @@ def generate(spec_path: Path, manifest_path: Path, boilerplate_path: Path,
     print(f"  Boilerplate: {boilerplate_path}", file=sys.stderr)
 
 
+# --- Protocol-layer Internet-Drafts (the cluster companions to Core) ----------
+#
+# The protocol documents (Trust, Runtime) are flatter than Core: they number
+# their own sections (Trust Authentication is its own Section 1), carry named
+# trailing sections (IANA/Security/References) and their own reference lists, and
+# cross-reference Core and each other. They become separate I-Ds in the same
+# draft-nederveld-adl-* family, submitted as a cluster.
+
+PROTOCOLS = {
+    "trust": {
+        "src": REPO_ROOT / "protocol" / "draft" / "trust-protocol.md",
+        "boilerplate": REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate-trust.md",
+        "output": REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-trust-00.md",
+        "self_slug": "trust",
+        "sibling_slug": "runtime",
+        "sibling_name": "Runtime Protocol",
+        "sibling_ref": "ADL-RUNTIME",
+        "ref_keys": {"RFC2119", "RFC3986", "RFC6648", "RFC6750", "RFC8126", "RFC8174",
+                     "RFC8785", "RFC9110", "RFC8693", "RFC9449", "W3C.DID-WEB",
+                     "ADL-CORE", "ADL-RUNTIME"},
+    },
+    "runtime": {
+        "src": REPO_ROOT / "protocol" / "draft" / "runtime-protocol.md",
+        "boilerplate": REPO_ROOT / "standardization" / "templates" / "ietf-boilerplate-runtime.md",
+        "output": REPO_ROOT / "standardization" / "output" / "draft-nederveld-adl-runtime-00.md",
+        "self_slug": "runtime",
+        "sibling_slug": "trust",
+        "sibling_name": "Trust Protocol",
+        "sibling_ref": "ADL-TRUST",
+        "ref_keys": {"RFC2119", "RFC8174", "RFC8785", "RFC6962", "XACML",
+                     "NIST.SP.800-162", "ADL-CORE", "ADL-TRUST"},
+    },
+}
+
+
+def strip_protocol_frontmatter(text: str) -> str:
+    """Drop the Docusaurus YAML front matter, the H1 title, and the Version/Status
+    lines -- all of that is carried by the kramdown-rfc boilerplate instead."""
+    text = re.sub(r'^---\n.*?\n---\n', '', text, count=1, flags=re.S)
+    text = re.sub(r'^#\s+.+\n', '', text, count=1, flags=re.M)
+    text = re.sub(r'^\*\*Version:\*\*.*\n', '', text, flags=re.M)
+    text = re.sub(r'^\*\*Status:\*\*.*\n', '', text, flags=re.M)
+    return text
+
+
+def protocol_links_to_citations(text: str, cfg: dict) -> str:
+    """Rewrite site-relative companion links to cluster citations.
+
+    [.. ](/spec..) -> {{ADL-CORE}}; the sibling protocol -> its citation; a
+    self-link is reduced to its label text (a document does not cite itself).
+    """
+    text = re.sub(r'\[[^\]]*\]\(/spec[^)]*\)', '{{ADL-CORE}}', text)
+    text = re.sub(rf'\[[^\]]*\]\(/protocol/{cfg["sibling_slug"]}[^)]*\)',
+                  '{{' + cfg["sibling_ref"] + '}}', text)
+    text = re.sub(rf'\[([^\]]*)\]\(/protocol/{cfg["self_slug"]}[^)]*\)', r'\1', text)
+    return text
+
+
+def protocol_inline_refs(text: str, cfg: dict) -> str:
+    """Convert inline [KEY] reference markers to {{KEY}} citations (defined keys only)."""
+    def repl(m: re.Match) -> str:
+        return "{{" + m.group(1) + "}}" if m.group(1) in cfg["ref_keys"] else m.group(0)
+    return re.sub(r'\[([A-Z][A-Z0-9.\-]+)\](?!\()', repl, text)
+
+
+def protocol_cross_refs(text: str, cfg: dict) -> str:
+    """Wire textual cross-document references to the sibling and to Core.
+
+    "Trust Protocol §1.1.3" -> "Section 1.1.3 of {{ADL-TRUST}}"; a bare sibling
+    name -> its citation; "Core §" is reduced to "§" so the section-number pass
+    routes out-of-range numbers to Core.
+    """
+    sib, ref = cfg["sibling_name"], cfg["sibling_ref"]
+    # Sibling section refs, allowing a possessive ("Trust Protocol's §1.1.3") and
+    # a slash/dash-joined list ("§1.1.3/§1.1.5") whose trailing members would
+    # otherwise lose the qualifier and mis-route to Core.
+    def _sib_sections(m: re.Match) -> str:
+        nums = re.findall(r'\d+(?:\.\d+)*', m.group(0))
+        joined = ", ".join(f"Section {n}" for n in nums)
+        return f"{joined} of {{{{{ref}}}}}"
+    text = re.sub(rf'{re.escape(sib)}(?:’s|\'s)?\s+§\d+(?:\.\d+)*(?:[/–-]§\d+(?:\.\d+)*)*',
+                  _sib_sections, text)
+    text = re.sub(re.escape(sib), '{{' + ref + '}}', text)
+    text = re.sub(r'\bCore §', '§', text)
+    return text
+
+
+def protocol_intra_xrefs(text: str, amap: dict) -> str:
+    """Resolve bare in-text "§N.M" references.
+
+    A number in this document's own heading map becomes a self {{anchor}} xref
+    (rendered "Section N.M"); any other number is a reference into Core.
+    """
+    def repl(m: re.Match) -> str:
+        num = m.group(1)
+        anc = amap.get(num)
+        if anc:
+            return "{{" + anc + "}}"
+        return f"Section {num} of {{{{ADL-CORE}}}}"
+
+    lines, out, in_code = text.split("\n"), [], False
+    for line in lines:
+        if line.strip().startswith("```"):
+            in_code = not in_code
+            out.append(line)
+            continue
+        out.append(line if in_code else re.sub(r'§(\d+(?:\.\d+)*)', repl, line))
+    return "\n".join(out)
+
+
+def add_introduction(text: str) -> str:
+    """Give the leading prose a home under a numbered Introduction.
+
+    The protocol sources open with prose before their first heading; an RFC needs
+    that under a section. xml2rfc forbids an unnumbered section before numbered
+    ones, so the Introduction is numbered like any other section. In-text section
+    references use self-filling {{anchor}} xrefs, so the rendered document stays
+    internally consistent regardless of the resulting RFC section numbers.
+    """
+    lines = text.split("\n")
+    head_idx = next((i for i, l in enumerate(lines) if re.match(r'^#\s', l)), len(lines))
+    prose = lines[:head_idx]
+    if not any(s.strip() for s in prose):
+        return text
+    return "\n".join(['# Introduction', ''] + prose + lines[head_idx:])
+
+
+def generate_protocol(key: str, spec_override: Path | None, output_override: Path | None) -> None:
+    """Generate a protocol-layer Internet-Draft (Trust or Runtime)."""
+    cfg = PROTOCOLS[key]
+    spec_path = spec_override or cfg["src"]
+    output_path = output_override or cfg["output"]
+    boilerplate_path = cfg["boilerplate"]
+
+    spec_text = load_text(spec_path)
+    boilerplate_text = load_text(boilerplate_path)
+    anchor_map = build_anchor_map(spec_text)
+
+    front_and_abstract, middle_marker, back_marker = split_boilerplate(boilerplate_text)
+
+    body = strip_protocol_frontmatter(spec_text)
+    body = body.split("## References")[0]  # references come from the boilerplate front matter
+
+    body = protocol_links_to_citations(body, cfg)
+    body = convert_spec_links(body)
+    body = fix_html_entities(body)
+    body = protocol_inline_refs(body, cfg)
+    body = convert_inline_citations(body)
+    body = protocol_cross_refs(body, cfg)
+    body = escape_kramdown_syntax(body)
+    body = convert_bcp14_keywords(body)
+    body = strip_horizontal_rules(body)
+    body = adjust_heading_levels(body)
+    body = strip_section_numbers(body)
+    body = protocol_intra_xrefs(body, anchor_map)
+    body = add_introduction(body)
+    body = normalize_ascii(body)
+
+    back_content = normalize_ascii('# Acknowledgments\n{:numbered="false"}\n\nTBD\n')
+
+    output = (front_and_abstract + middle_marker + "\n" + body.strip() + "\n"
+              + back_marker + "\n" + back_content)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(output, encoding="utf-8")
+    print(f"Generated: {output_path}", file=sys.stderr)
+    print(f"  Spec source: {spec_path}", file=sys.stderr)
+    print(f"  Boilerplate: {boilerplate_path}", file=sys.stderr)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate IETF Internet-Draft (kramdown-rfc) from ADL spec"
+    )
+    parser.add_argument(
+        "--protocol", choices=sorted(PROTOCOLS),
+        help="generate a protocol-layer I-D (trust or runtime) instead of Core"
     )
     parser.add_argument(
         "--spec", type=Path, default=DEFAULT_SPEC,
@@ -651,7 +842,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    generate(args.spec, args.manifest, args.boilerplate, args.output)
+    if args.protocol:
+        spec_override = args.spec if args.spec != DEFAULT_SPEC else None
+        output_override = args.output if args.output != DEFAULT_OUTPUT else None
+        generate_protocol(args.protocol, spec_override, output_override)
+    else:
+        generate(args.spec, args.manifest, args.boilerplate, args.output)
 
 
 if __name__ == "__main__":
